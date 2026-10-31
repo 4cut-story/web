@@ -32,6 +32,22 @@ function conversation(overrides: Record<string, unknown>) {
 }
 
 describe("로그인 화면", () => {
+  it("로그인 방식을 받아 오지 못하면 안내한다", async () => {
+    mockFetch({ "GET /api/providers": json({ items: [], devLogin: false }) });
+    render(<LoginScreen />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "로그인 서버에 닿지 못했어요",
+    );
+  });
+
+  it("목록 응답이 깨져도 안내한다", async () => {
+    mockFetch({ "GET /api/providers": new Response("x") });
+    render(<LoginScreen />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "로그인 서버에 닿지 못했어요",
+    );
+  });
+
   it("켜진 공급자 버튼과 오류를 보여 준다", async () => {
     mockFetch({
       "GET /api/providers": json({
