@@ -22,10 +22,7 @@ type Providers = { items: string[]; devLogin: boolean };
 
 /** 로그인 화면. 켜진 공급자 버튼만 보여 준다. */
 export function LoginScreen({ error }: { error?: string }) {
-  const [providers, setProviders] = useState<Providers>({
-    items: [],
-    devLogin: false,
-  });
+  const [providers, setProviders] = useState<Providers>();
   const [nickname, setNickname] = useState("");
   const [devError, setDevError] = useState<string>();
 
@@ -33,7 +30,7 @@ export function LoginScreen({ error }: { error?: string }) {
     fetch("/api/providers")
       .then((r) => r.json() as Promise<Providers>)
       .then(setProviders)
-      .catch(() => undefined);
+      .catch(() => setProviders({ items: [], devLogin: false }));
   }, []);
 
   async function devLogin(event: React.FormEvent) {
@@ -65,12 +62,15 @@ export function LoginScreen({ error }: { error?: string }) {
             code={error}
           />
         )}
-        {providers.items.map((p) => (
+        {providers && providers.items.length === 0 && !providers.devLogin && (
+          <ErrorText message="로그인 서버에 닿지 못했어요. 잠시 뒤 새로고침해 주세요." />
+        )}
+        {providers?.items.map((p) => (
           <Button key={p} variant="secondary" asChild>
             <a href={`/auth/login/${p}`}>{LABELS[p] ?? p}</a>
           </Button>
         ))}
-        {providers.devLogin && (
+        {providers?.devLogin && (
           <form onSubmit={devLogin} className="flex gap-2">
             <input
               aria-label="개발용 닉네임"
