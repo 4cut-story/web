@@ -4,10 +4,34 @@ name: ci
 
 on:
   pull_request:
-    paths: [package.json, package-lock.json, 'src/**', 'app/**', 'components/**', 'lib/**', 'public/**', '*.config.*', 'tsconfig.json', Dockerfile]
+    paths:
+      [
+        package.json,
+        package-lock.json,
+        "src/**",
+        "app/**",
+        "components/**",
+        "lib/**",
+        "public/**",
+        "*.config.*",
+        "tsconfig.json",
+        Dockerfile,
+      ]
   push:
     branches: [main]
-    paths: [package.json, package-lock.json, 'src/**', 'app/**', 'components/**', 'lib/**', 'public/**', '*.config.*', 'tsconfig.json', Dockerfile]
+    paths:
+      [
+        package.json,
+        package-lock.json,
+        "src/**",
+        "app/**",
+        "components/**",
+        "lib/**",
+        "public/**",
+        "*.config.*",
+        "tsconfig.json",
+        Dockerfile,
+      ]
 
 jobs:
   ci:
