@@ -38,8 +38,6 @@ jobs:
     uses: 4cut-story/common/.github/workflows/node-service.yml@main
     with:
       app-name: web
-    secrets:
-      DEPLOY_REPO_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
     permissions:
       contents: read
       packages: write
