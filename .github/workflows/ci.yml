@@ -1,0 +1,21 @@
+# package.json이 생기기 전에는 돌지 않는다.
+# 필요한 npm 스크립트: lint, typecheck, format:check, dup:check, test:coverage(80%), build
+name: ci
+
+on:
+  pull_request:
+    paths: [package.json, package-lock.json, 'src/**', 'app/**', 'components/**', 'lib/**', 'public/**', '*.config.*', 'tsconfig.json', Dockerfile]
+  push:
+    branches: [main]
+    paths: [package.json, package-lock.json, 'src/**', 'app/**', 'components/**', 'lib/**', 'public/**', '*.config.*', 'tsconfig.json', Dockerfile]
+
+jobs:
+  ci:
+    uses: 4cut-story/common/.github/workflows/node-service.yml@main
+    with:
+      app-name: web
+    secrets:
+      DEPLOY_REPO_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
+    permissions:
+      contents: read
+      packages: write
