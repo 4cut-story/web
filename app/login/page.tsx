@@ -1,7 +1,11 @@
 import { Awaited } from "@/components/awaited";
 import { LoginScreen } from "@/components/screens/login-screen";
 
-export default function Page({ searchParams }: PageProps<"/login">) {
+export default function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   return (
     <Awaited
       value={searchParams}
