@@ -22,6 +22,7 @@ RUN addgroup -S nodejs -g 1001 && adduser -S nextjs -u 1001 -G nodejs
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
-USER nextjs
+# runAsNonRoot가 확인할 수 있게 숫자 UID로 둔다
+USER 1001:1001
 EXPOSE 3000
 CMD ["node", "server.js"]
