@@ -4,9 +4,9 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-// shadcn/ui Button. 크기는 docs/design-system.md 6절(누르는 영역 44px 이상)에 맞췄다.
+// shadcn/ui Button. 크기와 모서리는 docs/design-system.md 5~6절(기본 48px, 누르는 영역 44px 이상, 모서리 12px)에 맞췄다.
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md font-semibold whitespace-nowrap transition-colors duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg font-semibold whitespace-nowrap transition-colors duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5 [&_svg]:stroke-[1.75]",
   {
     variants: {
       variant: {
@@ -16,11 +16,11 @@ const buttonVariants = cva(
         outline: "border border-input bg-background hover:bg-muted",
         ghost: "hover:bg-muted",
         destructive: "bg-destructive text-white hover:bg-destructive/90",
-        link: "text-foreground underline-offset-4 hover:underline",
+        link: "text-muted-foreground underline-offset-4 hover:text-foreground hover:underline",
       },
       size: {
         sm: "h-9 px-3 text-sm",
-        default: "h-11 px-4 text-base",
+        default: "h-12 px-5 text-base",
         lg: "h-13 px-6 text-base",
         icon: "size-11",
       },

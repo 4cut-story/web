@@ -5,10 +5,15 @@ import { describe, expect, it, vi } from "vitest";
 import { Button, buttonVariants } from "./button";
 
 describe("Button (디자인 시스템 6절)", () => {
-  it("기본 버튼은 검정 바탕(primary)과 44px 높이로 그린다", () => {
+  it("기본 버튼은 검정 바탕(primary), 48px 높이, 12px 모서리로 그린다", () => {
     render(<Button>올리기</Button>);
     const button = screen.getByRole("button", { name: "올리기" });
-    expect(button).toHaveClass("bg-primary", "text-primary-foreground", "h-11");
+    expect(button).toHaveClass(
+      "bg-primary",
+      "text-primary-foreground",
+      "h-12",
+      "rounded-lg",
+    );
     expect(button).toHaveAttribute("data-slot", "button");
   });
 
@@ -32,7 +37,7 @@ describe("Button (디자인 시스템 6절)", () => {
     render(<Button className="h-20">큰 버튼</Button>);
     const button = screen.getByRole("button", { name: "큰 버튼" });
     expect(button).toHaveClass("h-20");
-    expect(button).not.toHaveClass("h-11");
+    expect(button).not.toHaveClass("h-12");
   });
 
   it("누르면 onClick을 부르고, 비활성이면 부르지 않는다", async () => {
