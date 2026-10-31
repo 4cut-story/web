@@ -6,7 +6,7 @@
 
 - 상위 원칙: `docs`의 `.specify/memory/constitution.md`
 - 아키텍처: `docs`의 `docs/architecture.md` (v3.0)
-- **계약 기준 버전: common `v0.1.0` (태그 예정)** — 계약은 이 버전에 고정해 쓰고, 올릴 때 이 줄을 함께 고친다.
+- **계약 기준 버전: common `v0.1.0`** — 계약은 이 버전에 고정해 쓰고, 올릴 때 이 줄을 함께 고친다.
 - 디자인: `docs`의 `docs/design-system.md` — 색과 크기는 `app/globals.css` 토큰 클래스로만 쓴다
 - 포트: 3000 (`common/service-catalog.yaml`)
 
