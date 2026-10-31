@@ -1,0 +1,13 @@
+{
+  "minLines": 10,
+  "minTokens": 70,
+  "format": ["typescript", "tsx", "javascript", "css"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/coverage/**",
+    "**/.specify/**",
+    "**/.claude/**",
+    "**/package-lock.json"
+  ]
+}
