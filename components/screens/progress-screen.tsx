@@ -12,11 +12,11 @@ import type { Conversation, ConversationStatus } from "@/lib/types";
 import { useLoad } from "@/lib/use-load";
 
 const STEPS: { status: ConversationStatus; label: string }[] = [
-  { status: "TRANSCRIBING", label: "전사" },
-  { status: "SELECTING", label: "장면 고르기" },
-  { status: "SCRIPTING", label: "콘티" },
-  { status: "DRAWING", label: "그림" },
-  { status: "COMPOSING", label: "합성" },
+  { status: "TRANSCRIBING", label: "대화 듣는 중" },
+  { status: "SELECTING", label: "장면 고르는 중" },
+  { status: "SCRIPTING", label: "대사 쓰는 중" },
+  { status: "DRAWING", label: "그리는 중" },
+  { status: "COMPOSING", label: "4컷 완성" },
 ];
 
 const ORDER: ConversationStatus[] = [
