@@ -122,15 +122,15 @@ describe("진행 상태 (FR-008)", () => {
       "href",
       "/comics",
     );
-    expect(screen.getByText("전사").closest("li")).toHaveAttribute(
+    expect(screen.getByText("대화 듣는 중").closest("li")).toHaveAttribute(
       "data-state",
       "done",
     );
-    expect(screen.getByText("그림").closest("li")).toHaveAttribute(
+    expect(screen.getByText("그리는 중").closest("li")).toHaveAttribute(
       "data-state",
       "running",
     );
-    expect(screen.getByText("합성").closest("li")).toHaveAttribute(
+    expect(screen.getByText("4컷 완성").closest("li")).toHaveAttribute(
       "data-state",
       "waiting",
     );
@@ -166,7 +166,7 @@ describe("진행 상태 (FR-008)", () => {
     expect(await screen.findByText(/만들지 못했어요/)).toHaveTextContent(
       "LLM_TIMEOUT",
     );
-    expect(screen.getByText("콘티").closest("li")).toHaveAttribute(
+    expect(screen.getByText("대사 쓰는 중").closest("li")).toHaveAttribute(
       "data-state",
       "failed",
     );
