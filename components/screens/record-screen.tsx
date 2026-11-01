@@ -9,7 +9,10 @@ import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/api";
 import { clock } from "@/lib/format";
+import type { Concept } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import {
+  CONCEPTS,
   fileContentType,
   MAX_PARTS,
   MAX_RECORDING_SEC,
@@ -25,6 +28,7 @@ type Phase = "ready" | "recording" | "sending";
 export function RecordScreen() {
   const router = useRouter();
   const [consent, setConsent] = useState(false);
+  const [concept, setConcept] = useState<Concept>("AUTO");
   const [phase, setPhase] = useState<Phase>("ready");
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string>();
@@ -74,7 +78,7 @@ export function RecordScreen() {
       return;
     }
     try {
-      const id = await startConversation("RECORDING");
+      const id = await startConversation("RECORDING", concept);
       const queue = new PartQueue(id, mimeType);
       const media = new MediaRecorder(stream, {
         mimeType,
@@ -113,7 +117,7 @@ export function RecordScreen() {
       return;
     }
     try {
-      const id = await startConversation("UPLOAD");
+      const id = await startConversation("UPLOAD", concept);
       const queue = new PartQueue(id, type);
       queue.add(file);
       await finish(queue, id);
@@ -128,6 +132,35 @@ export function RecordScreen() {
       <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
         {phase === "ready" && (
           <>
+            <p
+              id="concept-label"
+              className="-mb-5 self-start text-sm font-medium"
+            >
+              그림체
+            </p>
+            <div
+              role="radiogroup"
+              aria-labelledby="concept-label"
+              className="grid w-full grid-cols-2 gap-2"
+            >
+              {CONCEPTS.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={concept === value}
+                  onClick={() => setConcept(value)}
+                  className={cn(
+                    "h-11 rounded-lg text-sm font-medium",
+                    concept === value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             <label className="flex items-start gap-3 text-left text-base">
               <input
                 type="checkbox"
