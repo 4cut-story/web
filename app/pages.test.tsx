@@ -10,6 +10,7 @@ import MePage from "./me/page";
 import FeedPage from "./page";
 import PostPage from "./posts/[id]/page";
 import RecordPage from "./record/page";
+import UserPage from "./u/[nickname]/page";
 import ProfilePage from "./users/[id]/page";
 import { Awaited, Resolve } from "@/components/awaited";
 import { router } from "@/test/screen";
@@ -63,6 +64,12 @@ describe("페이지 연결", () => {
       [ProgressPage({ params } as never), "만화 만드는 중"],
       [PostPage({ params } as never), "게시물"],
       [ProfilePage({ params } as never), "프로필"],
+      [
+        UserPage({
+          params: Promise.resolve({ nickname: "%EB%A7%88%EB%A5%B4%EC%BD%94" }),
+        } as never),
+        "마르코",
+      ],
     ];
     for (const [element, title] of cases) {
       await renderAwaited(element);

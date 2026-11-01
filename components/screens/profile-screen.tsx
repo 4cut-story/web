@@ -1,15 +1,33 @@
 "use client";
 
-import { AppShell } from "@/components/app-shell";
-import { ProfileView } from "@/components/profile-view";
-import { useMe } from "@/lib/use-me";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-/** 다른 사람 프로필. 내 프로필이면 팔로우 버튼을 숨긴다. */
+import { AppShell } from "@/components/app-shell";
+import { ErrorText } from "@/components/empty-state";
+import { api, userPath } from "@/lib/api";
+import type { User } from "@/lib/types";
+import { useLoad } from "@/lib/use-load";
+
+/** 예전 프로필 주소(/users/ID). 사용자 페이지 주소(/@닉네임)로 보낸다. */
 export function ProfileScreen({ userId }: { userId: string }) {
-  const me = useMe();
+  const router = useRouter();
+  const user = useLoad(`user:${userId}`, () =>
+    api.get<User>(`/users/${userId}`),
+  );
+  const nickname = user.data?.nickname;
+
+  useEffect(() => {
+    if (nickname) {
+      router.replace(userPath(nickname));
+    }
+  }, [nickname, router]);
+
   return (
-    <AppShell title="프로필" tab={me.data?.id === userId ? "profile" : "feed"}>
-      <ProfileView userId={userId} self={me.data?.id === userId} />
+    <AppShell title="프로필">
+      {user.error && (
+        <ErrorText message={user.error.message} code={user.error.code} />
+      )}
     </AppShell>
   );
 }

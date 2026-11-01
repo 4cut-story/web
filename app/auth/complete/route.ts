@@ -3,13 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { publicUrl } from "@/lib/server/config";
 import { exchangeCode, loginError } from "@/lib/server/login";
 
-/** auth-service가 로그인을 마치고 일회용 코드와 함께 보내는 곳. */
+/** auth-service가 로그인을 마치고 일회용 코드와 함께 보내는 곳. 로그인하면 내 페이지(/me → /@닉네임)로 간다. */
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   if (!code) {
     return loginError("LOGIN_FAILED");
   }
-  const response = NextResponse.redirect(publicUrl("/"), 303);
+  const response = NextResponse.redirect(publicUrl("/me"), 303);
   try {
     return (await exchangeCode(code, response))
       ? response

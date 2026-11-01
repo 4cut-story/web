@@ -41,7 +41,7 @@ export function LoginScreen({ error }: { error?: string }) {
       body: JSON.stringify({ nickname }),
     });
     if (response.ok) {
-      window.location.assign(new URL("/", window.location.origin));
+      window.location.assign(new URL("/me", window.location.origin));
     } else {
       setDevError("개발용 로그인에 실패했어요.");
     }
@@ -50,7 +50,7 @@ export function LoginScreen({ error }: { error?: string }) {
   return (
     <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col justify-center gap-10 px-5">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-semibold">4컷 이야기</h1>
+        <h1 className="text-2xl font-semibold">4cut story</h1>
         <p className="text-base text-muted-foreground">
           대화를 녹음하면 4컷 만화가 됩니다.
         </p>

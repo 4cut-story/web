@@ -40,6 +40,8 @@ export async function request<T>(
     body?: unknown;
     raw?: BodyInit;
     contentType?: string;
+    /** true면 401이어도 로그인 화면으로 보내지 않는다 (로그인 없이 보는 화면). */
+    quiet?: boolean;
   } = {},
 ): Promise<T> {
   const headers: Record<string, string> = {};
@@ -56,7 +58,7 @@ export async function request<T>(
     headers,
     body,
   });
-  if (response.status === 401) {
+  if (response.status === 401 && !init.quiet) {
     navigation.toLogin();
   }
   if (!response.ok) {
@@ -75,7 +77,23 @@ export const api = {
     request<T>(`/api/v1${path}`, { method: "POST", body: body ?? {} }),
   put: <T>(path: string) => request<T>(`/api/v1${path}`, { method: "PUT" }),
   del: <T>(path: string) => request<T>(`/api/v1${path}`, { method: "DELETE" }),
+  /** 로그인하지 않았으면(401) null. 로그인 화면으로 보내지 않는다. */
+  getIfSignedIn: async <T>(path: string): Promise<T | null> => {
+    try {
+      return await request<T>(`/api/v1${path}`, { quiet: true });
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        return null;
+      }
+      throw e;
+    }
+  },
 };
+
+/** 사용자 페이지 주소. 블로그처럼 /@닉네임 (닉네임은 회원마다 고유하다). */
+export function userPath(nickname: string): string {
+  return `/@${encodeURIComponent(nickname)}`;
+}
 
 export function errorMessage(error: unknown): string {
   return error instanceof ApiError ? error.message : FALLBACK_MESSAGE;
