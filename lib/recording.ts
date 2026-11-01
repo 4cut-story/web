@@ -103,12 +103,16 @@ export class PartQueue {
   }
 }
 
+/** 대화 언어. 아직 고르는 화면이 없어 한국어로 보낸다 (자동 감지는 짧은 녹음에서 en으로 잘못 잡힌다). */
+const DEFAULT_LANGUAGE = "ko";
+
 export async function startConversation(
   source: "RECORDING" | "UPLOAD",
 ): Promise<string> {
   const created = await api.post<{ id: string }>("/conversations", {
     source,
     consent: true,
+    language: DEFAULT_LANGUAGE,
   });
   return created.id;
 }

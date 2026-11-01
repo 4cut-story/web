@@ -158,6 +158,7 @@ describe("녹음 파일 올리기 (FR-003)", () => {
     expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({
       source: "UPLOAD",
       consent: true,
+      language: "ko",
     });
   });
 
