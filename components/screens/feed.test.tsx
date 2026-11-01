@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -6,7 +6,7 @@ import { FeedScreen } from "./feed-screen";
 import { InboxScreen } from "./inbox-screen";
 import { navigation } from "@/lib/api";
 import { comic, OTHER, post } from "@/test/screen";
-import { json, mockFetch, noContent } from "@/test/fetch-mock";
+import { json, mockFetch } from "@/test/fetch-mock";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -14,28 +14,26 @@ afterEach(() => {
 });
 
 describe("피드 (FR-020)", () => {
-  it("게시물과 작성자를 보여 주고 좋아요를 누른다", async () => {
+  it("첫 컷과 제목, 작성자를 격자로 보여 주고 더 불러온다", async () => {
     const calls = mockFetch({
+      "GET /api/v1/me": json({ id: "u1", nickname: "나", avatarUrl: null }),
       "GET /api/v1/feed?cursor=next": json({
-        items: [post({ postId: "p2", caption: "", visibility: "FOLLOWERS" })],
+        items: [post({ postId: "p2", title: "두 번째" })],
         nextCursor: null,
       }),
       "GET /api/v1/feed": json({ items: [post()], nextCursor: "next" }),
       "GET /api/v1/users": json({ items: [OTHER] }),
-      "PUT /api/v1/posts/p1/like": noContent(),
-      "DELETE /api/v1/posts/p1/like": json({}, 500),
     });
     render(<FeedScreen />);
-    expect(await screen.findByText("오늘 있었던 일")).toBeInTheDocument();
-    expect(await screen.findAllByText("지수")).not.toHaveLength(0);
-    const like = screen.getByRole("button", { name: "좋아요" });
-    await userEvent.click(like);
-    expect(like).toHaveAttribute("aria-pressed", "true");
-    expect(like).toHaveTextContent("3");
-    await userEvent.click(like);
-    await waitFor(() => expect(like).toHaveAttribute("aria-pressed", "true"));
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "피드" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("편의점 대소동")).toBeInTheDocument();
+    const link = (await screen.findByText("지수")).closest("a");
+    expect(link).toHaveAttribute("href", "/@%EC%A7%80%EC%88%98");
+    expect(link).toHaveAttribute("target", "_blank");
     await userEvent.click(screen.getByRole("button", { name: "더 보기" }));
-    expect(await screen.findByLabelText("팔로워만")).toBeInTheDocument();
+    expect(await screen.findByText("두 번째")).toBeInTheDocument();
     expect(calls.some((c) => c.url === "/api/v1/users?ids=u2")).toBe(true);
   });
 
@@ -76,21 +74,6 @@ describe("첫 화면 포털", () => {
     expect(
       screen.queryByRole("region", { name: "서비스 소개" }),
     ).not.toBeInTheDocument();
-  });
-
-  it("피드에서 캡션이 제목과 같으면 다시 쓰지 않고, 4컷 자리를 미리 잡는다", async () => {
-    mockFetch({
-      "GET /api/v1/me": json({ id: "u1", nickname: "나", avatarUrl: null }),
-      "GET /api/v1/feed": json({
-        items: [post({ caption: "편의점 대소동" })],
-        nextCursor: null,
-      }),
-    });
-    render(<FeedScreen />);
-    const image = await screen.findByAltText("편의점 대소동");
-    expect(image).toHaveAttribute("width", "800");
-    expect(image).toHaveAttribute("height", "3206");
-    expect(screen.queryByText("편의점 대소동")).not.toBeInTheDocument();
   });
 
   it("로그인하지 않았으면 서비스 소개와 최근 공개 4컷을 썸네일로 보여 준다", async () => {
