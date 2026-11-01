@@ -58,6 +58,7 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
   return (
     <AppShell
       title={nickname}
+      home={anonymous}
       tab={anonymous ? undefined : self ? "profile" : "feed"}
       actions={
         anonymous ? (

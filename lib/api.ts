@@ -90,6 +90,12 @@ export const api = {
   },
 };
 
+/**
+ * 만화 이미지의 크기(가로 800, 세로 4컷). img에 넣어 이미지가 오기 전에 자리를 잡는다.
+ * 실제 크기가 달라도 브라우저가 받은 이미지 비율로 다시 그린다.
+ */
+export const COMIC_SIZE = { width: 800, height: 3206 } as const;
+
 /** 사용자 페이지 주소. 블로그처럼 /@닉네임 (닉네임은 회원마다 고유하다). */
 export function userPath(nickname: string): string {
   return `/@${encodeURIComponent(nickname)}`;

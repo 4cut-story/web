@@ -1,4 +1,10 @@
-import { BookImage, Home, Mic, User as UserIcon } from "lucide-react";
+import {
+  BookImage,
+  ChevronLeft,
+  Home,
+  Mic,
+  User as UserIcon,
+} from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -13,22 +19,38 @@ const TABS: { id: Tab; href: string; label: string; icon: typeof Home }[] = [
   { id: "profile", href: "/me", label: "프로필", icon: UserIcon },
 ];
 
-/** 화면 틀: 상단 헤더(56px) + 본문(최대 480px) + 하단 탭(녹음·진행·로그인 화면에서는 숨김). */
+/**
+ * 화면 틀: 상단 헤더(56px) + 본문(최대 480px) + 하단 탭(녹음·진행·로그인 화면에서는 숨김).
+ * home이면 제목 앞에 첫 화면으로 가는 링크를 둔다(하단 탭이 없는 손님용).
+ */
 export function AppShell({
   title,
   tab,
+  home,
   actions,
   children,
 }: {
   title: string;
   tab?: Tab;
+  home?: boolean;
   actions?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
       <header className="flex h-14 items-center justify-between px-5">
-        <h1 className="text-lg font-semibold">{title}</h1>
+        <div className="flex min-w-0 items-center gap-1">
+          {home && (
+            <Link
+              href="/"
+              aria-label="첫 화면으로"
+              className="-ml-2 flex size-10 shrink-0 items-center justify-center"
+            >
+              <ChevronLeft aria-hidden className="size-6" />
+            </Link>
+          )}
+          <h1 className="truncate text-lg font-semibold">{title}</h1>
+        </div>
         <div className="flex items-center gap-1">{actions}</div>
       </header>
       <main className={cn("flex flex-1 flex-col px-5", tab && "pb-24")}>

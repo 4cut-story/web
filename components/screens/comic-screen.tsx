@@ -9,7 +9,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
 import { PublishSheet } from "@/components/publish-sheet";
 import { Button } from "@/components/ui/button";
-import { api, errorMessage, imageUrl } from "@/lib/api";
+import { api, COMIC_SIZE, errorMessage, imageUrl } from "@/lib/api";
 import type { Comic } from "@/lib/types";
 import { useLoad } from "@/lib/use-load";
 
@@ -51,7 +51,8 @@ export function ComicScreen({ id }: { id: string }) {
           <img
             src={imageUrl("comics", comic.id)}
             alt={comic.title ?? "4컷 만화"}
-            className="w-full rounded-lg bg-muted"
+            {...COMIC_SIZE}
+            className="h-auto w-full rounded-lg bg-muted"
           />
           {comic.state === "POSTED" && comic.postId ? (
             <Button size="lg" asChild>

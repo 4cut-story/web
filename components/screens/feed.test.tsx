@@ -64,6 +64,35 @@ describe("피드 (FR-020)", () => {
 });
 
 describe("첫 화면 포털", () => {
+  it("로그인 확인 중에는 서비스 이름만 보이고 피드 탭은 숨긴다", () => {
+    mockFetch({ "GET /api/v1/me": () => new Promise<Response>(() => {}) });
+    render(<FeedScreen />);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "4cut story" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "주요 메뉴" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "서비스 소개" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("캡션이 만화 제목과 같으면 다시 쓰지 않고, 만화 자리를 미리 잡는다", async () => {
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/feed": json({
+        items: [post({ caption: "편의점 대소동" })],
+        nextCursor: null,
+      }),
+    });
+    render(<FeedScreen />);
+    const image = await screen.findByAltText("편의점 대소동");
+    expect(image).toHaveAttribute("width", "800");
+    expect(image).toHaveAttribute("height", "3206");
+    expect(screen.queryByText("편의점 대소동")).not.toBeInTheDocument();
+  });
+
   it("로그인하지 않았으면 서비스 소개와 최근 공개 만화를 보여 준다", async () => {
     const toLogin = vi
       .spyOn(navigation, "toLogin")

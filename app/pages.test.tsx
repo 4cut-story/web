@@ -42,7 +42,8 @@ describe("페이지 연결", () => {
   it("정적 페이지는 각 화면을 그린다", () => {
     mockFetch({});
     const pages: [() => ReactElement, string][] = [
-      [FeedPage, "피드"],
+      // 첫 화면은 로그인 확인 전이라 서비스 이름만 보인다
+      [FeedPage, "4cut story"],
       [InboxPage, "만화함"],
       [RecordPage, "만들기"],
       [MePage, "프로필"],

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { ErrorText } from "@/components/empty-state";
@@ -86,6 +87,9 @@ export function LoginScreen({ error }: { error?: string }) {
           </form>
         )}
         {devError && <ErrorText message={devError} />}
+        <Button variant="link" className="text-muted-foreground" asChild>
+          <Link href="/">로그인 없이 만화 구경하기</Link>
+        </Button>
       </div>
     </main>
   );

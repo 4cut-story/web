@@ -40,6 +40,14 @@ describe("로그인 화면", () => {
     );
   });
 
+  it("로그인 없이 첫 화면으로 돌아갈 수 있다", () => {
+    mockFetch({ "GET /api/providers": json({ items: [], devLogin: false }) });
+    render(<LoginScreen />);
+    expect(
+      screen.getByRole("link", { name: "로그인 없이 만화 구경하기" }),
+    ).toHaveAttribute("href", "/");
+  });
+
   it("목록 응답이 깨져도 안내한다", async () => {
     mockFetch({ "GET /api/providers": new Response("x") });
     render(<LoginScreen />);

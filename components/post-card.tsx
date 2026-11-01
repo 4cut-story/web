@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Avatar } from "@/components/avatar";
-import { api, imageUrl, userPath } from "@/lib/api";
+import { api, COMIC_SIZE, imageUrl, userPath } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
 import type { Post, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -56,7 +56,8 @@ export function PostCard({ post, author }: { post: Post; author?: User }) {
         <img
           src={imageUrl("posts", post.postId)}
           alt={post.caption || `${name}님의 4컷 만화`}
-          className="w-full rounded-lg bg-muted"
+          {...COMIC_SIZE}
+          className="h-auto w-full rounded-lg bg-muted"
         />
       </Link>
       <div className="flex items-center gap-4 text-sm font-semibold">
@@ -79,7 +80,10 @@ export function PostCard({ post, author }: { post: Post; author?: User }) {
           <span className="tabular-nums">{post.commentCount}</span>
         </Link>
       </div>
-      {post.caption && <p className="text-base">{post.caption}</p>}
+      {/* 제목은 만화 위에 그려져 있으니, 캡션이 제목과 같으면 다시 쓰지 않는다 */}
+      {post.caption && post.caption !== post.title && (
+        <p className="text-base">{post.caption}</p>
+      )}
     </article>
   );
 }
