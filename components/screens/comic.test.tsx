@@ -44,7 +44,7 @@ describe("로그인 화면", () => {
     mockFetch({ "GET /api/providers": json({ items: [], devLogin: false }) });
     render(<LoginScreen />);
     expect(
-      screen.getByRole("link", { name: "로그인 없이 만화 구경하기" }),
+      screen.getByRole("link", { name: "로그인 없이 둘러보기" }),
     ).toHaveAttribute("href", "/");
   });
 
@@ -95,7 +95,7 @@ describe("로그인 화면", () => {
 });
 
 describe("진행 상태 (FR-008)", () => {
-  it("단계를 보여 주고 5초마다 다시 확인해 끝나면 만화 보기를 보여 준다", async () => {
+  it("단계를 보여 주고 5초마다 다시 확인해 끝나면 4컷 보기를 보여 준다", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     let n = 0;
     mockFetch({
@@ -118,7 +118,7 @@ describe("진행 상태 (FR-008)", () => {
     render(<ProgressScreen id="v1" />);
     expect(await screen.findByText(/잠시 쉬고 있어요/)).toBeInTheDocument();
     expect(screen.getByText(/화면을 닫아도 계속 만들어요/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "만화함으로" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "스토리로" })).toHaveAttribute(
       "href",
       "/comics",
     );
@@ -138,7 +138,7 @@ describe("진행 상태 (FR-008)", () => {
       await vi.advanceTimersByTimeAsync(POLL_MS);
     });
     expect(
-      await screen.findByRole("link", { name: "만화 보기" }),
+      await screen.findByRole("link", { name: "4컷 보기" }),
     ).toHaveAttribute("href", "/comics/c1");
     expect(screen.getByRole("progressbar")).toHaveAttribute(
       "aria-valuenow",
@@ -179,7 +179,7 @@ describe("진행 상태 (FR-008)", () => {
   });
 });
 
-describe("만화 보기와 게시 (FR-013, FR-014)", () => {
+describe("4컷 보기와 게시 (FR-013, FR-014)", () => {
   it("실명 경고를 보고 동의한 뒤 올리면 게시물로 간다", async () => {
     const calls = mockFetch({
       "GET /api/v1/comics/c1": json(comic({ nameWarnings: ["김철수"] })),
@@ -228,7 +228,7 @@ describe("만화 보기와 게시 (FR-013, FR-014)", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("게시한 만화는 게시물 보기, 저장 링크, 삭제 확인 뒤 만화함으로", async () => {
+  it("게시한 4컷은 게시물 보기, 저장 링크, 삭제 확인 뒤 스토리로", async () => {
     mockFetch({
       "GET /api/v1/comics/c1": json(comic({ state: "POSTED", postId: "p1" })),
       "DELETE /api/v1/comics/c1": noContent(),

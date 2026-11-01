@@ -43,7 +43,7 @@ describe("피드 (FR-020)", () => {
     mockFetch({ "GET /api/v1/feed": json({ items: [], nextCursor: null }) });
     render(<FeedScreen />);
     expect(
-      await screen.findByText("아직 올라온 만화가 없어요"),
+      await screen.findByText("아직 올라온 4컷이 없어요"),
     ).toBeInTheDocument();
   });
 
@@ -78,9 +78,9 @@ describe("첫 화면 포털", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("캡션이 만화 제목과 같으면 다시 쓰지 않고, 만화 자리를 미리 잡는다", async () => {
+  it("피드에서 캡션이 제목과 같으면 다시 쓰지 않고, 4컷 자리를 미리 잡는다", async () => {
     mockFetch({
-      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/me": json({ id: "u1", nickname: "나", avatarUrl: null }),
       "GET /api/v1/feed": json({
         items: [post({ caption: "편의점 대소동" })],
         nextCursor: null,
@@ -93,7 +93,7 @@ describe("첫 화면 포털", () => {
     expect(screen.queryByText("편의점 대소동")).not.toBeInTheDocument();
   });
 
-  it("로그인하지 않았으면 서비스 소개와 최근 공개 만화를 보여 준다", async () => {
+  it("로그인하지 않았으면 서비스 소개와 최근 공개 4컷을 썸네일로 보여 준다", async () => {
     const toLogin = vi
       .spyOn(navigation, "toLogin")
       .mockImplementation(() => undefined);
@@ -112,15 +112,24 @@ describe("첫 화면 포털", () => {
     expect(
       screen.getByRole("link", { name: "무료로 시작하기" }),
     ).toHaveAttribute("href", "/login");
-    expect(await screen.findByText("방금 올라온 만화")).toBeInTheDocument();
-    expect(await screen.findByText("오늘 있었던 일")).toBeInTheDocument();
+    expect(await screen.findByText("방금 올라온 4컷")).toBeInTheDocument();
+    // 4컷 전체 대신 첫 컷 썸네일과 제목, 작성자. 누르면 새 탭에서 작성자 페이지
+    expect(await screen.findByText("편의점 대소동")).toBeInTheDocument();
+    expect(screen.getByAltText("편의점 대소동")).toHaveAttribute(
+      "src",
+      "/api/images/posts/p1?size=thumb",
+    );
+    const link = (await screen.findByText("지수")).closest("a");
+    expect(link).toHaveAttribute("href", "/@%EC%A7%80%EC%88%98");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(screen.queryByText("오늘 있었던 일")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("navigation", { name: "주요 메뉴" }),
     ).not.toBeInTheDocument();
     expect(toLogin).not.toHaveBeenCalled();
   });
 
-  it("공개 만화가 아직 없으면 녹음하기는 로그인으로 보낸다", async () => {
+  it("공개 4컷이 아직 없으면 녹음하기는 로그인으로 보낸다", async () => {
     mockFetch({
       "GET /api/v1/me": json({}, 401),
       "GET /api/v1/feed": json({ items: [], nextCursor: null }),
@@ -129,12 +138,12 @@ describe("첫 화면 포털", () => {
     expect(
       await screen.findByRole("link", { name: "녹음하기" }),
     ).toHaveAttribute("href", "/login");
-    expect(screen.queryByText("방금 올라온 만화")).not.toBeInTheDocument();
+    expect(screen.queryByText("방금 올라온 4컷")).not.toBeInTheDocument();
   });
 });
 
-describe("만화함 (FR-012)", () => {
-  it("만화를 2열로 보여 주고 게시한 것에는 배지를 단다", async () => {
+describe("스토리 (옛 만화함, FR-012)", () => {
+  it("첫 컷과 제목을 2열로 보여 주고 게시한 것에는 배지를 단다", async () => {
     mockFetch({
       "GET /api/v1/comics": json({
         items: [
@@ -150,6 +159,10 @@ describe("만화함 (FR-012)", () => {
     expect(screen.getByAltText("편의점 대소동")).toHaveAttribute(
       "src",
       "/api/images/comics/c1?size=thumb",
+    );
+    expect(screen.getByText("편의점 대소동").closest("a")).toHaveAttribute(
+      "href",
+      "/comics/c1",
     );
   });
 

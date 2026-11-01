@@ -83,7 +83,7 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
     expect(await screen.findByText("지우기 실패")).toBeInTheDocument();
   });
 
-  it("내 게시물은 내리면 만화함으로, 삭제하면 피드로 간다", async () => {
+  it("내 게시물은 내리면 스토리로, 삭제하면 피드로 간다", async () => {
     const calls = mockFetch({
       "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
       "GET /api/v1/posts/p1": json(post({ authorId: "me" })),
@@ -200,11 +200,11 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
       "/api/images/posts/p1?size=thumb",
     );
     expect(
-      screen.queryByRole("link", { name: "녹음해서 만화 만들기" }),
+      screen.queryByRole("link", { name: "녹음해서 4컷 만들기" }),
     ).not.toBeInTheDocument();
   });
 
-  it("로그인하지 않았으면 만화만 보이고 팔로우 대신 로그인 버튼이 있다", async () => {
+  it("로그인하지 않았으면 4컷만 보이고 팔로우 대신 로그인 버튼이 있다", async () => {
     const toLogin = vi
       .spyOn(navigation, "toLogin")
       .mockImplementation(() => undefined);
@@ -283,10 +283,10 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     });
     render(<UserPageScreen nickname="마르코" />);
     expect(
-      await screen.findByText("아직 올린 만화가 없어요."),
+      await screen.findByText("아직 올린 4컷이 없어요."),
     ).toBeInTheDocument();
     expect(
-      await screen.findByRole("link", { name: "녹음해서 만화 만들기" }),
+      await screen.findByRole("link", { name: "녹음해서 4컷 만들기" }),
     ).toHaveAttribute("href", "/record");
     expect(
       screen.queryByRole("button", { name: "팔로우" }),

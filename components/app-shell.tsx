@@ -15,7 +15,7 @@ export type Tab = "feed" | "create" | "inbox" | "profile";
 const TABS: { id: Tab; href: string; label: string; icon: typeof Home }[] = [
   { id: "feed", href: "/", label: "피드", icon: Home },
   { id: "create", href: "/record", label: "만들기", icon: Mic },
-  { id: "inbox", href: "/comics", label: "만화함", icon: BookImage },
+  { id: "inbox", href: "/comics", label: "스토리", icon: BookImage },
   { id: "profile", href: "/me", label: "프로필", icon: UserIcon },
 ];
 

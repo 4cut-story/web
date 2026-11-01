@@ -87,7 +87,7 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
           <Button asChild>
             <Link href="/record">
               <Mic aria-hidden />
-              녹음해서 만화 만들기
+              녹음해서 4컷 만들기
             </Link>
           </Button>
           <div className="flex items-center justify-between gap-2 rounded-lg bg-muted px-4 py-3 text-sm">
@@ -122,7 +122,7 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
       {confirm && (
         <ConfirmDialog
           title="정말 탈퇴할까요?"
-          description="녹음, 만화, 게시물, 댓글이 모두 지워지고 되돌릴 수 없어요."
+          description="녹음, 4컷, 게시물, 댓글이 모두 지워지고 되돌릴 수 없어요."
           confirmLabel="탈퇴"
           onConfirm={withdraw}
           onCancel={() => setConfirm(false)}

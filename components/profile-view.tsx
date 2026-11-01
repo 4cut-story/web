@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Avatar } from "@/components/avatar";
+import { ComicCover } from "@/components/comic-cover";
 import { ErrorText } from "@/components/empty-state";
 import { MoreButton } from "@/components/more-button";
 import { Button } from "@/components/ui/button";
@@ -86,18 +87,17 @@ export function ProfileView({
       {error && <ErrorText message={error} />}
       {posts.items?.length === 0 && (
         <p className="py-8 text-center text-base text-muted-foreground">
-          아직 올린 만화가 없어요.
+          아직 올린 4컷이 없어요.
         </p>
       )}
       <ul className="grid grid-cols-3 gap-1">
         {posts.items?.map((p) => (
           <li key={p.postId}>
             <Link href={`/posts/${p.postId}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <ComicCover
                 src={imageUrl("posts", p.postId, true)}
-                alt={p.caption || `${name}님의 4컷 만화`}
-                className="aspect-square w-full rounded-sm bg-muted object-cover object-top"
+                alt={p.caption || `${name}님의 4컷`}
+                className="rounded-sm"
               />
             </Link>
           </li>

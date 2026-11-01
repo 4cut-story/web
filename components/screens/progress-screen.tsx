@@ -77,8 +77,8 @@ export function ProgressScreen({ id }: { id: string }) {
 
   return (
     <AppShell
-      title="만화 만드는 중"
-      back={{ href: "/comics", label: "만화함으로" }}
+      title="4컷 만드는 중"
+      back={{ href: "/comics", label: "스토리로" }}
     >
       {loaded.error && (
         <ErrorText message={loaded.error.message} code={loaded.error.code} />
@@ -114,7 +114,7 @@ export function ProgressScreen({ id }: { id: string }) {
           </ol>
           {!finished && (
             <p className="text-sm text-muted-foreground">
-              화면을 닫아도 계속 만들어요. 다 되면 만화함에 넣어 드려요.
+              화면을 닫아도 계속 만들어요. 다 되면 스토리에 넣어 드려요.
             </p>
           )}
           {c.status === "GPU_WAITING" && (
@@ -124,19 +124,19 @@ export function ProgressScreen({ id }: { id: string }) {
           )}
           {c.status === "FAILED" && (
             <ErrorText
-              message="만화를 만들지 못했어요. 다시 녹음해 주세요."
+              message="4컷을 만들지 못했어요. 다시 녹음해 주세요."
               code={c.failureReason ?? undefined}
             />
           )}
           {c.status === "NO_SCENE" && (
             <p className="text-base">
-              만화로 만들 만한 장면을 찾지 못했어요. 조금 더 길게 이야기해
+              4컷으로 만들 만한 장면을 찾지 못했어요. 조금 더 길게 이야기해
               보세요.
             </p>
           )}
           {c.status === "DONE" && c.comicId && (
             <Button size="lg" asChild>
-              <Link href={`/comics/${c.comicId}`}>만화 보기</Link>
+              <Link href={`/comics/${c.comicId}`}>4컷 보기</Link>
             </Button>
           )}
           {finished && c.status !== "DONE" && (

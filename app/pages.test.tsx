@@ -44,7 +44,7 @@ describe("페이지 연결", () => {
     const pages: [() => ReactElement, string][] = [
       // 첫 화면은 로그인 확인 전이라 서비스 이름만 보인다
       [FeedPage, "4cut story"],
-      [InboxPage, "만화함"],
+      [InboxPage, "스토리"],
       [RecordPage, "만들기"],
       [MePage, "프로필"],
     ];
@@ -61,8 +61,8 @@ describe("페이지 연결", () => {
     mockFetch({});
     const params = Promise.resolve({ id: "x1" });
     const cases: [ReactElement, string][] = [
-      [ComicPage({ params } as never), "만화"],
-      [ProgressPage({ params } as never), "만화 만드는 중"],
+      [ComicPage({ params } as never), "4컷"],
+      [ProgressPage({ params } as never), "4컷 만드는 중"],
       [PostPage({ params } as never), "게시물"],
       [ProfilePage({ params } as never), "프로필"],
       [

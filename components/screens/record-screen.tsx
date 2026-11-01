@@ -135,7 +135,7 @@ export function RecordScreen() {
                 onChange={(e) => setConsent(e.target.checked)}
                 className="mt-1 size-5 accent-foreground"
               />
-              함께 대화하는 사람들에게 녹음해 만화로 만든다고 알리고 동의를
+              함께 대화하는 사람들에게 녹음해 4컷으로 만든다고 알리고 동의를
               받았어요.
             </label>
             <Button
