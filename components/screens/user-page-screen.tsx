@@ -4,7 +4,7 @@ import { Mic } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { AppShell, LoginButton } from "@/components/app-shell";
+import { AppShell, HOME, LoginButton } from "@/components/app-shell";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
 import { ProfileView } from "@/components/profile-view";
@@ -58,7 +58,7 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
   return (
     <AppShell
       title={nickname}
-      home={anonymous}
+      back={anonymous ? HOME : undefined}
       tab={anonymous ? undefined : self ? "profile" : "feed"}
       actions={
         anonymous ? (

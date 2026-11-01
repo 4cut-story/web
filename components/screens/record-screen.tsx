@@ -4,7 +4,7 @@ import { Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { AppShell } from "@/components/app-shell";
+import { AppShell, HOME } from "@/components/app-shell";
 import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/api";
@@ -123,7 +123,8 @@ export function RecordScreen() {
   }
 
   return (
-    <AppShell title="만들기">
+    // 녹음하는 동안에는 실수로 나가지 않게 ‹를 숨긴다
+    <AppShell title="만들기" back={phase === "ready" ? HOME : undefined}>
       <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
         {phase === "ready" && (
           <>

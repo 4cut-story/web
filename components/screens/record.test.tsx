@@ -69,9 +69,16 @@ describe("녹음 (FR-001, FR-002)", () => {
     stubMedia(() => Promise.resolve(stream));
     render(<RecordScreen />);
     expect(screen.getByRole("button", { name: "녹음 시작" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "첫 화면으로" })).toHaveAttribute(
+      "href",
+      "/",
+    );
     await consent();
     await userEvent.click(screen.getByRole("button", { name: "녹음 시작" }));
     expect(await screen.findByText("녹음 중")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "첫 화면으로" }),
+    ).not.toBeInTheDocument();
     expect(FakeRecorder.last.start).toHaveBeenCalledWith(60_000);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(3000);
