@@ -21,48 +21,54 @@ import { useUsers } from "@/lib/use-users";
 export function FeedScreen() {
   const viewer = useViewer();
   const anonymous = viewer.data === null;
+  // 로그인 확인 전에는 피드인지 포털인지 모르니 헤더만 보인다(깜빡임 방지).
+  const checking = viewer.data === undefined && !viewer.error;
   const feed = usePaged<Post>("/feed");
   const users = useUsers((feed.items ?? []).map((p) => p.authorId));
 
   return (
     <AppShell
-      title={anonymous ? "4cut story" : "피드"}
-      tab={anonymous ? undefined : "feed"}
+      title={anonymous || checking ? "4cut story" : "피드"}
+      tab={anonymous || checking ? undefined : "feed"}
       actions={anonymous && <LoginButton />}
     >
-      {anonymous && <Promo />}
-      {anonymous && (feed.items?.length ?? 0) > 0 && (
-        <h2 className="pb-4 text-lg font-semibold">방금 올라온 만화</h2>
-      )}
-      {feed.error && (
-        <ErrorText message={feed.error.message} code={feed.error.code} />
-      )}
-      {feed.items?.length === 0 && (
-        <EmptyState
-          icon={Newspaper}
-          title="아직 올라온 만화가 없어요"
-          description="대화를 녹음해 첫 만화를 만들어 보세요."
-          action={
-            <Button asChild>
-              <Link href={anonymous ? "/login" : "/record"}>녹음하기</Link>
-            </Button>
-          }
-        />
-      )}
-      <div className="flex flex-col gap-7">
-        {feed.items?.map((post) => (
-          <PostCard
-            key={post.postId}
-            post={post}
-            author={users[post.authorId]}
+      {!checking && (
+        <>
+          {anonymous && <Promo />}
+          {anonymous && (feed.items?.length ?? 0) > 0 && (
+            <h2 className="pb-4 text-lg font-semibold">방금 올라온 만화</h2>
+          )}
+          {feed.error && (
+            <ErrorText message={feed.error.message} code={feed.error.code} />
+          )}
+          {feed.items?.length === 0 && (
+            <EmptyState
+              icon={Newspaper}
+              title="아직 올라온 만화가 없어요"
+              description="대화를 녹음해 첫 만화를 만들어 보세요."
+              action={
+                <Button asChild>
+                  <Link href={anonymous ? "/login" : "/record"}>녹음하기</Link>
+                </Button>
+              }
+            />
+          )}
+          <div className="flex flex-col gap-7">
+            {feed.items?.map((post) => (
+              <PostCard
+                key={post.postId}
+                post={post}
+                author={users[post.authorId]}
+              />
+            ))}
+          </div>
+          <MoreButton
+            hasMore={feed.hasMore}
+            onMore={feed.more}
+            error={feed.moreError}
           />
-        ))}
-      </div>
-      <MoreButton
-        hasMore={feed.hasMore}
-        onMore={feed.more}
-        error={feed.moreError}
-      />
+        </>
+      )}
     </AppShell>
   );
 }

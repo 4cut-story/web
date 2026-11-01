@@ -40,6 +40,7 @@ export function PostScreen({ id }: { id: string }) {
   return (
     <AppShell
       title="게시물"
+      home={anonymous}
       tab={anonymous ? undefined : "feed"}
       actions={
         anonymous ? (

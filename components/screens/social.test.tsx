@@ -134,6 +134,10 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
     ).toHaveAttribute("href", "/login");
     expect(screen.queryByLabelText("댓글 입력")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "로그인" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "첫 화면으로" })).toHaveAttribute(
+      "href",
+      "/",
+    );
     expect(
       (await screen.findAllByRole("link", { name: /지수/ }))[0],
     ).toHaveAttribute("href", "/@%EC%A7%80%EC%88%98");
@@ -226,6 +230,10 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     expect(
       screen.queryByRole("navigation", { name: "주요 메뉴" }),
     ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "첫 화면으로" })).toHaveAttribute(
+      "href",
+      "/",
+    );
     expect(toLogin).not.toHaveBeenCalled();
   });
 
