@@ -2,10 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { errorResponse, readSession, unauthorized } from "./bff";
 import { callGateway } from "./gateway";
+import { isPublicId } from "./ids";
 import { writeSession } from "./session";
 
 const KINDS = new Set(["posts", "comics"]);
-const UUID = /^[0-9a-f-]{36}$/i;
 
 /**
  * 이미지 권한은 content-service가 확인하고 미리 서명된 주소를 준다. web이 그 주소에서 바이트를 받아 그대로 넘긴다.
@@ -16,7 +16,7 @@ export async function proxyImage(
   kind: string,
   id: string,
 ): Promise<NextResponse> {
-  if (!KINDS.has(kind) || !UUID.test(id)) {
+  if (!KINDS.has(kind) || !isPublicId(id)) {
     return errorResponse(404, "NOT_FOUND", "찾을 수 없어요.");
   }
   const session = readSession(request);

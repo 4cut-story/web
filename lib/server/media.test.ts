@@ -10,7 +10,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const ID = "0b7e1f0e-1111-4222-8333-444455556666";
+const ID = "V1StGXR8_Z5jdHi6B-myT";
 const STORE = "http://minio:9000/4cut";
 
 function png() {
@@ -85,6 +85,14 @@ describe("이미지 중계", () => {
     expect(
       (await image(loggedIn("/x"), params({ kind: "posts", id: "../x" })))
         .status,
+    ).toBe(404);
+    expect(
+      (
+        await image(
+          loggedIn("/x"),
+          params({ kind: "posts", id: "0b7e1f0e-1111-4222-8333-444455556666" }),
+        )
+      ).status,
     ).toBe(404);
     expect(
       (await image(anonymous("/x"), params({ kind: "posts", id: ID }))).status,
