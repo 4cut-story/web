@@ -28,7 +28,13 @@ export type Conversation = {
   failureReason: string | null;
   comicId: string | null;
   createdAt: string;
+  /** 고른 그림체. 예전 서버는 주지 않는다. */
+  concept?: Concept;
 };
+
+/** 그림체(콘셉트). 없거나 AUTO면 서버가 대화에 맞춰 고른다. */
+export type Concept =
+  "AUTO" | "DAILY" | "ANIMALS" | "WATERCOLOR" | "PICTURE_BOOK" | "NEWSPAPER";
 
 export type Comic = {
   id: string;

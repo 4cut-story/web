@@ -1,4 +1,5 @@
 import { api, request } from "./api";
+import type { Concept } from "./types";
 
 /** 조각 하나의 최대 크기. Ingress 요청 크기 제한(1MB)보다 작게 자른다. */
 export const PART_BYTES = 900_000;
@@ -103,12 +104,25 @@ export class PartQueue {
   }
 }
 
+/** 만들기 화면에서 고르는 그림체. 첫 항목(자동)이 기본값이다. */
+export const CONCEPTS: { value: Concept; label: string }[] = [
+  { value: "AUTO", label: "자동(추천)" },
+  { value: "DAILY", label: "일상 웹툰" },
+  { value: "ANIMALS", label: "동물 친구들" },
+  { value: "WATERCOLOR", label: "수채화 애니메이션" },
+  { value: "PICTURE_BOOK", label: "어린이 그림책" },
+  { value: "NEWSPAPER", label: "흑백 신문 4컷" },
+];
+
 export async function startConversation(
   source: "RECORDING" | "UPLOAD",
+  concept: Concept = "AUTO",
 ): Promise<string> {
+  // AUTO는 보내지 않는다(없으면 자동). 그림체를 모르는 예전 서버와도 그대로 맞는다.
   const created = await api.post<{ id: string }>("/conversations", {
     source,
     consent: true,
+    ...(concept === "AUTO" ? {} : { concept }),
   });
   return created.id;
 }

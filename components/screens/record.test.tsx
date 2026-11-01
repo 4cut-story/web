@@ -162,9 +162,30 @@ describe("녹음 파일 올리기 (FR-003)", () => {
       expect(router.push).toHaveBeenCalledWith("/conversations/v1"),
     );
     expect(calls.filter((c) => c.method === "PUT")).toHaveLength(2);
+    const body = JSON.parse(String(calls[0].init?.body));
+    expect(body).toMatchObject({ source: "UPLOAD", consent: true });
+    // 기본값 자동(추천)은 보내지 않는다
+    expect(body).not.toHaveProperty("concept");
+  });
+
+  it("고른 그림체를 함께 보낸다", async () => {
+    const calls = mockFetch(ROUTES);
+    render(<RecordScreen />);
+    const auto = screen.getByRole("radio", { name: "자동(추천)" });
+    expect(auto).toHaveAttribute("aria-checked", "true");
+    await userEvent.click(screen.getByRole("radio", { name: "흑백 신문 4컷" }));
+    expect(auto).toHaveAttribute("aria-checked", "false");
+    await consent();
+    await userEvent.upload(
+      screen.getByLabelText("녹음 파일"),
+      new File([new Uint8Array(10)], "talk.m4a", { type: "" }),
+    );
+    await vi.waitFor(() =>
+      expect(router.push).toHaveBeenCalledWith("/conversations/v1"),
+    );
     expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({
       source: "UPLOAD",
-      consent: true,
+      concept: "NEWSPAPER",
     });
   });
 
