@@ -112,6 +112,8 @@ export const CONCEPTS: { value: Concept; label: string }[] = [
   { value: "WATERCOLOR", label: "수채화 애니메이션" },
   { value: "PICTURE_BOOK", label: "어린이 그림책" },
   { value: "NEWSPAPER", label: "흑백 신문 4컷" },
+  { value: "JOSEON", label: "조선시대 사람들" },
+  { value: "WUXIA", label: "무협" },
 ];
 
 export async function startConversation(

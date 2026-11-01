@@ -34,7 +34,14 @@ export type Conversation = {
 
 /** 그림체(콘셉트). 없거나 AUTO면 서버가 대화에 맞춰 고른다. */
 export type Concept =
-  "AUTO" | "DAILY" | "ANIMALS" | "WATERCOLOR" | "PICTURE_BOOK" | "NEWSPAPER";
+  | "AUTO"
+  | "DAILY"
+  | "ANIMALS"
+  | "WATERCOLOR"
+  | "PICTURE_BOOK"
+  | "NEWSPAPER"
+  | "JOSEON"
+  | "WUXIA";
 
 export type Comic = {
   id: string;
