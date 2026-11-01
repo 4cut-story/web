@@ -7,7 +7,6 @@ import { AppShell, LoginButton } from "@/components/app-shell";
 import { EmptyState, ErrorText } from "@/components/empty-state";
 import { MoreButton } from "@/components/more-button";
 import { PortalGrid } from "@/components/portal-grid";
-import { PostCard } from "@/components/post-card";
 import { Promo } from "@/components/promo";
 import { Button } from "@/components/ui/button";
 import type { Post } from "@/lib/types";
@@ -16,8 +15,9 @@ import { useViewer } from "@/lib/use-me";
 import { useUsers } from "@/lib/use-users";
 
 /**
- * 첫 화면. 로그인하지 않았으면 포털: 서비스 소개와 최근 전체 공개 만화 썸네일.
+ * 첫 화면. 로그인하지 않았으면 포털: 서비스 소개와 최근 전체 공개 4컷.
  * 로그인했으면 피드: 내가 팔로우한 사람과 전체 공개 게시물.
+ * 둘 다 첫 컷과 제목만 격자로 보여 주고, 누르면 새 탭에서 작성자 페이지를 연다.
  */
 export function FeedScreen() {
   const viewer = useViewer();
@@ -54,19 +54,7 @@ export function FeedScreen() {
               }
             />
           )}
-          {anonymous ? (
-            <PortalGrid posts={feed.items ?? []} users={users} />
-          ) : (
-            <div className="flex flex-col gap-7">
-              {feed.items?.map((post) => (
-                <PostCard
-                  key={post.postId}
-                  post={post}
-                  author={users[post.authorId]}
-                />
-              ))}
-            </div>
-          )}
+          <PortalGrid posts={feed.items ?? []} users={users} />
           <MoreButton
             hasMore={feed.hasMore}
             onMore={feed.more}
