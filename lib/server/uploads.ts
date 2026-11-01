@@ -2,9 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { errorResponse, readSession, unauthorized } from "./bff";
 import { callGateway } from "./gateway";
+import { isPublicId } from "./ids";
 import { writeSession } from "./session";
-
-const UUID = /^[0-9a-f-]{36}$/i;
 
 /** 조각 하나의 최대 크기. Ingress 기본 요청 크기(1MB)보다 작게 브라우저가 잘라 보낸다. */
 export const MAX_CHUNK_BYTES = 1_000_000;
@@ -19,7 +18,7 @@ export async function uploadChunk(
   index: string,
 ): Promise<NextResponse> {
   const position = Number(index);
-  if (!UUID.test(id) || !Number.isInteger(position) || position < 0) {
+  if (!isPublicId(id) || !Number.isInteger(position) || position < 0) {
     return errorResponse(404, "NOT_FOUND", "찾을 수 없어요.");
   }
   const session = readSession(request);
