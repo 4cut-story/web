@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { AppShell, LoginButton } from "@/components/app-shell";
+import { AppShell, HOME, LoginButton } from "@/components/app-shell";
 import { Comments } from "@/components/comments";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
@@ -40,7 +40,7 @@ export function PostScreen({ id }: { id: string }) {
   return (
     <AppShell
       title="게시물"
-      home={anonymous}
+      back={anonymous ? HOME : undefined}
       tab={anonymous ? undefined : "feed"}
       actions={
         anonymous ? (

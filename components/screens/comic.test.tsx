@@ -117,6 +117,11 @@ describe("진행 상태 (FR-008)", () => {
     });
     render(<ProgressScreen id="v1" />);
     expect(await screen.findByText(/잠시 쉬고 있어요/)).toBeInTheDocument();
+    expect(screen.getByText(/화면을 닫아도 계속 만들어요/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "만화함으로" })).toHaveAttribute(
+      "href",
+      "/comics",
+    );
     expect(screen.getByText("전사").closest("li")).toHaveAttribute(
       "data-state",
       "done",
@@ -139,6 +144,9 @@ describe("진행 상태 (FR-008)", () => {
       "aria-valuenow",
       "100",
     );
+    expect(
+      screen.queryByText(/화면을 닫아도 계속 만들어요/),
+    ).not.toBeInTheDocument();
   });
 
   it("실패와 장면 없음을 알리고 다시 녹음하게 한다", async () => {

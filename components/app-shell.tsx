@@ -21,18 +21,18 @@ const TABS: { id: Tab; href: string; label: string; icon: typeof Home }[] = [
 
 /**
  * 화면 틀: 상단 헤더(56px) + 본문(최대 480px) + 하단 탭(녹음·진행·로그인 화면에서는 숨김).
- * home이면 제목 앞에 첫 화면으로 가는 링크를 둔다(하단 탭이 없는 손님용).
+ * back이 있으면 제목 앞에 ‹ 링크를 둔다(하단 탭이 없는 화면에서 나가는 길).
  */
 export function AppShell({
   title,
   tab,
-  home,
+  back,
   actions,
   children,
 }: {
   title: string;
   tab?: Tab;
-  home?: boolean;
+  back?: { href: string; label: string };
   actions?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -40,10 +40,10 @@ export function AppShell({
     <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
       <header className="flex h-14 items-center justify-between px-5">
         <div className="flex min-w-0 items-center gap-1">
-          {home && (
+          {back && (
             <Link
-              href="/"
-              aria-label="첫 화면으로"
+              href={back.href}
+              aria-label={back.label}
               className="-ml-2 flex size-10 shrink-0 items-center justify-center"
             >
               <ChevronLeft aria-hidden className="size-6" />
@@ -83,6 +83,9 @@ export function AppShell({
     </div>
   );
 }
+
+/** 첫 화면으로 돌아가는 ‹ 링크. */
+export const HOME = { href: "/", label: "첫 화면으로" };
 
 /** 로그인하지 않은 사람에게 헤더 오른쪽에 두는 로그인 버튼. */
 export function LoginButton() {

@@ -76,7 +76,10 @@ export function ProgressScreen({ id }: { id: string }) {
   }, [finished]);
 
   return (
-    <AppShell title="만화 만드는 중">
+    <AppShell
+      title="만화 만드는 중"
+      back={{ href: "/comics", label: "만화함으로" }}
+    >
       {loaded.error && (
         <ErrorText message={loaded.error.message} code={loaded.error.code} />
       )}
@@ -109,6 +112,11 @@ export function ProgressScreen({ id }: { id: string }) {
               );
             })}
           </ol>
+          {!finished && (
+            <p className="text-sm text-muted-foreground">
+              화면을 닫아도 계속 만들어요. 다 되면 만화함에 넣어 드려요.
+            </p>
+          )}
           {c.status === "GPU_WAITING" && (
             <p className="text-sm text-muted-foreground">
               그림 그리는 컴퓨터가 잠시 쉬고 있어요. 켜지면 이어서 만들어요.
