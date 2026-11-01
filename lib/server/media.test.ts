@@ -77,7 +77,34 @@ describe("이미지 중계", () => {
     ).toBe(502);
   });
 
-  it("모르는 종류나 ID는 404, 세션이 없으면 401", async () => {
+  it("세션이 없으면 토큰 없이 확인을 받고, 게이트웨이가 막으면 그 상태를 돌려준다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/posts/${ID}/image`]: json({
+        url: `${STORE}/full.png?sig`,
+        expiresIn: 300,
+      }),
+      [`GET ${GW}/api/v1/comics/${ID}/image`]: json({}, 401),
+      [`GET ${STORE}`]: png(),
+    });
+    const ok = await image(
+      anonymous(`/api/images/posts/${ID}`),
+      params({ kind: "posts", id: ID }),
+    );
+    expect(ok.status).toBe(200);
+    expect(
+      (calls[0].init?.headers as Record<string, string>).Authorization,
+    ).toBeUndefined();
+    expect(
+      (
+        await image(
+          anonymous(`/api/images/comics/${ID}`),
+          params({ kind: "comics", id: ID }),
+        )
+      ).status,
+    ).toBe(401);
+  });
+
+  it("모르는 종류나 ID는 404", async () => {
     mockFetch({});
     expect(
       (await image(loggedIn("/x"), params({ kind: "users", id: ID }))).status,
@@ -94,9 +121,6 @@ describe("이미지 중계", () => {
         )
       ).status,
     ).toBe(404);
-    expect(
-      (await image(anonymous("/x"), params({ kind: "posts", id: ID }))).status,
-    ).toBe(401);
   });
 });
 

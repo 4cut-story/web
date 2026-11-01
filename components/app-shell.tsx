@@ -1,6 +1,7 @@
 import { BookImage, Home, Mic, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type Tab = "feed" | "create" | "inbox" | "profile";
@@ -58,5 +59,14 @@ export function AppShell({
         </nav>
       )}
     </div>
+  );
+}
+
+/** 로그인하지 않은 사람에게 헤더 오른쪽에 두는 로그인 버튼. */
+export function LoginButton() {
+  return (
+    <Button asChild size="sm">
+      <Link href="/login">로그인</Link>
+    </Button>
   );
 }

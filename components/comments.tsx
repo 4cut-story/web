@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { Avatar } from "@/components/avatar";
@@ -12,8 +13,16 @@ import type { Comment } from "@/lib/types";
 import { usePaged } from "@/lib/use-paged";
 import { useUsers } from "@/lib/use-users";
 
-/** 댓글 목록과 입력칸. 내 댓글은 지울 수 있다. */
-export function Comments({ postId, meId }: { postId: string; meId?: string }) {
+/** 댓글 목록과 입력칸. 내 댓글은 지울 수 있다. 로그인하지 않았으면 입력칸 대신 로그인 안내를 둔다. */
+export function Comments({
+  postId,
+  meId,
+  anonymous = false,
+}: {
+  postId: string;
+  meId?: string;
+  anonymous?: boolean;
+}) {
   const list = usePaged<Comment>(`/posts/${postId}/comments`);
   const [added, setAdded] = useState<Comment[]>([]);
   const [removed, setRemoved] = useState<string[]>([]);
@@ -76,19 +85,25 @@ export function Comments({ postId, meId }: { postId: string; meId?: string }) {
         onMore={list.more}
         error={list.moreError}
       />
-      <form onSubmit={submit} className="flex gap-2">
-        <input
-          aria-label="댓글 입력"
-          placeholder="댓글 달기"
-          value={text}
-          maxLength={300}
-          onChange={(e) => setText(e.target.value)}
-          className="h-12 flex-1 rounded-lg bg-muted px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <Button type="submit" variant="secondary" disabled={!text.trim()}>
-          등록
+      {anonymous ? (
+        <Button asChild variant="secondary">
+          <Link href="/login">로그인하고 댓글 달기</Link>
         </Button>
-      </form>
+      ) : (
+        <form onSubmit={submit} className="flex gap-2">
+          <input
+            aria-label="댓글 입력"
+            placeholder="댓글 달기"
+            value={text}
+            maxLength={300}
+            onChange={(e) => setText(e.target.value)}
+            className="h-12 flex-1 rounded-lg bg-muted px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <Button type="submit" variant="secondary" disabled={!text.trim()}>
+            등록
+          </Button>
+        </form>
+      )}
       {error && <ErrorText message={error} />}
     </section>
   );

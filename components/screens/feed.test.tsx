@@ -4,11 +4,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { FeedScreen } from "./feed-screen";
 import { InboxScreen } from "./inbox-screen";
+import { navigation } from "@/lib/api";
 import { comic, OTHER, post } from "@/test/screen";
 import { json, mockFetch, noContent } from "@/test/fetch-mock";
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe("피드 (FR-020)", () => {
@@ -58,6 +60,47 @@ describe("피드 (FR-020)", () => {
       await screen.findByRole("button", { name: "더 보기" }),
     );
     expect(await screen.findByText("다음 쪽 실패")).toBeInTheDocument();
+  });
+});
+
+describe("첫 화면 포털", () => {
+  it("로그인하지 않았으면 서비스 소개와 최근 공개 만화를 보여 준다", async () => {
+    const toLogin = vi
+      .spyOn(navigation, "toLogin")
+      .mockImplementation(() => undefined);
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/feed": json({ items: [post()], nextCursor: null }),
+      "GET /api/v1/users": json({ items: [OTHER] }),
+    });
+    render(<FeedScreen />);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "4cut story" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "서비스 소개" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "무료로 시작하기" }),
+    ).toHaveAttribute("href", "/login");
+    expect(await screen.findByText("방금 올라온 만화")).toBeInTheDocument();
+    expect(await screen.findByText("오늘 있었던 일")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "주요 메뉴" }),
+    ).not.toBeInTheDocument();
+    expect(toLogin).not.toHaveBeenCalled();
+  });
+
+  it("공개 만화가 아직 없으면 녹음하기는 로그인으로 보낸다", async () => {
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/feed": json({ items: [], nextCursor: null }),
+    });
+    render(<FeedScreen />);
+    expect(
+      await screen.findByRole("link", { name: "녹음하기" }),
+    ).toHaveAttribute("href", "/login");
+    expect(screen.queryByText("방금 올라온 만화")).not.toBeInTheDocument();
   });
 });
 

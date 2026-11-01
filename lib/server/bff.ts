@@ -25,7 +25,10 @@ export function unauthorized(): NextResponse {
   return errorResponse(401, "UNAUTHORIZED", "로그인이 필요해요.");
 }
 
-/** 게이트웨이 응답을 그대로 브라우저에 돌려준다. 토큰이 갱신되었으면 쿠키도 바꾼다. */
+/**
+ * 게이트웨이 응답을 그대로 브라우저에 돌려준다. 토큰이 갱신되었으면 쿠키도 바꾼다.
+ * 세션이 없으면 읽기(GET)만 토큰 없이 넘긴다. 로그인 없이 볼 수 있는 경로인지는 게이트웨이가 정한다 (아니면 401).
+ */
 export async function relay(
   request: NextRequest,
   path: string,
@@ -36,7 +39,7 @@ export async function relay(
   } = {},
 ): Promise<NextResponse> {
   const session = readSession(request);
-  if (!session) {
+  if (!session && (init.method ?? "GET") !== "GET") {
     return unauthorized();
   }
   const result = await callGateway(path, init, session);

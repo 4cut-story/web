@@ -3,7 +3,7 @@ import { pretendard } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "4컷 이야기",
+  title: "4cut story",
   description: "대화를 녹음하면 4컷 만화가 됩니다.",
 };
 

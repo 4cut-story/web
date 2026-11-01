@@ -12,13 +12,16 @@ import type { FollowStats, Post, User } from "@/lib/types";
 import { useLoad } from "@/lib/use-load";
 import { usePaged } from "@/lib/use-paged";
 
-/** 프로필 본문: 아바타 72px, 닉네임, 팔로워/팔로잉, 팔로우 버튼(남의 프로필), 게시물 3열 격자. */
+/**
+ * 프로필 본문: 아바타 72px, 닉네임, 팔로워/팔로잉, 팔로우 버튼(로그인한 사람이 남의 페이지를 볼 때), 게시물 3열 격자.
+ * 게시물은 보는 사람 기준 공개 범위대로 온다 (로그인하지 않았으면 전체 공개만, 주인은 모두).
+ */
 export function ProfileView({
   userId,
-  self,
+  canFollow,
 }: {
   userId: string;
-  self: boolean;
+  canFollow: boolean;
 }) {
   const user = useLoad(`user:${userId}`, () =>
     api.get<User>(`/users/${userId}`),
@@ -72,7 +75,7 @@ export function ProfileView({
           )}
         </div>
       </div>
-      {!self && stats.data && (
+      {canFollow && stats.data && (
         <Button
           variant={stats.data.followedByMe ? "secondary" : "default"}
           onClick={toggleFollow}

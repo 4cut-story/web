@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Avatar } from "@/components/avatar";
-import { api, imageUrl } from "@/lib/api";
+import { api, imageUrl, userPath } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
 import type { Post, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,7 @@ export function PostCard({ post, author }: { post: Post; author?: User }) {
     <article className="flex flex-col gap-3">
       <div className="flex items-center gap-2 text-sm">
         <Link
-          href={`/users/${post.authorId}`}
+          href={author ? userPath(author.nickname) : `/users/${post.authorId}`}
           className="flex items-center gap-2 font-medium"
         >
           <Avatar name={name} src={author?.avatarUrl} />

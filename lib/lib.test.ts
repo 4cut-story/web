@@ -7,8 +7,9 @@ import {
   imageUrl,
   navigation,
   request,
+  userPath,
 } from "./api";
-import { needsLogin } from "./auth-gate";
+import { decodeSegment, needsLogin, userPageRewrite } from "./auth-gate";
 import { clock, timeAgo } from "./format";
 import {
   fileContentType,
@@ -78,6 +79,23 @@ describe("API 호출", () => {
     expect(toLogin).toHaveBeenCalled();
   });
 
+  it("로그인 없이 보는 화면은 401이면 null을 받고 로그인 화면으로 가지 않는다", async () => {
+    const toLogin = vi
+      .spyOn(navigation, "toLogin")
+      .mockImplementation(() => undefined);
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users": json({ error: { code: "X", message: "실패" } }, 500),
+      "GET /api/v1/feed": json({ items: [] }),
+    });
+    expect(await api.getIfSignedIn("/me")).toBeNull();
+    expect(await api.getIfSignedIn("/feed")).toEqual({ items: [] });
+    await expect(api.getIfSignedIn("/users")).rejects.toMatchObject({
+      code: "X",
+    });
+    expect(toLogin).not.toHaveBeenCalled();
+  });
+
   it("바이트 본문은 지정한 형식으로 보낸다", async () => {
     const calls = mockFetch({ "PUT /up": noContent() });
     await request("/up", { method: "PUT", raw: "abc" });
@@ -96,13 +114,33 @@ describe("API 호출", () => {
 
 describe("로그인 확인 (FR 로그인)", () => {
   it("세션이 없으면 화면은 로그인으로, 공개 경로와 파일은 그대로", () => {
-    expect(needsLogin("/", false)).toBe(true);
-    expect(needsLogin("/posts/1", false)).toBe(true);
+    expect(needsLogin("/record", false)).toBe(true);
+    expect(needsLogin("/comics", false)).toBe(true);
+    expect(needsLogin("/me", false)).toBe(true);
+    expect(needsLogin("/", false)).toBe(false);
+    expect(needsLogin("/@%EB%A7%88%EB%A5%B4%EC%BD%94", false)).toBe(false);
+    expect(needsLogin("/u/marco", false)).toBe(false);
+    expect(needsLogin("/users/u1", false)).toBe(false);
+    expect(needsLogin("/posts/1", false)).toBe(false);
+    expect(needsLogin("/posts/1/edit", false)).toBe(true);
     expect(needsLogin("/", true)).toBe(false);
     expect(needsLogin("/login", false)).toBe(false);
     expect(needsLogin("/auth/complete", false)).toBe(false);
     expect(needsLogin("/favicon.ico", false)).toBe(false);
     expect(needsLogin("/logo.svg", false)).toBe(false);
+  });
+});
+
+describe("사용자 페이지 주소", () => {
+  it("/@닉네임은 /u/닉네임 화면으로 바꾸고, 닉네임은 인코딩해 만든다", () => {
+    expect(userPageRewrite("/@marco")).toBe("/u/marco");
+    expect(userPageRewrite("/@marco/")).toBe("/u/marco");
+    expect(userPageRewrite("/@")).toBeNull();
+    expect(userPageRewrite("/@a/b")).toBeNull();
+    expect(userPageRewrite("/marco")).toBeNull();
+    expect(userPath("마르코")).toBe("/@%EB%A7%88%EB%A5%B4%EC%BD%94");
+    expect(decodeSegment("%EB%A7%88%EB%A5%B4%EC%BD%94")).toBe("마르코");
+    expect(decodeSegment("%E0%A4%A")).toBe("%E0%A4%A");
   });
 });
 

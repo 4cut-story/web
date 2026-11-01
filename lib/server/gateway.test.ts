@@ -89,10 +89,25 @@ describe("BFF API 중계", () => {
     ).toBe(404);
   });
 
-  it("세션이 없으면 401", async () => {
-    mockFetch({});
+  it("세션이 없으면 읽기만 토큰 없이 넘기고, 쓰기는 401", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/feed`]: json({ items: [], nextCursor: null }),
+    });
     expect((await proxyApi(anonymous("/api/v1/feed"), ["feed"])).status).toBe(
-      401,
+      200,
     );
+    expect(
+      (calls[0].init?.headers as Record<string, string>).Authorization,
+    ).toBeUndefined();
+    expect(
+      (
+        await proxyApi(anonymous("/api/v1/posts/p1/like", { method: "PUT" }), [
+          "posts",
+          "p1",
+          "like",
+        ])
+      ).status,
+    ).toBe(401);
+    expect(calls).toHaveLength(1);
   });
 });

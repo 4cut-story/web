@@ -87,11 +87,11 @@ describe("공급자 로그인 중계", () => {
 });
 
 describe("로그인 마무리", () => {
-  it("코드를 토큰으로 바꿔 쿠키에 담고 피드로 보낸다", async () => {
+  it("코드를 토큰으로 바꿔 쿠키에 담고 내 페이지(/me)로 보낸다", async () => {
     mockFetch({ [`POST ${GW}/auth/token`]: json(TOKENS) });
     const response = await complete(anonymous("/auth/complete?code=one"));
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("http://localhost:3000/");
+    expect(response.headers.get("location")).toBe("http://localhost:3000/me");
     expect(response.headers.get("set-cookie")).toContain("fourcut_session=");
   });
 
