@@ -1,10 +1,10 @@
 import { Avatar } from "@/components/avatar";
 import { ComicCover } from "@/components/comic-cover";
-import { imageUrl, userPath } from "@/lib/api";
+import { imageUrl } from "@/lib/api";
 import type { Post, User } from "@/lib/types";
 
 /**
- * 첫 화면(포털과 피드)의 최근 4컷: 첫 컷과 제목, 작성자를 2열 격자로. 누르면 새 탭에서 작성자 페이지(/@닉네임)를 연다.
+ * 첫 화면(포털과 피드)의 최근 4컷: 첫 컷과 제목, 작성자를 2열 격자로. 누르면 새 탭에서 게시물 상세(4컷 전체, 좋아요·댓글)를 연다.
  * 4컷 전체는 세로로 길어서 첫 화면에서는 첫 컷만 보여 준다.
  */
 export function PortalGrid({
@@ -22,9 +22,7 @@ export function PortalGrid({
         return (
           <li key={post.postId}>
             <a
-              href={
-                author ? userPath(author.nickname) : `/users/${post.authorId}`
-              }
+              href={`/posts/${post.postId}`}
               target="_blank"
               rel="noopener"
               className="flex flex-col gap-2"

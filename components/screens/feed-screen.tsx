@@ -17,7 +17,7 @@ import { useUsers } from "@/lib/use-users";
 /**
  * 첫 화면. 로그인하지 않았으면 포털: 서비스 소개와 최근 전체 공개 4컷.
  * 로그인했으면 피드: 내가 팔로우한 사람과 전체 공개 게시물.
- * 둘 다 첫 컷과 제목만 격자로 보여 주고, 누르면 새 탭에서 작성자 페이지를 연다.
+ * 둘 다 첫 컷과 제목만 격자로 보여 주고, 누르면 새 탭에서 게시물 상세(4컷 전체)를 연다.
  */
 export function FeedScreen() {
   const viewer = useViewer();
