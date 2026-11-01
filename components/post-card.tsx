@@ -55,7 +55,7 @@ export function PostCard({ post, author }: { post: Post; author?: User }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl("posts", post.postId)}
-          alt={post.caption || `${name}님의 4컷 만화`}
+          alt={post.caption || `${name}님의 4컷`}
           {...COMIC_SIZE}
           className="h-auto w-full rounded-lg bg-muted"
         />

@@ -15,7 +15,7 @@ import { useLoad } from "@/lib/use-load";
 import { useViewer } from "@/lib/use-me";
 import { useUsers } from "@/lib/use-users";
 
-/** 게시물 상세: 게시물 + 댓글. 내 게시물이면 내리기(만화함으로)와 삭제. */
+/** 게시물 상세: 게시물 + 댓글. 내 게시물이면 내리기(스토리로)와 삭제. */
 export function PostScreen({ id }: { id: string }) {
   const router = useRouter();
   const loaded = useLoad(id, () => api.get<Post>(`/posts/${id}`));
@@ -86,12 +86,12 @@ export function PostScreen({ id }: { id: string }) {
           title={
             confirm === "UNPUBLISH"
               ? "게시물을 내릴까요?"
-              : "게시물과 만화를 삭제할까요?"
+              : "게시물과 4컷을 삭제할까요?"
           }
           description={
             confirm === "UNPUBLISH"
-              ? "피드에서 내리고 만화는 만화함에 남겨요. 좋아요와 댓글은 사라져요."
-              : "만화까지 지워지고 되돌릴 수 없어요."
+              ? "피드에서 내리고 4컷은 스토리에 남겨요. 좋아요와 댓글은 사라져요."
+              : "4컷까지 지워지고 되돌릴 수 없어요."
           }
           confirmLabel={confirm === "UNPUBLISH" ? "내리기" : "삭제"}
           onConfirm={() => remove(confirm)}

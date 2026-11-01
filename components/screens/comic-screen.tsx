@@ -34,7 +34,7 @@ export function ComicScreen({ id }: { id: string }) {
 
   return (
     <AppShell
-      title={comic?.title ?? "만화"}
+      title={comic?.title ?? "4컷"}
       tab="inbox"
       actions={
         <Button variant="ghost" size="sm" onClick={() => setConfirm(true)}>
@@ -50,7 +50,7 @@ export function ComicScreen({ id }: { id: string }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl("comics", comic.id)}
-            alt={comic.title ?? "4컷 만화"}
+            alt={comic.title ?? "4컷"}
             {...COMIC_SIZE}
             className="h-auto w-full rounded-lg bg-muted"
           />
@@ -86,7 +86,7 @@ export function ComicScreen({ id }: { id: string }) {
       )}
       {confirm && (
         <ConfirmDialog
-          title="만화를 삭제할까요?"
+          title="4컷을 삭제할까요?"
           description="삭제하면 되돌릴 수 없어요. 게시한 글도 함께 내려가요."
           confirmLabel="삭제"
           onConfirm={remove}

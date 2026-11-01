@@ -53,7 +53,7 @@ export function LoginScreen({ error }: { error?: string }) {
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-semibold">4cut story</h1>
         <p className="text-base text-muted-foreground">
-          대화를 녹음하면 4컷 만화가 됩니다.
+          대화를 녹음하면 4컷 스토리가 됩니다.
         </p>
       </div>
       <div className="flex flex-col gap-3">
@@ -88,7 +88,7 @@ export function LoginScreen({ error }: { error?: string }) {
         )}
         {devError && <ErrorText message={devError} />}
         <Button variant="link" className="text-muted-foreground" asChild>
-          <Link href="/">로그인 없이 만화 구경하기</Link>
+          <Link href="/">로그인 없이 둘러보기</Link>
         </Button>
       </div>
     </main>

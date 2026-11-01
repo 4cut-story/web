@@ -57,8 +57,8 @@ export function PublishSheet({
         <h2 className="text-lg font-semibold">게시하기</h2>
         {comic.nameWarnings.length > 0 && (
           <div className="rounded-lg bg-muted p-4 text-sm">
-            만화에 실명으로 보이는 이름이 있어요:{" "}
-            {comic.nameWarnings.join(", ")}. 올리기 전에 꼭 확인해 주세요.
+            4컷에 실명으로 보이는 이름이 있어요: {comic.nameWarnings.join(", ")}
+            . 올리기 전에 꼭 확인해 주세요.
           </div>
         )}
         <label className="flex flex-col gap-2 text-sm font-medium">

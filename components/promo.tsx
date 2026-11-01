@@ -11,14 +11,13 @@ const STEPS = [
   },
   {
     icon: BookImage,
-    title: "4컷 만화를 받아요",
-    description: "재미있는 장면을 골라 4컷 만화로 그려 만화함에 넣어 드려요.",
+    title: "4컷을 받아요",
+    description: "재미있는 장면을 골라 4컷으로 그려 스토리에 넣어 드려요.",
   },
   {
     icon: Share2,
     title: "내 페이지에 올려요",
-    description:
-      "4cut.java21.net/@닉네임 주소로 누구나 내 만화를 볼 수 있어요.",
+    description: "4cut.java21.net/@닉네임 주소로 누구나 내 4컷을 볼 수 있어요.",
   },
 ];
 
@@ -30,10 +29,10 @@ export function Promo() {
         <h2 className="text-2xl font-bold">
           우리가 나눈 대화가
           <br />
-          4컷 만화가 돼요
+          4컷 스토리가 돼요
         </h2>
         <p className="text-base text-muted-foreground">
-          4cut story에는 녹음만 올리면 돼요. 오늘 있었던 웃긴 이야기를 만화로
+          4cut story에는 녹음만 올리면 돼요. 오늘 있었던 웃긴 이야기를 4컷으로
           남기고 나눠 보세요.
         </p>
       </div>

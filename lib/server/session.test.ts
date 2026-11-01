@@ -20,7 +20,9 @@ describe("세션 쿠키", () => {
 
   it("위조되거나 비어 있으면 null", () => {
     const sealed = sealSession({ accessToken: "a", refreshToken: "r" });
-    expect(openSession(sealed.slice(0, -2) + "xx")).toBeNull();
+    // 끝 두 글자를 늘 다른 값으로 바꾼다 (원래 "xx"였으면 "yy")
+    const tail = sealed.endsWith("xx") ? "yy" : "xx";
+    expect(openSession(sealed.slice(0, -2) + tail)).toBeNull();
     expect(openSession(undefined)).toBeNull();
     expect(openSession("")).toBeNull();
   });
