@@ -2,7 +2,7 @@
  * 서비스 소개(/about) 페이지에 싣는 사실. 값은 각 레포의 설정과 커밋 기록에서 옮겼다.
  * - 모델·설정: conversation-service application.yml·ScenarioProperties·TranscriptCorrector·ClaudeClient·GeminiClient,
  *   model-runtime config.py·backends(whisper, ollama, sdxl), docs architecture.md
- * - 튜닝 수치: conversation-service #8·#18·#20~#27·#34~#40·#63~#70·#73, model-runtime #6·#8·#10~#16
+ * - 튜닝 수치: conversation-service #8·#18·#20~#27·#34~#40·#63~#70·#73, model-runtime #6·#8·#10~#16·#18
  * - 품질 점수: docs comic-quality-plan.md(고정 시험 세트 채점), image-quality-log.md
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
@@ -188,6 +188,7 @@ export const MODELS: Model[] = [
     why: "WhisperX가 공식으로 붙여 쓰는 화자 분리 모델이라 따로 맞출 것이 적어요. 받아 적은 글과 함께 한 번에 메모리에 올라가요.",
     settings: [
       "끝나면 GPU 계산 설정(TF32)을 원래대로 되돌려 다음 그림 작업이 느려지지 않게",
+      "짧은 녹음에서 여러 사람을 한 사람으로 합치지 않게 화자를 최소 2명으로 나눠요",
       "화자 이름은 저장하지 않고 가명으로만 다뤄요",
     ],
   },
