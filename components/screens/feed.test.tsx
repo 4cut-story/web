@@ -32,6 +32,20 @@ describe("피드 (FR-020)", () => {
     const link = (await screen.findByText("지수")).closest("a");
     expect(link).toHaveAttribute("href", "/posts/p1");
     expect(link).not.toHaveAttribute("target");
+    // 로그인했어도 위에 서비스 소개가 있고, 시작 버튼은 녹음으로 간다
+    expect(
+      screen.getByRole("region", { name: "서비스 소개" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "녹음해서 만들기" }),
+    ).toHaveAttribute("href", "/record");
+    expect(screen.getByRole("link", { name: "내 페이지" })).toHaveAttribute(
+      "href",
+      "/me",
+    );
+    expect(
+      screen.getByText("내가 팔로우한 사람과 전체 공개 4컷이에요."),
+    ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "더 보기" }));
     expect(await screen.findByText("두 번째")).toBeInTheDocument();
     expect(calls.some((c) => c.url === "/api/v1/users?ids=u2")).toBe(true);
@@ -95,6 +109,10 @@ describe("첫 화면 포털", () => {
     expect(
       screen.getByRole("link", { name: "무료로 시작하기" }),
     ).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: "내 페이지" })).toHaveAttribute(
+      "href",
+      "/login",
+    );
     expect(await screen.findByText("방금 올라온 4컷")).toBeInTheDocument();
     // 4컷 전체 대신 첫 컷 썸네일과 제목, 작성자. 누르면 같은 창에서 게시물 상세
     expect(await screen.findByText("편의점 대소동")).toBeInTheDocument();
