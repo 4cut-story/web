@@ -7,11 +7,15 @@ import { gatewayUrl } from "./config";
 /**
  * 개인 액세스 토큰(게시 전용). 자동화 도구가 쿠키 대신 `Authorization: Bearer fcp_...`로 web을 부른다.
  * web이 auth-service에서 짧은 Access Token으로 바꿔 게이트웨이를 부르고, Access Token은 밖에 내보내지 않는다.
- * 토큰으로는 아래 게시 경로만 열린다. 토큰 관리(/me/tokens), 탈퇴, 삭제, 팔로우·댓글은 열지 않는다.
+ * 토큰으로는 아래 게시 경로만 열린다. 토큰 관리(/me/tokens), 탈퇴, 팔로우·댓글은 열지 않는다.
+ * 지우기는 내 게시물 하나(DELETE /posts/{id})만 된다.
  */
 export const PAT_PREFIX = "fcp_";
 
-type Rule = { methods: string[]; match: (path: string[]) => boolean };
+type Rule = {
+  methods: string[];
+  match: (path: string[], method: string) => boolean;
+};
 
 const READ = ["GET"];
 const WRITE = ["GET", "POST", "PUT"];
@@ -19,7 +23,11 @@ const WRITE = ["GET", "POST", "PUT"];
 const RULES: Record<string, Rule> = {
   conversations: { methods: WRITE, match: () => true },
   comics: { methods: WRITE, match: () => true },
-  posts: { methods: WRITE, match: () => true },
+  // 다시 만든 편으로 바꿀 때 예전 게시물을 내린다 (자기 게시물인지는 content-service가 확인한다)
+  posts: {
+    methods: [...WRITE, "DELETE"],
+    match: (path, method) => method !== "DELETE" || path.length === 2,
+  },
   characters: { methods: READ, match: () => true },
   feed: { methods: READ, match: () => true },
   users: { methods: READ, match: () => true },
@@ -29,7 +37,7 @@ const RULES: Record<string, Rule> = {
 /** `/api/v1/**` 경로(첫 조각부터)를 토큰으로 부를 수 있는지. */
 export function patAllows(method: string, path: string[]): boolean {
   const rule = Object.hasOwn(RULES, path[0] ?? "") ? RULES[path[0]] : undefined;
-  return !!rule && rule.methods.includes(method) && rule.match(path);
+  return !!rule && rule.methods.includes(method) && rule.match(path, method);
 }
 
 /** 요청 헤더의 개인 액세스 토큰. 없으면 null. */
