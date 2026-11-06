@@ -123,6 +123,7 @@ describe("서비스 소개 페이지", () => {
     );
     expect(text).not.toMatch(/학교/);
     expect(text).not.toMatch(/추정/);
+    expect(text).not.toMatch(/포트폴리오/);
   });
 
   it("최근 공개 4컷을 실제 예시로 보여 준다", async () => {
@@ -161,10 +162,11 @@ describe("서비스 소개 페이지", () => {
 
 describe("소개 페이지로 가는 링크", () => {
   it("첫 화면 히어로 아래에서 소개 페이지로 간다", () => {
-    render(<Landing signedIn={false} posts={[]} />);
+    const { container } = render(<Landing signedIn={false} posts={[]} />);
     expect(
       screen.getByRole("link", { name: /이 서비스는 어떻게 만들었을까요/ }),
     ).toHaveAttribute("href", "/about");
+    expect(container.textContent).not.toMatch(/포트폴리오/);
   });
 
   it("바닥글에 소개 링크가 GitHub 링크와 나란히 있다", () => {
