@@ -158,7 +158,7 @@ export const MODELS: Model[] = [
 
 export type Bundle = { name: string; gb: number; detail: string };
 
-/** 한 번에 하나만 VRAM에 올리는 모델 묶음 (아키텍처 문서의 설계 추정치, 16GB 기준). */
+/** 한 번에 하나만 VRAM에 올리는 모델 묶음 (아키텍처 문서의 설계 기준 배분, 16GB 기준). */
 export const VRAM_BUNDLES: Bundle[] = [
   {
     name: "전사 묶음",
@@ -231,8 +231,8 @@ export const TUNINGS: Tuning[] = [
   {
     title: "HNSW 인덱스와 공유 메모리",
     problem:
-      "운영 DB에서 vector(1024) HNSW 인덱스를 병렬로 짓다 공유 메모리(shm)가 모자라 마이그레이션이 실패하고 파드가 CrashLoopBackOff에 빠졌어요.",
-    fix: "인덱스는 한 프로세스로(병렬 작업자 0, maintenance_work_mem 64MB) 짓고, 실패해도 서비스는 이름 검색으로 떠 있게 했어요.",
+      "운영 DB에서 vector(1024) HNSW 인덱스를 병렬로 생성하다가 공유 메모리(shm)가 모자라 마이그레이션이 실패하고 파드가 CrashLoopBackOff에 빠졌어요.",
+    fix: "인덱스를 병렬 없이 한 프로세스로 생성하고(병렬 작업자 0, maintenance_work_mem 64MB), 생성에 실패해도 서비스는 이름 검색으로 정상 기동하게 했어요.",
     result: "배포 실패 → 무중단 기동",
   },
   {
@@ -259,7 +259,7 @@ export const HARDWARE: Hardware[] = [
   {
     title: "쿠버네티스 클러스터",
     specs: [
-      "학교 서버 쿠버네티스 (Rancher)",
+      "서버 쿠버네티스 클러스터 (Rancher)",
       "Argo CD ApplicationSet 자동 동기화, Kustomize",
       "NetworkPolicy로 호출 방향 고정, 외부 공개는 web 하나",
       "PostgreSQL + pgvector, MinIO(S3 API)",
