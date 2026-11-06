@@ -82,3 +82,32 @@ export type FollowStats = {
   following: number;
   followedByMe: boolean;
 };
+
+export type Gender = "FEMALE" | "MALE";
+export type AgeGroup = "CHILD" | "YOUNG" | "MIDDLE" | "OLD";
+export type Expression =
+  "NEUTRAL" | "HAPPY" | "SAD" | "ANGRY" | "SURPRISED" | "EMBARRASSED";
+
+/** 캐릭터 갤러리 목록 한 칸. coverLookId는 고른 테마의 기본 표정 그림. */
+export type CharacterCard = {
+  id: string;
+  name: string;
+  description: string;
+  job: string | null;
+  gender: Gender | null;
+  ageGroup: AgeGroup | null;
+  coverLookId: string | null;
+};
+
+export type CharacterLook = {
+  id: string;
+  concept: Exclude<Concept, "AUTO">;
+  expression: Expression;
+  look: string;
+};
+
+export type CharacterDetail = Omit<CharacterCard, "coverLookId"> & {
+  looks: CharacterLook[];
+};
+
+export type JobCount = { job: string; count: number };

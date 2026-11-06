@@ -5,7 +5,15 @@ import { callGateway } from "./gateway";
 import { isPublicId } from "./ids";
 import { writeSession } from "./session";
 
-const KINDS = new Set(["posts", "comics"]);
+/** 이미지 종류 → 게이트웨이에서 사전 서명 주소를 받는 경로. looks는 캐릭터 모습 그림이다 (로그인 필요). */
+const SOURCES: Record<string, (id: string, size: string) => string> = {
+  posts: (id, size) => `/api/v1/posts/${id}/image?size=${size}`,
+  comics: (id, size) => `/api/v1/comics/${id}/image?size=${size}`,
+  looks: (id) => `/api/v1/characters/looks/${id}/image`,
+};
+
+/** 캐릭터 그림은 거의 바뀌지 않아 더 오래 둔다. */
+const MAX_AGE: Record<string, number> = { looks: 3600 };
 
 /**
  * 이미지 권한은 content-service가 확인하고 미리 서명된 주소를 준다. web이 그 주소에서 바이트를 받아 그대로 넘긴다.
@@ -16,18 +24,15 @@ export async function proxyImage(
   kind: string,
   id: string,
 ): Promise<NextResponse> {
-  if (!KINDS.has(kind) || !isPublicId(id)) {
+  const source = Object.hasOwn(SOURCES, kind) ? SOURCES[kind] : undefined;
+  if (!source || !isPublicId(id)) {
     return errorResponse(404, "NOT_FOUND", "찾을 수 없어요.");
   }
   // 세션이 없어도 부른다. 전체 공개 게시물이 아니면 게이트웨이·content-service가 401·404로 답한다.
   const session = readSession(request);
   const size =
     request.nextUrl.searchParams.get("size") === "thumb" ? "thumb" : "full";
-  const result = await callGateway(
-    `/api/v1/${kind}/${id}/image?size=${size}`,
-    {},
-    session,
-  );
+  const result = await callGateway(source(id, size), {}, session);
   let response: NextResponse;
   if (!result.response.ok) {
     response = new NextResponse(null, { status: result.response.status });
@@ -39,7 +44,7 @@ export async function proxyImage(
           status: 200,
           headers: {
             "content-type": image.headers.get("content-type") ?? "image/png",
-            "cache-control": "private, max-age=300",
+            "cache-control": `private, max-age=${MAX_AGE[kind] ?? 300}`,
             vary: "Cookie",
           },
         })

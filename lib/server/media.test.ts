@@ -39,6 +39,31 @@ describe("이미지 중계", () => {
     expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?size=full`);
   });
 
+  it("캐릭터 모습 그림은 캐릭터 API에서 주소를 받고 더 오래 둔다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/characters/looks/${ID}/image`]: json({
+        url: `${STORE}/ref.png?sig`,
+      }),
+      [`GET ${STORE}`]: png(),
+    });
+    const response = await image(
+      loggedIn(`/api/images/looks/${ID}`),
+      params({ kind: "looks", id: ID }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    expect(calls[0].url).toBe(`${GW}/api/v1/characters/looks/${ID}/image`);
+  });
+
+  it("모르는 종류는 404", async () => {
+    mockFetch({});
+    const response = await image(
+      loggedIn(`/api/images/constructor/${ID}`),
+      params({ kind: "constructor", id: ID }),
+    );
+    expect(response.status).toBe(404);
+  });
+
   it("썸네일을 요청하고, 토큰이 갱신되면 쿠키를 바꾼다", async () => {
     let first = true;
     const calls = mockFetch({

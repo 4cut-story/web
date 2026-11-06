@@ -106,7 +106,7 @@ export function errorMessage(error: unknown): string {
 }
 
 export function imageUrl(
-  kind: "posts" | "comics",
+  kind: "posts" | "comics" | "looks",
   id: string,
   thumb = false,
 ): string {
