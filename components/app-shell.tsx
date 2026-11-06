@@ -41,6 +41,7 @@ const WIDTH: Record<ShellWidth, string> = {
 
 export function AppShell({
   title,
+  brand = false,
   tab,
   back,
   actions,
@@ -48,6 +49,8 @@ export function AppShell({
   children,
 }: {
   title: string;
+  /** 제목 대신 로고를 보인다(첫 화면). 접근성 이름은 "4cut story"로 같다. */
+  brand?: boolean;
   tab?: Tab;
   back?: { href: string; label: string };
   actions?: React.ReactNode;
@@ -69,7 +72,9 @@ export function AppShell({
                 <ChevronLeft aria-hidden className="size-6" />
               </Link>
             )}
-            <h1 className="truncate text-lg font-semibold">{title}</h1>
+            <h1 className="truncate text-lg font-semibold">
+              {brand ? <Logo /> : title}
+            </h1>
           </div>
           <div className="flex items-center gap-1">{actions}</div>
         </header>

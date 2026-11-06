@@ -58,19 +58,28 @@ export function Comments({
   }
 
   return (
-    <section aria-label="댓글" className="flex flex-col gap-3">
-      <ul className="flex flex-col gap-3">
+    <section
+      aria-label="댓글"
+      className="flex flex-col gap-4 md:sticky md:top-20 md:rounded-2xl md:border md:border-border md:p-5"
+    >
+      <h2 className="text-base font-semibold">댓글</h2>
+      {list.items?.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          아직 댓글이 없어요. 첫 댓글을 남겨 보세요.
+        </p>
+      )}
+      <ul className="flex flex-col gap-4">
         {comments.map((c) => {
           const name = users[c.authorId]?.nickname ?? "알 수 없음";
           return (
             <li key={c.id} className="flex gap-2 text-sm">
               <Avatar name={name} src={users[c.authorId]?.avatarUrl} />
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <span className="font-medium">{name}</span>{" "}
                 <span className="text-muted-foreground">
                   {timeAgo(c.createdAt)}
                 </span>
-                <p className="text-base">{c.text}</p>
+                <p className="text-base break-words">{c.text}</p>
               </div>
               {c.authorId === meId && (
                 <Button
@@ -105,7 +114,7 @@ export function Comments({
             value={text}
             maxLength={300}
             onChange={(e) => setText(e.target.value)}
-            className="h-12 flex-1 rounded-lg bg-muted px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-12 min-w-0 flex-1 rounded-lg bg-muted px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <Button
             type="submit"
