@@ -76,7 +76,6 @@ export function AppShell({
         <main className="flex flex-1 flex-col px-5 pb-10 md:px-8 md:pb-12">
           {children}
         </main>
-        <SiteFooter className={tab ? "pb-24 md:pb-6" : undefined} />
         {tab && (
           <nav
             aria-label="주요 메뉴"
@@ -102,6 +101,13 @@ export function AppShell({
           </nav>
         )}
       </div>
+      <SiteFooter
+        className={
+          tab
+            ? "pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0"
+            : undefined
+        }
+      />
     </>
   );
 }
