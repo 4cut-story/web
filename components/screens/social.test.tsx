@@ -304,7 +304,7 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("잠시 문제");
   });
 
-  it("내 페이지에서는 주소 복사, 로그아웃, 탈퇴를 하고, 게시한 4컷이 없으면 스토리로 안내한다", async () => {
+  it("내 페이지에서는 주소 복사, 개인 토큰 관리, 로그아웃, 탈퇴를 하고, 게시한 4컷이 없으면 스토리로 안내한다", async () => {
     const toLogin = vi
       .spyOn(navigation, "toLogin")
       .mockImplementation(() => undefined);
@@ -356,6 +356,10 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     expect(
       await screen.findByRole("button", { name: "복사했어요" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "개인 토큰" })).toHaveAttribute(
+      "href",
+      "/me/tokens",
+    );
     await userEvent.click(screen.getByRole("button", { name: "로그아웃" }));
     expect(toLogin).toHaveBeenCalledTimes(1);
     await userEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));

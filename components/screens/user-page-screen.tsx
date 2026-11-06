@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, Link2, LogOut, UserX } from "lucide-react";
+import { Check, KeyRound, Link2, LogOut, UserX } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { AppShell, HOME, LoginButton } from "@/components/app-shell";
@@ -20,7 +21,7 @@ async function logout() {
 
 /**
  * 사용자 페이지 (/@닉네임). 누구나 열 수 있고, 게시물은 보는 사람 기준 공개 범위대로 보인다.
- * 내 페이지면 내 주소 복사, 로그아웃, 탈퇴를 함께 둔다 (녹음은 메뉴의 만들기에서).
+ * 내 페이지면 내 주소 복사, 개인 토큰 관리, 로그아웃, 탈퇴를 함께 둔다 (녹음은 메뉴의 만들기에서).
  */
 export function UserPageScreen({ nickname }: { nickname: string }) {
   const viewer = useViewer();
@@ -112,6 +113,16 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
             self && (
               <>
                 {copyButton}
+                <Button
+                  asChild
+                  variant="outline"
+                  className="flex-1 md:flex-none"
+                >
+                  <Link href="/me/tokens">
+                    <KeyRound aria-hidden />
+                    개인 토큰
+                  </Link>
+                </Button>
                 <Button
                   variant="outline"
                   onClick={() => setConfirm(true)}
