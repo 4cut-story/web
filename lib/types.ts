@@ -1,7 +1,13 @@
 /** 게이트웨이 API 응답 모양 (common/contracts 기준). */
 export type Page<T> = { items: T[]; nextCursor: string | null };
 
-export type User = { id: string; nickname: string; avatarUrl: string | null };
+export type User = {
+  id: string;
+  nickname: string;
+  avatarUrl: string | null;
+  /** 가입 시각 (ISO-8601). */
+  joinedAt?: string;
+};
 
 export type Me = User & { providers: string[] };
 
@@ -81,6 +87,12 @@ export type FollowStats = {
   followers: number;
   following: number;
   followedByMe: boolean;
+  /** 보는 사람이 볼 수 있는 게시물 수. */
+  posts?: number;
+  /** 그 게시물들이 받은 좋아요 합계. */
+  likes?: number;
+  /** 만든 4컷 전체 수. 본인이 볼 때만 온다. */
+  comics?: number;
 };
 
 export type Gender = "FEMALE" | "MALE";
