@@ -44,7 +44,7 @@ export function PublishSheet({
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-end justify-center bg-foreground/40"
+      className="fixed inset-0 z-40 flex items-end justify-center bg-foreground/40 md:items-center md:p-5"
       onClick={onClose}
     >
       <section
@@ -52,7 +52,7 @@ export function PublishSheet({
         aria-modal="true"
         aria-label="게시하기"
         onClick={(e) => e.stopPropagation()}
-        className="flex w-full max-w-[480px] flex-col gap-5 rounded-t-xl bg-background px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
+        className="flex w-full max-w-[480px] flex-col gap-5 rounded-t-xl bg-background px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:rounded-xl md:pb-5"
       >
         <h2 className="text-lg font-semibold">게시하기</h2>
         {comic.nameWarnings.length > 0 && (

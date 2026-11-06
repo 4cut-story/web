@@ -51,7 +51,7 @@ export function CharactersScreen({ initial }: { initial: CharacterFilter }) {
     filter.job || filter.ageGroup || filter.gender || filter.q.trim();
 
   return (
-    <AppShell title="캐릭터" tab="characters" wide>
+    <AppShell title="캐릭터" tab="characters" width="wide">
       <div className="flex flex-col gap-3 pb-4">
         <div
           role="radiogroup"

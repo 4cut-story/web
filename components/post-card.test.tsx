@@ -46,4 +46,50 @@ describe("게시물 카드 (FR-021)", () => {
     render(<PostCard post={post()} author={OTHER} />);
     expect(screen.getByText("오늘 있었던 일")).toBeInTheDocument();
   });
+
+  it("공유: 공유 시트가 있으면 쓰고, 없으면 주소를 복사한다", async () => {
+    mockFetch({});
+    const shareFn = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", {
+      value: shareFn,
+      configurable: true,
+    });
+    const { unmount } = render(<PostCard post={post()} author={OTHER} />);
+    await userEvent.click(screen.getByRole("button", { name: "공유" }));
+    expect(shareFn).toHaveBeenCalledWith(
+      expect.objectContaining({ url: expect.stringContaining("/posts/p1") }),
+    );
+    unmount();
+
+    Object.defineProperty(navigator, "share", {
+      value: undefined,
+      configurable: true,
+    });
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+    render(<PostCard post={post()} author={OTHER} />);
+    await userEvent.click(screen.getByRole("button", { name: "공유" }));
+    expect(writeText).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "주소를 복사했어요" }),
+    ).toBeInTheDocument();
+  });
+
+  it("공유를 닫으면 조용히 넘어간다", async () => {
+    mockFetch({});
+    Object.defineProperty(navigator, "share", {
+      value: vi.fn().mockRejectedValue(new Error("AbortError")),
+      configurable: true,
+    });
+    render(<PostCard post={post()} author={OTHER} />);
+    await userEvent.click(screen.getByRole("button", { name: "공유" }));
+    expect(screen.getByRole("button", { name: "공유" })).toBeInTheDocument();
+    Object.defineProperty(navigator, "share", {
+      value: undefined,
+      configurable: true,
+    });
+  });
 });

@@ -32,6 +32,7 @@ export function FeedScreen() {
       title={anonymous || checking ? "4cut story" : "피드"}
       tab={anonymous || checking ? undefined : "feed"}
       actions={anonymous && <LoginButton />}
+      width="wide"
     >
       {!checking && (
         <>

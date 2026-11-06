@@ -24,9 +24,12 @@ const STEPS = [
 /** 첫 화면 소개: 로그인하지 않은 사람에게 서비스가 무엇인지 알리고 시작하게 한다. */
 export function Promo() {
   return (
-    <section aria-label="서비스 소개" className="flex flex-col gap-6 pb-10">
-      <div className="flex flex-col gap-3 pt-4">
-        <h2 className="text-2xl font-bold">
+    <section
+      aria-label="서비스 소개"
+      className="flex flex-col gap-6 pb-10 md:grid md:grid-cols-2 md:items-center md:gap-x-12 md:py-10"
+    >
+      <div className="flex flex-col gap-3 pt-4 md:col-start-1 md:pt-0">
+        <h2 className="text-2xl font-bold md:text-4xl md:leading-tight">
           우리가 나눈 대화가
           <br />
           4컷 스토리가 돼요
@@ -36,10 +39,10 @@ export function Promo() {
           남기고 나눠 보세요.
         </p>
       </div>
-      <ol className="flex flex-col gap-4">
+      <ol className="flex flex-col gap-4 md:col-start-2 md:row-span-2 md:row-start-1 md:rounded-xl md:bg-muted md:p-6">
         {STEPS.map(({ icon: Icon, title, description }) => (
           <li key={title} className="flex gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted md:bg-background">
               <Icon aria-hidden className="size-5" />
             </span>
             <div className="flex flex-col gap-0.5">
@@ -49,7 +52,7 @@ export function Promo() {
           </li>
         ))}
       </ol>
-      <Button asChild>
+      <Button asChild className="md:col-start-1 md:w-fit md:self-start">
         <Link href="/login">무료로 시작하기</Link>
       </Button>
     </section>

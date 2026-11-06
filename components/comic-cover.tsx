@@ -23,7 +23,12 @@ export function ComicCover({
     >
       {/* 권한 확인 뒤 web이 바이트를 넘기는 주소라 next/image 최적화를 쓰지 않는다 */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="-mt-[14%] block w-full" />
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className="-mt-[14%] block w-full transition-transform duration-300 group-hover:scale-[1.03]"
+      />
     </span>
   );
 }

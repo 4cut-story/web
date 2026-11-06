@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic } from "lucide-react";
+import { Check, Link2, LogOut, Mic } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -60,13 +60,20 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
       title={nickname}
       back={anonymous ? HOME : undefined}
       tab={anonymous ? undefined : self ? "profile" : "feed"}
+      width="wide"
       actions={
         anonymous ? (
           <LoginButton />
         ) : (
           self && (
-            <Button variant="ghost" size="sm" onClick={logout}>
-              로그아웃
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="로그아웃"
+              title="로그아웃"
+              onClick={logout}
+            >
+              <LogOut aria-hidden />
             </Button>
           )
         )
@@ -96,6 +103,11 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
               <span className="font-medium text-foreground">@{nickname}</span>
             </span>
             <Button variant="ghost" size="sm" onClick={copyAddress}>
+              {copied ? (
+                <Check aria-hidden className="text-success" />
+              ) : (
+                <Link2 aria-hidden />
+              )}
               {copied ? "복사했어요" : "주소 복사"}
             </Button>
           </div>

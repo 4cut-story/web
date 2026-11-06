@@ -41,7 +41,7 @@ export function CharacterScreen({ id, theme }: { id: string; theme?: Theme }) {
     <AppShell
       title={data?.name ?? "캐릭터"}
       back={{ href: "/characters", label: "캐릭터 목록으로" }}
-      wide
+      width="wide"
     >
       {character.error && (
         <ErrorText

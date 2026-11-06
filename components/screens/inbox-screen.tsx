@@ -17,7 +17,7 @@ export function InboxScreen() {
   const comics = usePaged<Comic>("/comics");
 
   return (
-    <AppShell title="스토리" tab="inbox">
+    <AppShell title="스토리" tab="inbox" width="wide">
       {comics.error && (
         <ErrorText message={comics.error.message} code={comics.error.code} />
       )}
@@ -33,10 +33,10 @@ export function InboxScreen() {
           }
         />
       )}
-      <ul className="grid grid-cols-2 gap-3">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
         {comics.items?.map((comic) => (
           <li key={comic.id}>
-            <Link href={`/comics/${comic.id}`} className="relative block">
+            <Link href={`/comics/${comic.id}`} className="group relative block">
               <ComicCover
                 src={imageUrl("comics", comic.id, true)}
                 alt={comic.title ?? "4컷"}

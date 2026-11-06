@@ -1,5 +1,6 @@
 "use client";
 
+import { SendHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -72,8 +73,15 @@ export function Comments({
                 <p className="text-base">{c.text}</p>
               </div>
               {c.authorId === meId && (
-                <Button variant="ghost" size="sm" onClick={() => remove(c.id)}>
-                  삭제
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="삭제"
+                  title="댓글 삭제"
+                  className="size-9 text-muted-foreground"
+                  onClick={() => remove(c.id)}
+                >
+                  <Trash2 aria-hidden className="size-4" />
                 </Button>
               )}
             </li>
@@ -99,8 +107,15 @@ export function Comments({
             onChange={(e) => setText(e.target.value)}
             className="h-12 flex-1 rounded-lg bg-muted px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <Button type="submit" variant="secondary" disabled={!text.trim()}>
-            등록
+          <Button
+            type="submit"
+            size="icon"
+            aria-label="등록"
+            title="등록"
+            className="size-12"
+            disabled={!text.trim()}
+          >
+            <SendHorizontal aria-hidden />
           </Button>
         </form>
       )}
