@@ -1,6 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { callGateway } from "./gateway";
+import {
+  callGateway,
+  callGatewayWithPat,
+  patForbidden,
+  type GatewayResult,
+} from "./gateway";
+import { patAllows, readPat } from "./pat";
 import {
   openSession,
   SESSION_COOKIE,
@@ -10,6 +16,44 @@ import {
 
 export function readSession(request: NextRequest): Session | null {
   return openSession(request.cookies.get(SESSION_COOKIE)?.value);
+}
+
+/** 누가 부르는지: 쿠키 세션이 먼저고, 없으면 개인 액세스 토큰(Authorization 헤더). */
+export type Caller = { session: Session | null; pat: string | null };
+
+export function readCaller(request: NextRequest): Caller {
+  const session = readSession(request);
+  return { session, pat: session ? null : readPat(request) };
+}
+
+export function isSignedIn(caller: Caller): boolean {
+  return caller.session !== null || caller.pat !== null;
+}
+
+/** 게이트웨이 경로를 부른다. 개인 토큰이면 게시에 필요한 경로만 열고 나머지는 403. */
+export async function callAs(
+  caller: Caller,
+  path: string,
+  init: {
+    method?: string;
+    headers?: Record<string, string>;
+    body?: BodyInit | null;
+  } = {},
+): Promise<GatewayResult> {
+  if (caller.session || !caller.pat) {
+    return callGateway(path, init, caller.session);
+  }
+  const segments = path
+    .split("?")[0]
+    .replace(/^\/api\/v1\//, "")
+    .split("/");
+  if (
+    !path.startsWith("/api/v1/") ||
+    !patAllows(init.method ?? "GET", segments)
+  ) {
+    return patForbidden();
+  }
+  return callGatewayWithPat(path, init, caller.pat);
 }
 
 /** api-conventions의 오류 본문 모양으로 답한다. */
@@ -38,11 +82,11 @@ export async function relay(
     body?: BodyInit | null;
   } = {},
 ): Promise<NextResponse> {
-  const session = readSession(request);
-  if (!session && (init.method ?? "GET") !== "GET") {
+  const caller = readCaller(request);
+  if (!isSignedIn(caller) && (init.method ?? "GET") !== "GET") {
     return unauthorized();
   }
-  const result = await callGateway(path, init, session);
+  const result = await callAs(caller, path, init);
   const headers = new Headers();
   const type = result.response.headers.get("content-type");
   if (type) {
