@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { GitHubIconLink, SiteFooter } from "@/components/github-link";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -72,14 +73,10 @@ export function AppShell({
           </div>
           <div className="flex items-center gap-1">{actions}</div>
         </header>
-        <main
-          className={cn(
-            "flex flex-1 flex-col px-5 md:px-8",
-            tab ? "pb-24 md:pb-12" : "md:pb-12",
-          )}
-        >
+        <main className="flex flex-1 flex-col px-5 pb-10 md:px-8 md:pb-12">
           {children}
         </main>
+        <SiteFooter className={tab ? "pb-24 md:pb-6" : undefined} />
         {tab && (
           <nav
             aria-label="주요 메뉴"
@@ -140,6 +137,7 @@ function TopNav({ tab }: { tab: Tab }) {
             ))}
           </ul>
         </nav>
+        <GitHubIconLink className="-mr-2" />
       </div>
     </div>
   );
