@@ -158,7 +158,7 @@ export const MODELS: Model[] = [
 
 export type Bundle = { name: string; gb: number; detail: string };
 
-/** 한 번에 하나만 VRAM에 올리는 모델 묶음 (아키텍처 문서의 설계 추정치, 16GB 기준). */
+/** 한 번에 하나만 VRAM에 올리는 모델 묶음 (아키텍처 문서의 설계 기준 배분, 16GB 기준). */
 export const VRAM_BUNDLES: Bundle[] = [
   {
     name: "전사 묶음",

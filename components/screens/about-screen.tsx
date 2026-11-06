@@ -381,7 +381,7 @@ function HardwareSection() {
           ))}
         </ul>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          설계 단계 추정치예요. 화면 출력과 CUDA 컨텍스트 몫으로 약 2GB를 남기고
+          설계 기준 배분이에요. 화면 출력과 CUDA 컨텍스트 몫으로 약 2GB를 남기고
           한 묶음이 14GB를 넘지 않게 정했어요. 모델을 올리기 전에 남은 VRAM을
           확인하고, 모자라면 작업을 대기열로 돌려보내요.
         </p>

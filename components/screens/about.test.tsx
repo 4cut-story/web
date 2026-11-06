@@ -51,6 +51,7 @@ describe("서비스 소개 페이지", () => {
     expect(text).not.toMatch(/\b\d{1,3}(\.\d{1,3}){3}\b/);
     expect(text).not.toMatch(/java21\.net/);
     expect(text).not.toMatch(/학교/);
+    expect(text).not.toMatch(/추정/);
   });
 
   it("GitHub과 첫 화면으로 가는 길을 둔다", () => {
