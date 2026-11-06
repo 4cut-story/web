@@ -26,3 +26,10 @@ Node.js LTS, React + Next.js, TypeScript, Vitest + Testing Library, MSW, Playwri
 - `.github/workflows/ci.yml`이 `4cut-story/common`의 재사용 워크플로를 부른다. 정적 분석과 테스트 커버리지 80%를 어기면 CI가 실패한다. 기준은 `common` README "CI와 품질 기준".
 - main에 머지되면 이미지(`:<sha>`)가 GHCR에 올라가고 `deploy` 레포 태그가 자동 갱신돼 배포된다.
 - 로컬 검사: `npm run lint && npm run typecheck && npm run format:check && npm run dup:check && npm run test:coverage`
+
+## 소개 페이지 (/about)
+
+- `/about`은 포트폴리오용 기술 소개 페이지다. 내용은 `lib/about.ts`에 모여 있다.
+- 서비스 구조, 생성 흐름, 모델·설정값, 성능 개선, 캐릭터 DB 규모가 바뀌는 변경(이 레포든 다른 레포든)을 하면 `lib/about.ts`도 함께 고친다. 다른 레포 변경이면 web에 이어지는 PR을 올린다.
+- 사실은 저장소 설정과 커밋에 남은 측정값만 쓴다. 내부 IP·내부 호스트 이름·비밀 값, 운영 기관 이름(학교 등), "추정" 같은 표현, 원작 캐릭터 이름은 쓰지 않는다(`components/screens/about.test.tsx`가 일부를 검사한다).
+- 처음 보는 사람도 읽을 수 있게 쉬운 말로 쓰고, 전문 용어는 용어 풀이(`GLOSSARY`)에 더한다.
