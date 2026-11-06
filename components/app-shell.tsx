@@ -4,41 +4,56 @@ import {
   Home,
   Mic,
   User as UserIcon,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export type Tab = "feed" | "create" | "inbox" | "profile";
+export type Tab = "feed" | "create" | "inbox" | "characters" | "profile";
 
 const TABS: { id: Tab; href: string; label: string; icon: typeof Home }[] = [
   { id: "feed", href: "/", label: "피드", icon: Home },
   { id: "create", href: "/record", label: "만들기", icon: Mic },
   { id: "inbox", href: "/comics", label: "스토리", icon: BookImage },
+  { id: "characters", href: "/characters", label: "캐릭터", icon: Users },
   { id: "profile", href: "/me", label: "프로필", icon: UserIcon },
 ];
 
 /**
  * 화면 틀: 상단 헤더(56px) + 본문(최대 480px) + 하단 탭(녹음·진행·로그인 화면에서는 숨김).
  * back이 있으면 제목 앞에 ‹ 링크를 둔다(하단 탭이 없는 화면에서 나가는 길).
+ * wide면 PC에서 본문을 넓게 쓴다(캐릭터 갤러리처럼 격자가 넓어질수록 좋은 화면).
  */
 export function AppShell({
   title,
   tab,
   back,
   actions,
+  wide,
   children,
 }: {
   title: string;
   tab?: Tab;
   back?: { href: string; label: string };
   actions?: React.ReactNode;
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col">
-      <header className="flex h-14 items-center justify-between px-5">
+    <div
+      className={cn(
+        "mx-auto flex w-full flex-1 flex-col",
+        wide ? "max-w-6xl" : "max-w-[480px]",
+      )}
+    >
+      <header
+        className={cn(
+          "flex h-14 items-center justify-between px-5",
+          wide && "md:px-8",
+        )}
+      >
         <div className="flex min-w-0 items-center gap-1">
           {back && (
             <Link
@@ -53,7 +68,13 @@ export function AppShell({
         </div>
         <div className="flex items-center gap-1">{actions}</div>
       </header>
-      <main className={cn("flex flex-1 flex-col px-5", tab && "pb-24")}>
+      <main
+        className={cn(
+          "flex flex-1 flex-col px-5",
+          wide && "md:px-8",
+          tab && "pb-24",
+        )}
+      >
         {children}
       </main>
       {tab && (

@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import CharacterPage from "./characters/[id]/page";
+import CharactersPage from "./characters/page";
 import ComicPage from "./comics/[id]/page";
 import InboxPage from "./comics/page";
 import ProgressPage from "./conversations/[id]/page";
@@ -65,6 +67,23 @@ describe("페이지 연결", () => {
       [ProgressPage({ params } as never), "4컷 만드는 중"],
       [PostPage({ params } as never), "게시물"],
       [ProfilePage({ params } as never), "프로필"],
+      [
+        CharactersPage({
+          searchParams: Promise.resolve({ theme: "WUXIA" }),
+        } as never),
+        "캐릭터",
+      ],
+      [
+        CharacterPage({
+          params,
+          searchParams: Promise.resolve({ theme: "JOSEON" }),
+        } as never),
+        "캐릭터",
+      ],
+      [
+        CharacterPage({ params, searchParams: Promise.resolve({}) } as never),
+        "캐릭터",
+      ],
       [
         UserPage({
           params: Promise.resolve({ nickname: "%EB%A7%88%EB%A5%B4%EC%BD%94" }),

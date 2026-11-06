@@ -12,6 +12,7 @@ const ALLOWED = new Set([
   "feed",
   "follows",
   "comments",
+  "characters",
 ]);
 
 const SAFE_SEGMENT = /^[A-Za-z0-9_-]+$/;
