@@ -7,6 +7,7 @@ import { Landing } from "@/components/landing";
 import {
   CHARACTER_IMAGES,
   CHARACTER_SEARCH,
+  CHARACTER_SEARCH_NEXT,
   DECISIONS,
   MODELS,
   SERVICES,
@@ -87,6 +88,10 @@ describe("서비스 소개 페이지", () => {
       expect(within(search).getByText(step.title)).toBeInTheDocument();
     }
     expect(within(search).getByText("0.30 (채택)")).toBeInTheDocument();
+    expect(within(search).getByText("향후 개선")).toBeInTheDocument();
+    for (const item of CHARACTER_SEARCH_NEXT) {
+      expect(within(search).getByText(item)).toBeInTheDocument();
+    }
   });
 
   it("모델마다 크기·왜 골랐나·설정값을, 개선마다 원인과 전후 비교를 적는다", () => {

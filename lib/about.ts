@@ -969,6 +969,12 @@ export const CHARACTER_SEARCH: Step[] = [
   },
 ];
 
+/** 캐릭터 찾기에서 다음에 손볼 점 (conversation-service #29·#30). */
+export const CHARACTER_SEARCH_NEXT: string[] = [
+  "참조 그림 자체의 이미지 임베딩(CLIP)도 함께 비교해, 설명은 비슷한데 그림은 다른 캐릭터가 뽑히는 경우를 줄여요",
+  "성별·나이대를 캐릭터 DB에 따로 저장해 두고, 좌표로 찾기 전에 먼저 걸러요. 지금은 가까운 50명을 꺼낸 뒤 거르기 때문에 50명이 모두 어긋나면 맞는 캐릭터가 있어도 못 찾아요",
+];
+
 export type Threshold = { label: string; result: string };
 
 /** 거리 한도를 다르게 잡으면 생기는 일 (#18 측정 설명). */
