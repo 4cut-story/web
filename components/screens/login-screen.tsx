@@ -94,7 +94,7 @@ export function LoginScreen({ error }: { error?: string }) {
           </Button>
         </div>
       </main>
-      <SiteFooter className="mx-auto w-full max-w-6xl" />
+      <SiteFooter />
     </>
   );
 }

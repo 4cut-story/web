@@ -39,29 +39,42 @@ export function GitHubIconLink({ className }: { className?: string }) {
   );
 }
 
-/** 모든 화면 아래의 바닥글: 서비스 소개, GitHub 링크, 저작권. 휴대폰은 하단 탭에 가리지 않게 아래를 띄운다. */
+/**
+ * 모든 화면 아래의 바닥글: 서비스 소개, GitHub 링크, 저작권, 기술 스택.
+ * 본문 폭과 상관없이 화면 끝까지 깔고, 안쪽은 상단 메뉴와 같은 폭(1152px)에 맞춘다.
+ * 휴대폰은 한 줄씩 쌓고 GitHub 버튼을 꽉 채우며, 하단 탭이 있으면 className으로 아래를 띄운다.
+ */
 export function SiteFooter({ className }: { className?: string }) {
   return (
     <footer
       className={cn(
-        "flex flex-col gap-3 border-t border-border px-5 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-8",
+        "w-full border-t border-border bg-muted/40 text-sm text-muted-foreground",
         className,
       )}
     >
-      <div className="flex flex-col gap-1">
-        <p className="font-semibold text-foreground">4cut story</p>
-        <p>녹음한 대화를 AI가 4컷 만화로 그려 주는 서비스</p>
-        <p className="text-xs">© {COPYRIGHT_YEAR} 4cut story</p>
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-8 md:px-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-1">
+            <p className="text-base font-semibold text-foreground">
+              4cut story
+            </p>
+            <p>녹음한 대화를 AI가 4컷 만화로 그려 주는 서비스</p>
+          </div>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-muted md:w-fit"
+          >
+            <GitHubMark className="size-4" />
+            GitHub에서 소스 보기
+          </a>
+        </div>
+        <div className="flex flex-col gap-1 border-t border-border pt-4 text-xs md:flex-row md:justify-between">
+          <p>© {COPYRIGHT_YEAR} 4cut story</p>
+          <p>Next.js · Spring Boot · Spring AI · Kubernetes</p>
+        </div>
       </div>
-      <a
-        href={GITHUB_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex w-fit items-center gap-2 rounded-full border border-border px-4 py-2 font-medium text-foreground transition-colors hover:bg-muted"
-      >
-        <GitHubMark className="size-4" />
-        GitHub에서 소스 보기
-      </a>
     </footer>
   );
 }
