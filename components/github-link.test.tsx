@@ -16,9 +16,7 @@ describe("GitHub 링크와 바닥글", () => {
     expect(icon).toHaveAttribute("href", "https://github.com/4cut-story");
     expect(icon).toHaveAttribute("target", "_blank");
     const footer = screen.getByRole("contentinfo");
-    expect(footer).toHaveTextContent(
-      `© ${new Date().getFullYear()} 4cut story`,
-    );
+    expect(footer).toHaveTextContent("© 2026 4cut story");
     expect(
       screen.getByRole("link", { name: "GitHub에서 소스 보기" }),
     ).toHaveAttribute("rel", "noopener noreferrer");

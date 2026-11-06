@@ -3,6 +3,9 @@ import { cn } from "@/lib/utils";
 /** 이 서비스의 소스 코드가 있는 GitHub 조직. */
 export const GITHUB_URL = "https://github.com/4cut-story";
 
+/** 바닥글 저작권 연도. 빌드할 때 화면을 미리 그려 두므로 new Date()를 쓰지 않는다. */
+export const COPYRIGHT_YEAR = 2026;
+
 /** GitHub 마크 (lucide에는 상표 아이콘이 없어 직접 그린다). */
 export function GitHubMark({ className }: { className?: string }) {
   return (
@@ -48,7 +51,7 @@ export function SiteFooter({ className }: { className?: string }) {
       <div className="flex flex-col gap-1">
         <p className="font-semibold text-foreground">4cut story</p>
         <p>녹음한 대화를 AI가 4컷 만화로 그려 주는 서비스</p>
-        <p className="text-xs">© {new Date().getFullYear()} 4cut story</p>
+        <p className="text-xs">© {COPYRIGHT_YEAR} 4cut story</p>
       </div>
       <a
         href={GITHUB_URL}
