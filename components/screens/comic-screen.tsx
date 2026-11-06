@@ -1,5 +1,6 @@
 "use client";
 
+import { Download, ExternalLink, Send, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -37,8 +38,14 @@ export function ComicScreen({ id }: { id: string }) {
       title={comic?.title ?? "4컷"}
       tab="inbox"
       actions={
-        <Button variant="ghost" size="sm" onClick={() => setConfirm(true)}>
-          삭제
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="삭제"
+          title="삭제"
+          onClick={() => setConfirm(true)}
+        >
+          <Trash2 aria-hidden />
         </Button>
       }
     >
@@ -56,21 +63,26 @@ export function ComicScreen({ id }: { id: string }) {
           />
           {error && <ErrorText message={error} />}
           {/* 만화가 세로로 길어 버튼을 하단 탭 바로 위에 붙여 둔다 */}
-          <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] grid grid-cols-2 gap-2 bg-background py-3">
+          <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] grid grid-cols-2 gap-2 bg-background py-3 md:bottom-0">
             <Button size="lg" variant="secondary" asChild>
               <a
                 href={imageUrl("comics", comic.id)}
                 download={`4cut-${comic.id}.png`}
               >
+                <Download aria-hidden />
                 저장
               </a>
             </Button>
             {comic.state === "POSTED" && comic.postId ? (
               <Button size="lg" asChild>
-                <Link href={`/posts/${comic.postId}`}>게시물 보기</Link>
+                <Link href={`/posts/${comic.postId}`}>
+                  <ExternalLink aria-hidden />
+                  게시물 보기
+                </Link>
               </Button>
             ) : (
               <Button size="lg" onClick={() => setSheet(true)}>
+                <Send aria-hidden />
                 올리기
               </Button>
             )}

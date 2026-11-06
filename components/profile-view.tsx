@@ -80,6 +80,7 @@ export function ProfileView({
         <Button
           variant={stats.data.followedByMe ? "secondary" : "default"}
           onClick={toggleFollow}
+          className="md:w-48 md:self-start"
         >
           {stats.data.followedByMe ? "팔로우 중" : "팔로우"}
         </Button>
@@ -90,10 +91,10 @@ export function ProfileView({
           아직 올린 4컷이 없어요.
         </p>
       )}
-      <ul className="grid grid-cols-3 gap-1">
+      <ul className="grid grid-cols-3 gap-1 md:grid-cols-4 md:gap-2 lg:grid-cols-5">
         {posts.items?.map((p) => (
           <li key={p.postId}>
-            <Link href={`/posts/${p.postId}`}>
+            <Link href={`/posts/${p.postId}`} className="group block">
               <ComicCover
                 src={imageUrl("posts", p.postId, true)}
                 alt={p.caption || `${name}님의 4컷`}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Square } from "lucide-react";
+import { Mic, Square, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -177,6 +177,7 @@ export function RecordScreen() {
               disabled={!consent}
               onClick={start}
             >
+              <Mic aria-hidden />
               녹음 시작
             </Button>
           </>
@@ -229,6 +230,7 @@ export function RecordScreen() {
             disabled={!consent}
             onClick={() => fileInput.current?.click()}
           >
+            <Upload aria-hidden />
             녹음 파일 올리기
           </Button>
         </div>

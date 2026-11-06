@@ -15,7 +15,7 @@ export function PortalGrid({
   users: Record<string, User | undefined>;
 }) {
   return (
-    <ul className="grid grid-cols-2 gap-3">
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
       {posts.map((post) => {
         const author = users[post.authorId];
         const name = author?.nickname ?? "알 수 없음";
@@ -25,7 +25,7 @@ export function PortalGrid({
               href={`/posts/${post.postId}`}
               target="_blank"
               rel="noopener"
-              className="flex flex-col gap-2"
+              className="group flex flex-col gap-2"
             >
               <ComicCover
                 src={imageUrl("posts", post.postId, true)}

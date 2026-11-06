@@ -1,5 +1,6 @@
 "use client";
 
+import { EyeOff, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -42,6 +43,7 @@ export function PostScreen({ id }: { id: string }) {
       title="게시물"
       back={anonymous ? HOME : undefined}
       tab={anonymous ? undefined : "feed"}
+      width="medium"
       actions={
         anonymous ? (
           <LoginButton />
@@ -50,17 +52,21 @@ export function PostScreen({ id }: { id: string }) {
             <>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
+                aria-label="내리기"
+                title="피드에서 내리기"
                 onClick={() => setConfirm("UNPUBLISH")}
               >
-                내리기
+                <EyeOff aria-hidden />
               </Button>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
+                aria-label="삭제"
+                title="삭제"
                 onClick={() => setConfirm("DELETE")}
               >
-                삭제
+                <Trash2 aria-hidden />
               </Button>
             </>
           )
@@ -72,7 +78,8 @@ export function PostScreen({ id }: { id: string }) {
       )}
       {error && <ErrorText message={error} />}
       {post && (
-        <div className="flex flex-col gap-6">
+        // PC: 세로로 긴 4컷은 왼쪽, 댓글은 오른쪽에 붙여 둔다
+        <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] md:items-start md:gap-10">
           <PostCard post={post} author={users[post.authorId]} />
           <Comments
             postId={post.postId}
