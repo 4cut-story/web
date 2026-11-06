@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   AudioLines,
+  Cpu,
   Heart,
   Images,
   type LucideIcon,
@@ -76,7 +77,8 @@ const FEATURES: {
 ];
 
 /**
- * 첫 화면 소개(랜딩): 히어로(문구, 시작 버튼, 최근 4컷 네 장을 4컷 틀에), 만드는 과정 네 단계, 특징 세 가지.
+ * 첫 화면 소개(랜딩): 히어로(문구, 시작 버튼, 최근 4컷 네 장을 4컷 틀에), 서비스 소개 페이지 안내,
+ * 만드는 과정 네 단계, 특징 세 가지.
  * 이 아래에 피드가 이어진다. 로그인 여부에 따라 시작 버튼만 바뀐다.
  */
 export function Landing({
@@ -92,6 +94,7 @@ export function Landing({
       className="flex flex-col gap-16 pb-16 md:gap-24 md:pb-20"
     >
       <Hero signedIn={signedIn} posts={posts.slice(0, 4)} />
+      <AboutCallout />
       <Steps />
       <Features signedIn={signedIn} />
     </section>
@@ -142,6 +145,38 @@ function Hero({ signedIn, posts }: { signedIn: boolean; posts: Post[] }) {
       </div>
       <Strip posts={posts} />
     </div>
+  );
+}
+
+/** 히어로 바로 아래에서 서비스 소개(/about)로 이끄는 눈에 띄는 띠. 4컷 틀과 같은 굵은 선·그림자를 쓴다. */
+function AboutCallout() {
+  return (
+    <Link
+      href="/about"
+      className="group flex flex-col gap-4 rounded-2xl border-2 border-foreground bg-accent/10 p-5 shadow-[6px_6px_0_0_var(--color-foreground)] transition-transform hover:-translate-y-0.5 md:flex-row md:items-center md:justify-between md:p-6"
+    >
+      <div className="flex items-start gap-4">
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-foreground text-background">
+          <Cpu aria-hidden className="size-6" />
+        </span>
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-semibold text-accent-strong">
+            포트폴리오 · 기술 소개
+          </p>
+          <p className="text-lg font-bold md:text-xl">
+            이 서비스는 어떻게 만들었을까요?
+          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            마이크로서비스 아키텍처, RTX 5060 Ti 16GB 한 장으로 돌리는 AI 모델
+            9개, 직접 재고 고친 튜닝 기록을 모았어요.
+          </p>
+        </div>
+      </div>
+      <span className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground group-hover:bg-primary/90">
+        소개 페이지 보기
+        <ArrowRight aria-hidden className="size-4" />
+      </span>
+    </Link>
   );
 }
 
