@@ -263,7 +263,7 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("잠시 문제");
   });
 
-  it("내 페이지에서는 녹음하기, 주소 복사, 로그아웃, 탈퇴를 한다", async () => {
+  it("내 페이지에서는 주소 복사, 로그아웃, 탈퇴를 하고, 게시한 4컷이 없으면 스토리로 안내한다", async () => {
     const toLogin = vi
       .spyOn(navigation, "toLogin")
       .mockImplementation(() => undefined);
@@ -275,19 +275,34 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     const calls = mockFetch({
       "GET /api/v1/me": json(ME),
       "GET /api/v1/users/lookup": json(ME),
-      "GET /api/v1/users/me": json(ME),
-      "GET /api/v1/follows/me/stats": json(STATS),
+      "GET /api/v1/users/me": json({
+        ...ME,
+        joinedAt: "2026-03-14T01:00:00Z",
+      }),
+      "GET /api/v1/follows/me/stats": json({
+        ...STATS,
+        posts: 0,
+        likes: 0,
+        comics: 3,
+      }),
       "GET /api/v1/posts?authorId=me": json({ items: [], nextCursor: null }),
       "POST /auth/logout": noContent(),
       "DELETE /api/v1/me": noContent(),
     });
     render(<UserPageScreen nickname="마르코" />);
     expect(
-      await screen.findByText("아직 올린 4컷이 없어요."),
+      await screen.findByText(/아직 게시한 4컷이 없어요/),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "스토리로 가기" })).toHaveAttribute(
+      "href",
+      "/comics",
+    );
     expect(
-      await screen.findByRole("link", { name: "녹음해서 4컷 만들기" }),
-    ).toHaveAttribute("href", "/record");
+      await screen.findByText(
+        "2026년 3월 가입 · 만든 4컷 3개 · 게시 안 함 3개",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("게시물")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "팔로우" }),
     ).not.toBeInTheDocument();

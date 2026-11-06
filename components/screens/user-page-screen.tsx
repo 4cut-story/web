@@ -1,7 +1,6 @@
 "use client";
 
-import { Check, Link2, LogOut, Mic } from "lucide-react";
-import Link from "next/link";
+import { Check, Link2, LogOut, UserX } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell, HOME, LoginButton } from "@/components/app-shell";
@@ -21,7 +20,7 @@ async function logout() {
 
 /**
  * 사용자 페이지 (/@닉네임). 누구나 열 수 있고, 게시물은 보는 사람 기준 공개 범위대로 보인다.
- * 내 페이지면 녹음하기, 내 주소 복사, 로그아웃, 탈퇴를 함께 둔다.
+ * 내 페이지면 내 주소 복사, 로그아웃, 탈퇴를 함께 둔다 (녹음은 메뉴의 만들기에서).
  */
 export function UserPageScreen({ nickname }: { nickname: string }) {
   const viewer = useViewer();
@@ -54,6 +53,21 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
       setError("주소를 복사하지 못했어요.");
     }
   }
+
+  const copyButton = (
+    <Button
+      variant="outline"
+      onClick={copyAddress}
+      className="flex-1 md:flex-none"
+    >
+      {copied ? (
+        <Check aria-hidden className="text-success" />
+      ) : (
+        <Link2 aria-hidden />
+      )}
+      {copied ? "복사했어요" : "주소 복사"}
+    </Button>
+  );
 
   return (
     <AppShell
@@ -89,48 +103,29 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
           code={user.error.code}
         />
       )}
-      {self && (
-        <div className="mb-6 flex flex-col gap-3">
-          <Button asChild>
-            <Link href="/record">
-              <Mic aria-hidden />
-              녹음해서 4컷 만들기
-            </Link>
-          </Button>
-          <div className="flex items-center justify-between gap-2 rounded-lg bg-muted px-4 py-3 text-sm">
-            <span className="truncate text-muted-foreground">
-              내 주소{" "}
-              <span className="font-medium text-foreground">@{nickname}</span>
-            </span>
-            <Button variant="ghost" size="sm" onClick={copyAddress}>
-              {copied ? (
-                <Check aria-hidden className="text-success" />
-              ) : (
-                <Link2 aria-hidden />
-              )}
-              {copied ? "복사했어요" : "주소 복사"}
-            </Button>
-          </div>
-        </div>
-      )}
       {user.data && (
         <ProfileView
           userId={user.data.id}
           canFollow={Boolean(viewer.data) && !self}
+          self={self}
+          actions={
+            self && (
+              <>
+                {copyButton}
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirm(true)}
+                  className="flex-1 text-destructive hover:text-destructive md:flex-none"
+                >
+                  <UserX aria-hidden />
+                  탈퇴하기
+                </Button>
+              </>
+            )
+          }
         />
       )}
       {error && <ErrorText message={error} />}
-      {self && (
-        <div className="mt-auto flex justify-center pt-10">
-          <Button
-            variant="link"
-            className="text-muted-foreground"
-            onClick={() => setConfirm(true)}
-          >
-            탈퇴하기
-          </Button>
-        </div>
-      )}
       {confirm && (
         <ConfirmDialog
           title="정말 탈퇴할까요?"
