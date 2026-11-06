@@ -1,18 +1,18 @@
 "use client";
 
-import { Mic, Square, Upload } from "lucide-react";
+import { Mic, Sparkles, Square, Upload } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { AppShell, HOME } from "@/components/app-shell";
+import { ConceptPicker } from "@/components/concept-picker";
 import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/api";
 import { clock } from "@/lib/format";
 import type { Concept } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import {
-  CONCEPTS,
   fileContentType,
   MAX_PARTS,
   MAX_RECORDING_SEC,
@@ -132,35 +132,7 @@ export function RecordScreen() {
       <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
         {phase === "ready" && (
           <>
-            <p
-              id="concept-label"
-              className="-mb-5 self-start text-sm font-medium"
-            >
-              그림체
-            </p>
-            <div
-              role="radiogroup"
-              aria-labelledby="concept-label"
-              className="grid w-full grid-cols-2 gap-2"
-            >
-              {CONCEPTS.map(({ value, label }) => (
-                <button
-                  key={value}
-                  type="button"
-                  role="radio"
-                  aria-checked={concept === value}
-                  onClick={() => setConcept(value)}
-                  className={cn(
-                    "h-11 rounded-lg text-sm font-medium",
-                    concept === value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <ConceptPicker value={concept} onChange={setConcept} />
             <label className="flex items-start gap-3 text-left text-base">
               <input
                 type="checkbox"
@@ -179,6 +151,17 @@ export function RecordScreen() {
             >
               <Mic aria-hidden />
               녹음 시작
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="-mt-5 w-full"
+              asChild
+            >
+              <Link href="/record/samples">
+                <Sparkles aria-hidden />
+                녹음 없이 샘플로 만들어 보기
+              </Link>
             </Button>
           </>
         )}

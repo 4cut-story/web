@@ -228,3 +228,12 @@ describe("녹음 파일 올리기 (FR-003)", () => {
     expect(await screen.findByText("업로드 실패")).toBeInTheDocument();
   });
 });
+
+describe("샘플로 만들어 보기 (데모)", () => {
+  it("만들기 화면에서 샘플 화면으로 가는 길이 있다", () => {
+    render(<RecordScreen />);
+    expect(
+      screen.getByRole("link", { name: "녹음 없이 샘플로 만들어 보기" }),
+    ).toHaveAttribute("href", "/record/samples");
+  });
+});
