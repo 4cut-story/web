@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
+import { ComicCast } from "@/components/comic-cast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
 import { PublishSheet } from "@/components/publish-sheet";
@@ -60,6 +61,11 @@ export function ComicScreen({ id }: { id: string }) {
             alt={comic.title ?? "4컷"}
             {...COMIC_SIZE}
             className="h-auto w-full rounded-lg bg-muted"
+          />
+          <ComicCast
+            cast={comic.cast}
+            concept={comic.concept}
+            dialect={comic.dialect}
           />
           {error && <ErrorText message={error} />}
           {/* 만화가 세로로 길어 버튼을 하단 탭 바로 위에 붙여 둔다 */}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { AppShell, HOME, LoginButton } from "@/components/app-shell";
+import { ComicCast } from "@/components/comic-cast";
 import { Comments } from "@/components/comments";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
@@ -80,7 +81,14 @@ export function PostScreen({ id }: { id: string }) {
       {post && (
         // PC: 세로로 긴 4컷은 왼쪽, 댓글은 오른쪽에 붙여 둔다
         <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] md:items-start md:gap-10 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] lg:gap-12">
-          <PostCard post={post} author={users[post.authorId]} />
+          <div className="flex flex-col gap-6">
+            <PostCard post={post} author={users[post.authorId]} />
+            <ComicCast
+              cast={post.cast}
+              concept={post.concept}
+              dialect={post.dialect}
+            />
+          </div>
           <Comments
             postId={post.postId}
             meId={me.data?.id}

@@ -143,6 +143,47 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
     ).toHaveAttribute("href", "/@%EC%A7%80%EC%88%98");
   });
 
+  it("만화 아래에 등장인물(그림·호칭·이름)과 그림체·사투리를 보여 준다", async () => {
+    mockFetch({
+      "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
+      "GET /api/v1/posts/p1": json(
+        post({
+          cast: [
+            { role: "할머니", name: "하늘", lookId: "l1" },
+            { role: "손녀", name: "도윤", lookId: null },
+          ],
+          concept: "WATERCOLOR",
+          dialect: "GYEONGSANG",
+        }),
+      ),
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users": json({ items: [OTHER, ME] }),
+    });
+    render(<PostScreen id="p1" />);
+    const cast = await screen.findByRole("region", { name: "등장인물" });
+    expect(within(cast).getByText("할머니")).toBeInTheDocument();
+    expect(within(cast).getByText("하늘")).toBeInTheDocument();
+    expect(
+      within(cast).getByRole("img", { name: "할머니 하늘" }),
+    ).toHaveAttribute("src", expect.stringContaining("/api/images/looks/l1"));
+    expect(within(cast).getByText("수채화 애니메이션")).toBeInTheDocument();
+    expect(within(cast).getByText("경상도")).toBeInTheDocument();
+  });
+
+  it("예전 게시물은 등장인물 소개가 없다", async () => {
+    mockFetch({
+      "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
+      "GET /api/v1/posts/p1": json(post()),
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users": json({ items: [OTHER, ME] }),
+    });
+    render(<PostScreen id="p1" />);
+    expect(await screen.findByText("오늘 있었던 일")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "등장인물" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("내리기가 실패하면 알린다", async () => {
     mockFetch({
       "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
