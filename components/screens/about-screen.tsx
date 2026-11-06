@@ -63,7 +63,7 @@ const WHERE_ICON: Record<Where, LucideIcon> = {
 const fmt = (n: number) => n.toLocaleString("ko-KR");
 
 /**
- * 서비스 소개(포트폴리오) 페이지: 한눈에 보는 숫자, 실제 4컷, 직접 만든 도구(Crowfoot, nginx-manager), 전체 아키텍처(서비스·통신·데이터·인증·배포),
+ * 서비스 소개(기술 소개) 페이지: 한눈에 보는 숫자, 실제 4컷, 직접 만든 도구(Crowfoot, nginx-manager), 전체 아키텍처(서비스·통신·데이터·인증·배포),
  * 설계 결정과 대안, 생성 흐름, 캐릭터 찾기, 하드웨어와 VRAM 배분(회고), AI 모델, 성능 개선과 문제 해결,
  * 기술 스택, 용어 풀이. 로그인 없이 볼 수 있다. 값은 lib/about.ts에 모아 둔다.
  */
@@ -176,7 +176,7 @@ function Intro() {
       <div className="flex flex-col items-start gap-6">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-sm font-medium text-accent-strong">
           <Sparkles aria-hidden className="size-4" />
-          포트폴리오 · 기술 소개
+          4cut 기술 소개
         </span>
         <h2 className="text-[2rem] leading-[1.2] font-bold md:text-5xl md:leading-[1.15]">
           녹음 한 번이 <span className="text-accent">4컷 만화</span>가

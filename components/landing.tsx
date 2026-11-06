@@ -161,7 +161,7 @@ function AboutCallout() {
         </span>
         <div className="flex flex-col gap-1">
           <p className="text-sm font-semibold text-accent-strong">
-            포트폴리오 · 기술 소개
+            4cut 기술 소개
           </p>
           <p className="text-lg font-bold md:text-xl">
             이 서비스는 어떻게 만들었을까요?
