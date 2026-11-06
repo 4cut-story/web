@@ -1,5 +1,5 @@
 import { api, request } from "./api";
-import type { Concept } from "./types";
+import type { Concept, Dialect } from "./types";
 
 /** 조각 하나의 최대 크기. Ingress 요청 크기 제한(1MB)보다 작게 자른다. */
 export const PART_BYTES = 900_000;
@@ -116,15 +116,27 @@ export const CONCEPTS: { value: Concept; label: string }[] = [
   { value: "WUXIA", label: "무협" },
 ];
 
+/** 만들기 화면에서 고르는 대사 사투리. 첫 항목(없음)이 기본값이다. */
+export const DIALECTS: { value: Dialect; label: string }[] = [
+  { value: "NONE", label: "없음" },
+  { value: "GYEONGSANG", label: "경상도" },
+  { value: "JEOLLA", label: "전라도" },
+  { value: "CHUNGCHEONG", label: "충청도" },
+  { value: "GANGWON", label: "강원도" },
+  { value: "SEOUL", label: "서울" },
+];
+
 export async function startConversation(
   source: "RECORDING" | "UPLOAD",
   concept: Concept = "AUTO",
+  dialect: Dialect = "NONE",
 ): Promise<string> {
-  // AUTO는 보내지 않는다(없으면 자동). 그림체를 모르는 예전 서버와도 그대로 맞는다.
+  // AUTO·NONE은 보내지 않는다(없으면 자동·사투리 없음). 모르는 예전 서버와도 그대로 맞는다.
   const created = await api.post<{ id: string }>("/conversations", {
     source,
     consent: true,
     ...(concept === "AUTO" ? {} : { concept }),
+    ...(dialect === "NONE" ? {} : { dialect }),
   });
   return created.id;
 }

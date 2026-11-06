@@ -36,7 +36,13 @@ export type Conversation = {
   createdAt: string;
   /** 고른 그림체. 예전 서버는 주지 않는다. */
   concept?: Concept;
+  /** 고른 사투리. 예전 서버는 주지 않는다. */
+  dialect?: Dialect;
 };
+
+/** 말풍선 대사 사투리. 없거나 NONE이면 사투리로 바꾸지 않는다. */
+export type Dialect =
+  "NONE" | "GYEONGSANG" | "JEOLLA" | "CHUNGCHEONG" | "GANGWON" | "SEOUL";
 
 /** 그림체(콘셉트). 없거나 AUTO면 서버가 대화에 맞춰 고른다. */
 export type Concept =

@@ -6,12 +6,13 @@ import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { ConceptPicker } from "@/components/concept-picker";
+import { DialectPicker } from "@/components/dialect-picker";
 import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/api";
 import { clock } from "@/lib/format";
 import { SAMPLES, sampleUrl, startSample, type Sample } from "@/lib/samples";
-import type { Concept } from "@/lib/types";
+import type { Concept, Dialect } from "@/lib/types";
 
 export const RECORD = { href: "/record", label: "만들기로" };
 
@@ -19,6 +20,7 @@ export const RECORD = { href: "/record", label: "만들기로" };
 export function SamplesScreen() {
   const router = useRouter();
   const [concept, setConcept] = useState<Concept>("AUTO");
+  const [dialect, setDialect] = useState<Dialect>("NONE");
   const [sending, setSending] = useState<string>();
   const [error, setError] = useState<string>();
 
@@ -26,7 +28,7 @@ export function SamplesScreen() {
     setError(undefined);
     setSending(sample.id);
     try {
-      const id = await startSample(sample, concept);
+      const id = await startSample(sample, concept, dialect);
       router.push(`/conversations/${id}`);
     } catch (e) {
       setError(errorMessage(e));
@@ -43,6 +45,7 @@ export function SamplesScreen() {
           보세요.
         </p>
         <ConceptPicker value={concept} onChange={setConcept} />
+        <DialectPicker value={dialect} onChange={setDialect} />
         <ul className="flex flex-col gap-4">
           {SAMPLES.map((sample) => (
             <li

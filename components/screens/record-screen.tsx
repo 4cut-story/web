@@ -7,11 +7,12 @@ import { useEffect, useRef, useState } from "react";
 
 import { AppShell, HOME } from "@/components/app-shell";
 import { ConceptPicker } from "@/components/concept-picker";
+import { DialectPicker } from "@/components/dialect-picker";
 import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/api";
 import { clock } from "@/lib/format";
-import type { Concept } from "@/lib/types";
+import type { Concept, Dialect } from "@/lib/types";
 import {
   fileContentType,
   MAX_PARTS,
@@ -29,6 +30,7 @@ export function RecordScreen() {
   const router = useRouter();
   const [consent, setConsent] = useState(false);
   const [concept, setConcept] = useState<Concept>("AUTO");
+  const [dialect, setDialect] = useState<Dialect>("NONE");
   const [phase, setPhase] = useState<Phase>("ready");
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState<string>();
@@ -78,7 +80,7 @@ export function RecordScreen() {
       return;
     }
     try {
-      const id = await startConversation("RECORDING", concept);
+      const id = await startConversation("RECORDING", concept, dialect);
       const queue = new PartQueue(id, mimeType);
       const media = new MediaRecorder(stream, {
         mimeType,
@@ -117,7 +119,7 @@ export function RecordScreen() {
       return;
     }
     try {
-      const id = await startConversation("UPLOAD", concept);
+      const id = await startConversation("UPLOAD", concept, dialect);
       const queue = new PartQueue(id, type);
       queue.add(file);
       await finish(queue, id);
@@ -133,6 +135,7 @@ export function RecordScreen() {
         {phase === "ready" && (
           <>
             <ConceptPicker value={concept} onChange={setConcept} />
+            <DialectPicker value={dialect} onChange={setDialect} />
             <label className="flex items-start gap-3 text-left text-base">
               <input
                 type="checkbox"

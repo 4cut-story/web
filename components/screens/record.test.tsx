@@ -166,15 +166,21 @@ describe("녹음 파일 올리기 (FR-003)", () => {
     expect(body).toMatchObject({ source: "UPLOAD", consent: true });
     // 기본값 자동(추천)은 보내지 않는다
     expect(body).not.toHaveProperty("concept");
+    // 기본값 사투리 없음도 보내지 않는다
+    expect(body).not.toHaveProperty("dialect");
   });
 
-  it("고른 그림체를 함께 보낸다", async () => {
+  it("고른 그림체와 사투리를 함께 보낸다 (FR-005)", async () => {
     const calls = mockFetch(ROUTES);
     render(<RecordScreen />);
     const auto = screen.getByRole("radio", { name: "자동(추천)" });
     expect(auto).toHaveAttribute("aria-checked", "true");
     await userEvent.click(screen.getByRole("radio", { name: "흑백 신문 4컷" }));
     expect(auto).toHaveAttribute("aria-checked", "false");
+    const none = screen.getByRole("radio", { name: "없음" });
+    expect(none).toHaveAttribute("aria-checked", "true");
+    await userEvent.click(screen.getByRole("radio", { name: "경상도" }));
+    expect(none).toHaveAttribute("aria-checked", "false");
     await consent();
     await userEvent.upload(
       screen.getByLabelText("녹음 파일"),
@@ -186,6 +192,7 @@ describe("녹음 파일 올리기 (FR-003)", () => {
     expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({
       source: "UPLOAD",
       concept: "NEWSPAPER",
+      dialect: "GYEONGSANG",
     });
   });
 
