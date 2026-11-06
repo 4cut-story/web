@@ -75,9 +75,9 @@ export function TokensScreen() {
       <div className="flex flex-col gap-6">
         <p className="text-sm text-muted-foreground">
           자동화 도구가 로그인 쿠키 없이 대화를 올리고 4컷을 게시할 때 쓰는
-          토큰이에요. 게시에 필요한 기능만 쓸 수 있고, 삭제·댓글·탈퇴·토큰
-          관리는 할 수 없어요. 요청 머리글에{" "}
-          <code>Authorization: Bearer 토큰</code>을 넣어 보내요.
+          토큰이에요. 게시에 필요한 기능만 쓸 수 있고, 댓글·탈퇴·토큰 관리는 할
+          수 없어요. 요청 머리글에 <code>Authorization: Bearer 토큰</code>을
+          넣어 보내요.
         </p>
         <form
           className="flex flex-col gap-3"

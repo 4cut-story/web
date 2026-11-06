@@ -93,15 +93,15 @@ describe("PAT: 개인 액세스 토큰으로 쿠키 없이 게시한다", () => 
     expect(response.status).toBe(401);
   });
 
-  it("토큰 관리·삭제·댓글은 토큰으로 열리지 않는다 (403, 게이트웨이를 부르지 않음)", async () => {
+  it("토큰 관리·탈퇴·댓글은 토큰으로 열리지 않는다 (403, 게이트웨이를 부르지 않음)", async () => {
     const calls = mockFetch({});
     const tokens = await apiPost(
       withPat("/api/v1/me/tokens", { method: "POST", body: "{}" }),
       params({ path: ["me", "tokens"] }),
     );
     const remove = await apiDelete(
-      withPat(`/api/v1/posts/${ID}`, { method: "DELETE" }),
-      params({ path: ["posts", ID] }),
+      withPat("/api/v1/me", { method: "DELETE" }),
+      params({ path: ["me"] }),
     );
     const comment = await apiPost(
       withPat("/api/v1/comments", { method: "POST", body: "{}" }),
@@ -122,6 +122,10 @@ describe("PAT: 개인 액세스 토큰으로 쿠키 없이 게시한다", () => 
     expect(patAllows("POST", ["characters"])).toBe(false);
     expect(patAllows("POST", ["follows", ID])).toBe(false);
     expect(patAllows("GET", [])).toBe(false);
+    expect(patAllows("DELETE", ["posts", ID])).toBe(true);
+    expect(patAllows("DELETE", ["posts", ID, "comments"])).toBe(false);
+    expect(patAllows("DELETE", ["conversations", ID])).toBe(false);
+    expect(patAllows("POST", ["posts"])).toBe(true);
   });
 
   it("쿠키 세션이 있으면 토큰보다 세션을 쓴다", async () => {
