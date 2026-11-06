@@ -55,7 +55,21 @@ export type Concept =
   | "JOSEON"
   | "WUXIA";
 
-export type Comic = {
+/** 만화 아래 등장인물 한 명. lookId는 캐릭터 모습 그림 (캐릭터를 못 찾았으면 null). */
+export type CastMember = {
+  role: string;
+  name: string;
+  lookId: string | null;
+};
+
+/** 만화 아래에 보이는 등장인물과 만든 옵션. 예전 서버·예전 만화는 주지 않는다. */
+export type ComicExtras = {
+  cast?: CastMember[];
+  concept?: Concept | null;
+  dialect?: Dialect | null;
+};
+
+export type Comic = ComicExtras & {
   id: string;
   conversationId: string;
   title: string | null;
@@ -68,7 +82,7 @@ export type Comic = {
 
 export type Visibility = "PUBLIC" | "FOLLOWERS";
 
-export type Post = {
+export type Post = ComicExtras & {
   postId: string;
   comicId: string;
   authorId: string;
