@@ -25,6 +25,7 @@ import {
   CHARACTER_COUNT,
   CHARACTER_IMAGES,
   CHARACTER_SEARCH,
+  CHARACTER_SEARCH_NEXT,
   DECISIONS,
   DEPLOY_FLOW,
   GLOSSARY,
@@ -713,6 +714,14 @@ function CharacterSearch() {
             준비해 뒀어요.
           </p>
         </div>
+      </div>
+      <div className="flex flex-col gap-3 rounded-2xl border border-border p-5 md:p-6">
+        <p className="text-base font-semibold">향후 개선</p>
+        <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
+          {CHARACTER_SEARCH_NEXT.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
       </div>
     </Section>
   );
