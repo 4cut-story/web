@@ -259,7 +259,7 @@ export const HARDWARE: Hardware[] = [
   {
     title: "쿠버네티스 클러스터",
     specs: [
-      "학교 서버 쿠버네티스 (Rancher)",
+      "서버 쿠버네티스 클러스터 (Rancher)",
       "Argo CD ApplicationSet 자동 동기화, Kustomize",
       "NetworkPolicy로 호출 방향 고정, 외부 공개는 web 하나",
       "PostgreSQL + pgvector, MinIO(S3 API)",
