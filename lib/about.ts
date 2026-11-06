@@ -929,7 +929,7 @@ export const CHARACTER_SEARCH: Step[] = [
     icon: KeyRound,
     title: "이름이 같으면 바로",
     detail:
-      "콘티 인물 이름과 똑같은 이름의 캐릭터가 있으면 그 캐릭터를 바로 써요. 다시 그릴 때 같은 인물이 나오는 길이에요",
+      "콘티 인물 이름과 똑같은 이름의 캐릭터가 있고 성별·나이도 맞으면 그 캐릭터를 바로 써요. 다시 그릴 때 같은 인물이 나오는 길이에요. 이름만 같고 나이가 다르면(할머니에 젊은 캐릭터) 쓰지 않아요",
   },
   {
     icon: Sparkles,
@@ -947,7 +947,7 @@ export const CHARACTER_SEARCH: Step[] = [
     icon: Users,
     title: "성별·나이로 거르기",
     detail:
-      "외모 첫 마디(young woman, boy, fox…)에서 읽은 성별·나이·동물이 어긋나는 후보는 빼요",
+      "외모 첫 마디(young woman, boy, fox…)에서 읽은 성별·나이·동물이 어긋나는 후보는 빼요. 첫 마디에 나이가 없어도 흰머리·주름이 적혀 있으면 노인으로 봐요",
   },
   {
     icon: Gauge,
