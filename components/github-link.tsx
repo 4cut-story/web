@@ -1,3 +1,6 @@
+import { Sparkles } from "lucide-react";
+import Link from "next/link";
+
 import { cn } from "@/lib/utils";
 
 /** 이 서비스의 소스 코드가 있는 GitHub 조직. */
@@ -40,7 +43,7 @@ export function GitHubIconLink({ className }: { className?: string }) {
 }
 
 /**
- * 모든 화면 아래의 바닥글: 서비스 소개, GitHub 링크, 저작권, 기술 스택.
+ * 모든 화면 아래의 바닥글: 서비스 소개, 소개 페이지(/about)와 GitHub 링크, 저작권, 기술 스택.
  * 본문 폭과 상관없이 화면 끝까지 깔고, 안쪽은 상단 메뉴와 같은 폭(1152px)에 맞춘다.
  * 휴대폰은 한 줄씩 쌓고 GitHub 버튼을 꽉 채우며, 하단 탭이 있으면 className으로 아래를 띄운다.
  */
@@ -60,15 +63,24 @@ export function SiteFooter({ className }: { className?: string }) {
             </p>
             <p>녹음한 대화를 AI가 4컷 만화로 그려 주는 서비스</p>
           </div>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-muted md:w-fit"
-          >
-            <GitHubMark className="size-4" />
-            GitHub에서 소스 보기
-          </a>
+          <div className="flex w-full flex-col gap-2 md:w-fit md:flex-row">
+            <Link
+              href="/about"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 md:w-fit"
+            >
+              <Sparkles aria-hidden className="size-4" />
+              서비스 소개 · 기술 스택
+            </Link>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-muted md:w-fit"
+            >
+              <GitHubMark className="size-4" />
+              GitHub에서 소스 보기
+            </a>
+          </div>
         </div>
         <div className="flex flex-col gap-1 border-t border-border pt-4 text-xs md:flex-row md:justify-between">
           <p>© {COPYRIGHT_YEAR} 4cut story</p>

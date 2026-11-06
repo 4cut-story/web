@@ -118,6 +118,7 @@ describe("로그인 확인 (FR 로그인)", () => {
     expect(needsLogin("/comics", false)).toBe(true);
     expect(needsLogin("/me", false)).toBe(true);
     expect(needsLogin("/", false)).toBe(false);
+    expect(needsLogin("/about", false)).toBe(false);
     expect(needsLogin("/@%EB%A7%88%EB%A5%B4%EC%BD%94", false)).toBe(false);
     expect(needsLogin("/u/marco", false)).toBe(false);
     expect(needsLogin("/users/u1", false)).toBe(false);
