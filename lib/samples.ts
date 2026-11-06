@@ -1,6 +1,6 @@
 import { ApiError } from "./api";
 import { startConversation, PartQueue } from "./recording";
-import type { Concept } from "./types";
+import type { Concept, Dialect } from "./types";
 
 /**
  * 데모용 샘플 대화. 직접 쓴 가상 대본을 음성 합성(TTS)으로 읽힌 것이라 실제 사람의 녹음이 아니다.
@@ -62,6 +62,7 @@ export function sampleUrl(sample: Sample): string {
 export async function startSample(
   sample: Sample,
   concept: Concept,
+  dialect: Dialect = "NONE",
 ): Promise<string> {
   const res = await fetch(sampleUrl(sample));
   if (!res.ok) {
@@ -72,7 +73,7 @@ export async function startSample(
     );
   }
   const audio = await res.blob();
-  const id = await startConversation("UPLOAD", concept);
+  const id = await startConversation("UPLOAD", concept, dialect);
   const queue = new PartQueue(id, "audio/mpeg");
   queue.add(audio);
   await queue.finish();

@@ -46,6 +46,7 @@ describe("샘플로 만들어 보기 (데모)", () => {
     const calls = mockFetch(ROUTES);
     render(<SamplesScreen />);
     await userEvent.click(screen.getByRole("radio", { name: "무협" }));
+    await userEvent.click(screen.getByRole("radio", { name: "서울" }));
     await userEvent.click(
       screen.getAllByRole("button", { name: "이 대화로 만들기" })[1],
     );
@@ -63,6 +64,7 @@ describe("샘플로 만들어 보기 (데모)", () => {
       source: "UPLOAD",
       consent: true,
       concept: "WUXIA",
+      dialect: "SEOUL",
     });
     expect(calls[2].init?.headers).toMatchObject({
       "Content-Type": "audio/mpeg",
