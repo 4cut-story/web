@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { errorResponse, readSession } from "./bff";
-import { callGateway } from "./gateway";
+import { callAs, errorResponse, readCaller } from "./bff";
 import { isPublicId } from "./ids";
 import { writeSession } from "./session";
 
@@ -29,10 +28,10 @@ export async function proxyImage(
     return errorResponse(404, "NOT_FOUND", "찾을 수 없어요.");
   }
   // 세션이 없어도 부른다. 전체 공개 게시물이 아니면 게이트웨이·content-service가 401·404로 답한다.
-  const session = readSession(request);
+  const caller = readCaller(request);
   const size =
     request.nextUrl.searchParams.get("size") === "thumb" ? "thumb" : "full";
-  const result = await callGateway(source(id, size), {}, session);
+  const result = await callAs(caller, source(id, size));
   let response: NextResponse;
   if (!result.response.ok) {
     response = new NextResponse(null, { status: result.response.status });

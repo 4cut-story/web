@@ -1,7 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { errorResponse, readSession, unauthorized } from "./bff";
-import { callGateway } from "./gateway";
+import {
+  callAs,
+  errorResponse,
+  isSignedIn,
+  readCaller,
+  unauthorized,
+} from "./bff";
 import { isPublicId } from "./ids";
 import { writeSession } from "./session";
 
@@ -21,8 +26,8 @@ export async function uploadChunk(
   if (!isPublicId(id) || !Number.isInteger(position) || position < 0) {
     return errorResponse(404, "NOT_FOUND", "찾을 수 없어요.");
   }
-  const session = readSession(request);
-  if (!session) {
+  const caller = readCaller(request);
+  if (!isSignedIn(caller)) {
     return unauthorized();
   }
   const contentType = request.headers.get("content-type") ?? "audio/webm";
@@ -34,15 +39,11 @@ export async function uploadChunk(
       "녹음 조각 크기가 맞지 않아요.",
     );
   }
-  const result = await callGateway(
-    `/api/v1/conversations/${id}/chunks`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index: position, contentType }),
-    },
-    session,
-  );
+  const result = await callAs(caller, `/api/v1/conversations/${id}/chunks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ index: position, contentType }),
+  });
   let response: NextResponse;
   if (!result.response.ok) {
     response = new NextResponse(await result.response.arrayBuffer(), {

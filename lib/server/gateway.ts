@@ -1,4 +1,5 @@
 import { gatewayUrl } from "./config";
+import { patAccessToken } from "./pat";
 import { fromTokens, type Session, type TokenPair } from "./session";
 
 export type GatewayResult = {
@@ -70,5 +71,43 @@ export async function callGateway(
   return {
     response: await send(path, init, renewed.accessToken),
     session: renewed,
+  };
+}
+
+function rejected(status: number, code: string, message: string): Response {
+  return Response.json({ error: { code, message } }, { status });
+}
+
+/**
+ * 개인 액세스 토큰으로 게이트웨이를 부른다. Access Token이 만료돼 401이 오면 한 번 다시 바꿔서 부른다.
+ * 세션 쿠키는 만들지 않는다.
+ */
+export async function callGatewayWithPat(
+  path: string,
+  init: CallInit,
+  token: string,
+): Promise<GatewayResult> {
+  const access = await patAccessToken(token);
+  if (!access) {
+    return {
+      response: rejected(401, "UNAUTHORIZED", "토큰이 없거나 만료·폐기됐어요."),
+    };
+  }
+  const response = await send(path, init, access);
+  if (response.status !== 401) {
+    return { response };
+  }
+  const renewed = await patAccessToken(token, true);
+  return { response: renewed ? await send(path, init, renewed) : response };
+}
+
+/** 토큰으로는 열지 않는 경로. */
+export function patForbidden(): GatewayResult {
+  return {
+    response: rejected(
+      403,
+      "FORBIDDEN",
+      "이 토큰으로는 게시에 필요한 기능만 쓸 수 있어요.",
+    ),
   };
 }
