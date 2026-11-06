@@ -24,6 +24,31 @@ afterEach(() => {
 });
 
 describe("서비스 소개 페이지", () => {
+  it("직접 만든 Crowfoot과 nginx-manager를 소개하고 사이트와 GitHub로 이어 준다", () => {
+    render(<AboutScreen />);
+    const tools = screen.getByRole("region", {
+      name: "직접 만든 도구로 설계하고 연결했어요",
+    });
+    expect(within(tools).getAllByText("직접 만듦")).toHaveLength(2);
+    expect(
+      within(tools).getByRole("link", { name: "Crowfoot 사이트 열기" }),
+    ).toHaveAttribute("href", "https://crowfoot.java21.net");
+    expect(
+      within(tools).getByRole("link", { name: "Crowfoot GitHub 열기" }),
+    ).toHaveAttribute("href", "https://github.com/crowfoot-erd");
+    expect(
+      within(tools).getByRole("link", { name: "nginx-manager GitHub 열기" }),
+    ).toHaveAttribute("href", "https://github.com/nginx-manager");
+    expect(
+      within(tools).getByText(/표 14개, 요구사항 16개/),
+    ).toBeInTheDocument();
+    expect(
+      within(tools).getByText(
+        "이 서비스의 도메인 연결을 nginx-manager로 했어요",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("아키텍처부터 용어 풀이까지 구역을 차례로 보여 준다", () => {
     render(<AboutScreen />);
     expect(
@@ -87,7 +112,10 @@ describe("서비스 소개 페이지", () => {
     const { container } = render(<AboutScreen />);
     const text = container.textContent ?? "";
     expect(text).not.toMatch(/\b\d{1,3}(\.\d{1,3}){3}\b/);
-    expect(text).not.toMatch(/java21\.net/);
+    // 공개 사이트인 Crowfoot 주소만 보여 주고, 다른 내부 호스트 이름은 싣지 않는다.
+    expect(text.replaceAll("crowfoot.java21.net", "")).not.toMatch(
+      /java21\.net/,
+    );
     expect(text).not.toMatch(/학교/);
     expect(text).not.toMatch(/추정/);
   });

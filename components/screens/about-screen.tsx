@@ -4,6 +4,8 @@ import {
   Cloud,
   Cpu,
   Database,
+  ExternalLink,
+  Hammer,
   Gauge,
   Lightbulb,
   type LucideIcon,
@@ -31,6 +33,8 @@ import {
   LLM_FALLBACK,
   type Model,
   MODELS,
+  MY_TOOLS,
+  type MyTool,
   PIPELINE,
   SERVICES,
   STACK,
@@ -58,7 +62,7 @@ const WHERE_ICON: Record<Where, LucideIcon> = {
 const fmt = (n: number) => n.toLocaleString("ko-KR");
 
 /**
- * 서비스 소개(포트폴리오) 페이지: 한눈에 보는 숫자, 실제 4컷, 전체 아키텍처(서비스·통신·데이터·인증·배포),
+ * 서비스 소개(포트폴리오) 페이지: 한눈에 보는 숫자, 실제 4컷, 직접 만든 도구(Crowfoot, nginx-manager), 전체 아키텍처(서비스·통신·데이터·인증·배포),
  * 설계 결정과 대안, 생성 흐름, 캐릭터 찾기, 하드웨어와 VRAM 배분(회고), AI 모델, 성능 개선과 문제 해결,
  * 기술 스택, 용어 풀이. 로그인 없이 볼 수 있다. 값은 lib/about.ts에 모아 둔다.
  */
@@ -75,6 +79,7 @@ export function AboutScreen() {
         >
           <AboutExamples />
         </Section>
+        <MyTools />
         <Architecture />
         <Decisions />
         <Pipeline />
@@ -198,6 +203,89 @@ function Intro() {
         ))}
       </dl>
     </div>
+  );
+}
+
+function ToolCard({ tool }: { tool: MyTool }) {
+  return (
+    <article className="flex flex-col gap-5 rounded-2xl border-2 border-foreground bg-background p-6 shadow-[6px_6px_0_0_var(--color-foreground)] md:p-8">
+      <div className="flex items-start gap-4">
+        <IconTile icon={tool.icon} tone="dark" className="size-12" />
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-xl font-bold md:text-2xl">{tool.name}</h3>
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent-strong">
+              <Hammer aria-hidden className="size-3.5" />
+              직접 만듦
+            </span>
+          </div>
+          <p className="text-sm font-medium text-muted-foreground">
+            {tool.tagline}
+          </p>
+        </div>
+      </div>
+      <p className="text-base leading-relaxed">{tool.what}</p>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-semibold">할 수 있는 일</p>
+        <Bullets items={tool.features} />
+      </div>
+      <div className="flex flex-col gap-2 rounded-xl bg-accent/10 p-4">
+        <p className="text-sm font-semibold text-accent-strong">
+          이 프로젝트에서는
+        </p>
+        <Bullets items={tool.usedFor} />
+      </div>
+      <ul aria-label={`${tool.name} 기술`} className="flex flex-wrap gap-1.5">
+        {tool.tech.map((t) => (
+          <li
+            key={t}
+            className="rounded-md bg-muted px-2 py-1 text-xs font-medium"
+          >
+            {t}
+          </li>
+        ))}
+      </ul>
+      <div className="mt-auto flex flex-col gap-2 sm:flex-row">
+        {tool.links.map(({ label, href }) => (
+          <Button
+            key={href}
+            asChild
+            variant={label === "GitHub" ? "outline" : "default"}
+          >
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${tool.name} ${label === "GitHub" ? "GitHub" : "사이트"} 열기`}
+            >
+              {label === "GitHub" ? (
+                <GitHubMark className="size-4" />
+              ) : (
+                <ExternalLink aria-hidden className="size-4" />
+              )}
+              {label}
+            </a>
+          </Button>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function MyTools() {
+  return (
+    <Section
+      id="my-tools"
+      eyebrow="MADE BY ME"
+      title="직접 만든 도구로 설계하고 연결했어요"
+      description="DB 설계와 도메인 연결에는 이 서비스를 만든 개발자가 직접 만들어 공개한 오픈 소스 도구를 썼어요. 어떤 도구인지, 이 프로젝트에서 어떻게 썼는지 정리했어요."
+    >
+      <div className="grid gap-6 lg:grid-cols-2">
+        {MY_TOOLS.map((tool) => (
+          <ToolCard key={tool.name} tool={tool} />
+        ))}
+      </div>
+    </Section>
   );
 }
 

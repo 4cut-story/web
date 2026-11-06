@@ -3,6 +3,7 @@
  * - 모델·설정: conversation-service application.yml·ScenarioProperties·TranscriptCorrector·ClaudeClient·GeminiClient,
  *   model-runtime config.py·backends(whisper, ollama, sdxl), docs architecture.md
  * - 튜닝 수치: conversation-service #8·#18·#20·#21·#22·#23·#24·#25·#26·#27, model-runtime #6·#8·#10·#11
+ * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
  * 기능이 바뀌면 이 파일도 함께 고친다(web CLAUDE.md "소개 페이지").
  */
@@ -21,6 +22,7 @@ import {
   Ear,
   Gauge,
   GitBranch,
+  Globe,
   HardDrive,
   Hourglass,
   Images,
@@ -42,6 +44,7 @@ import {
   ShieldCheck,
   Sparkles,
   SpellCheck,
+  Table2,
   Timer,
   UserSearch,
   Users,
@@ -303,6 +306,21 @@ export const LLM_FALLBACK: { name: string; detail: string }[] = [
 export type Term = { term: string; meaning: string };
 
 export const GLOSSARY: Term[] = [
+  {
+    term: "ERD",
+    meaning:
+      "데이터베이스에 어떤 표(테이블)가 있고 서로 어떻게 이어지는지 그린 설계도예요.",
+  },
+  {
+    term: "DDL · 마이그레이션",
+    meaning:
+      "DDL은 표를 만들고 바꾸는 SQL 문장이에요. 마이그레이션은 그 변경을 순서대로 적어 두고 DB에 차례로 반영하는 방법이에요.",
+  },
+  {
+    term: "리버스 프록시 · HTTPS 인증서",
+    meaning:
+      "리버스 프록시는 바깥에서 들어온 요청을 먼저 받아 안쪽 서비스로 넘겨 주는 문지기예요. HTTPS 인증서는 주소가 진짜임을 보증하고 오가는 내용을 암호화해요.",
+  },
   {
     term: "파라미터",
     meaning:
@@ -569,7 +587,13 @@ export const STACK: Stack[] = [
   {
     icon: Database,
     group: "데이터",
-    items: ["PostgreSQL", "pgvector (HNSW)", "Flyway", "MinIO"],
+    items: [
+      "PostgreSQL",
+      "pgvector (HNSW)",
+      "Flyway",
+      "MinIO",
+      "Crowfoot (ERD 설계)",
+    ],
   },
   {
     icon: Rocket,
@@ -579,6 +603,7 @@ export const STACK: Stack[] = [
       "Argo CD",
       "GitHub Actions",
       "GHCR",
+      "nginx-manager (도메인·HTTPS)",
       "커버리지 80% 게이트",
     ],
   },
@@ -973,5 +998,79 @@ export const VRAM_RETRO: Retro[] = [
       "4컷 그림 약 5.6초, 모델 전환 1.2~1.4초",
       "GPU 한 장으로 받아 적기부터 그림까지 전 과정 운영",
     ],
+  },
+];
+
+export type ToolLink = { label: string; href: string };
+
+export type MyTool = {
+  icon: LucideIcon;
+  name: string;
+  tagline: string;
+  what: string;
+  features: string[];
+  usedFor: string[];
+  tech: string[];
+  links: ToolLink[];
+};
+
+/** 이 서비스를 만든 개발자가 직접 만들어 공개한 도구. 소개 페이지 위쪽에 크게 보여 준다. */
+export const MY_TOOLS: MyTool[] = [
+  {
+    icon: Table2,
+    name: "Crowfoot",
+    tagline: "무료 온라인 ERD 툴: 설계부터 DB 생성까지",
+    what: "설치 없이 브라우저에서 표(테이블)와 관계를 그리는 ERD 도구예요. 그림만 그리고 끝나지 않고, 그린 설계를 실제 데이터베이스까지 만들어 줘요.",
+    features: [
+      "여러 사람이 같은 ERD를 실시간으로 함께 고쳐요",
+      "이미 있는 DB를 연결하면 ERD를 자동으로 그려 줘요",
+      "설계에서 DDL과 마이그레이션 SQL을 만들고 DB에 바로 반영해요",
+      "무료 MySQL·PostgreSQL 데이터베이스를 바로 발급해요",
+      "요구사항을 등록하고 표마다 근거가 된 요구사항을 이어 둬요",
+      "pgvector 벡터 컬럼과 HNSW 색인까지 설계할 수 있어요",
+      "MCP 서버가 있어 AI 에이전트가 요구사항과 ERD를 읽고 고칠 수 있어요",
+    ],
+    usedFor: [
+      "이 서비스의 PostgreSQL 설계를 Crowfoot 문서 하나로 했어요: 표 14개, 요구사항 16개",
+      "AI 코딩 에이전트가 Crowfoot MCP로 요구사항을 등록하고 ERD를 고쳤어요",
+      "완성한 설계를 DDL로 뽑아 서비스마다 Flyway 첫 마이그레이션(V1)으로 나눴어요",
+      "개발용 DB는 Crowfoot이 발급한 PostgreSQL을 썼어요",
+    ],
+    tech: [
+      "React · React Flow",
+      "Spring Cloud Gateway",
+      "Spring Boot 마이크로서비스",
+      "WebSocket(STOMP) 협업",
+      "Spring AI MCP",
+      "Apache-2.0",
+    ],
+    links: [
+      { label: "crowfoot.java21.net", href: "https://crowfoot.java21.net" },
+      { label: "GitHub", href: "https://github.com/crowfoot-erd" },
+    ],
+  },
+  {
+    icon: Globe,
+    name: "nginx-manager",
+    tagline: "nginx와 관리 화면을 컨테이너 두 개로 띄우는 웹 nginx 관리 도구",
+    what: "nginx 설정 파일을 손으로 고치지 않고 화면의 폼으로 사이트를 만들어요. 도메인을 적고 HTTPS를 고르면 인증서 발급부터 갱신까지 알아서 해요.",
+    features: [
+      "Let's Encrypt 인증서를 자동으로 받고 만료 전에 갱신해요. 실패하면 메일·웹훅으로 알려요",
+      "부하 분산, 웹소켓, 타임아웃, 리디렉션, HTTP/3를 폼에서 정하고 만들어질 설정을 옆에서 바로 봐요",
+      "설정 검사·다시 읽기·헬스 체크 중 하나라도 실패하면 직전 설정으로 자동 롤백해요",
+      "사이트별 접속·오류 로그, 점검 모드, 2단계 인증, 권한과 감사 기록",
+      "명령 한 줄로 설치하고 4개 언어와 다크 모드를 지원해요",
+    ],
+    usedFor: [
+      "이 서비스의 도메인 연결을 nginx-manager로 했어요",
+      "HTTPS 인증서 발급과 갱신을 nginx-manager가 맡아요",
+    ],
+    tech: [
+      "Spring Boot 관리 화면",
+      "Go 에이전트",
+      "nginx 1.31",
+      "Docker 컨테이너 2개",
+    ],
+    links: [{ label: "GitHub", href: "https://github.com/nginx-manager" }],
   },
 ];
