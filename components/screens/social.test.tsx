@@ -299,7 +299,9 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     );
     expect(
       await screen.findByText(
-        "2026년 3월 가입 · 만든 4컷 3개 · 게시 안 함 3개",
+        (_, el) =>
+          el?.tagName === "P" &&
+          el.textContent === "2026년 3월 가입 · 만든 4컷 3개 · 게시 안 함 3개",
       ),
     ).toBeInTheDocument();
     expect(screen.getByText("게시물")).toBeInTheDocument();

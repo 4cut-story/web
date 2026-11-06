@@ -2,7 +2,7 @@
 
 import { BookImage, UserCheck, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { Avatar } from "@/components/avatar";
 import { ComicCover } from "@/components/comic-cover";
@@ -29,13 +29,19 @@ function StatLine({ stats }: { stats: FollowStats }) {
     ["팔로잉", stats.following],
   ];
   return (
-    <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+    <dl className="grid grid-cols-4 gap-2 py-1 text-sm text-muted-foreground md:flex md:flex-wrap md:gap-x-4 md:gap-y-1 md:py-0">
       {items
         .filter(([, n]) => n !== undefined)
         .map(([label, n]) => (
-          <div key={label} className="flex gap-1">
-            <dt>{label}</dt>
-            <dd className="font-semibold text-foreground tabular-nums">{n}</dd>
+          // 휴대폰은 숫자를 위에 크게, PC는 "게시물 11"처럼 한 줄로
+          <div
+            key={label}
+            className="flex flex-col-reverse md:flex-row md:items-baseline md:gap-1"
+          >
+            <dt className="text-xs md:text-sm">{label}</dt>
+            <dd className="text-base font-semibold text-foreground tabular-nums md:text-sm">
+              {n}
+            </dd>
           </div>
         ))}
     </dl>
@@ -56,12 +62,22 @@ function ProfileNote({
   }
   if (stats?.comics !== undefined) {
     const unpublished = Math.max(0, stats.comics - (stats.posts ?? 0));
-    parts.push(`만든 4컷 ${stats.comics}개 · 게시 안 함 ${unpublished}개`);
+    parts.push(`만든 4컷 ${stats.comics}개`, `게시 안 함 ${unpublished}개`);
   }
   if (parts.length === 0) {
     return null;
   }
-  return <p className="text-sm text-muted-foreground">{parts.join(" · ")}</p>;
+  // 줄이 바뀔 때 "게시 안 함 1개" 같은 묶음이 쪼개지지 않게 묶음마다 줄바꿈을 막는다
+  return (
+    <p className="text-sm text-muted-foreground">
+      {parts.map((part, i) => (
+        <Fragment key={part}>
+          {i > 0 && " · "}
+          <span className="whitespace-nowrap">{part}</span>
+        </Fragment>
+      ))}
+    </p>
+  );
 }
 
 /**

@@ -43,7 +43,7 @@ export function PostScreen({ id }: { id: string }) {
       title="게시물"
       back={anonymous ? HOME : undefined}
       tab={anonymous ? undefined : "feed"}
-      width="medium"
+      width="wide"
       actions={
         anonymous ? (
           <LoginButton />
@@ -79,7 +79,7 @@ export function PostScreen({ id }: { id: string }) {
       {error && <ErrorText message={error} />}
       {post && (
         // PC: 세로로 긴 4컷은 왼쪽, 댓글은 오른쪽에 붙여 둔다
-        <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] md:items-start md:gap-10">
+        <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] md:items-start md:gap-10 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] lg:gap-12">
           <PostCard post={post} author={users[post.authorId]} />
           <Comments
             postId={post.postId}
