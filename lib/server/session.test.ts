@@ -20,9 +20,10 @@ describe("세션 쿠키", () => {
 
   it("위조되거나 비어 있으면 null", () => {
     const sealed = sealSession({ accessToken: "a", refreshToken: "r" });
-    // 끝 두 글자를 늘 다른 값으로 바꾼다 (원래 "xx"였으면 "yy")
-    const tail = sealed.endsWith("xx") ? "yy" : "xx";
-    expect(openSession(sealed.slice(0, -2) + tail)).toBeNull();
+    // 마지막 바이트를 뒤집는다. base64url 끝 글자는 쓰지 않는 비트가 있어 글자를 바꿔도 같은 바이트로 풀릴 수 있다
+    const raw = Buffer.from(sealed, "base64url");
+    raw[raw.length - 1] ^= 0xff;
+    expect(openSession(raw.toString("base64url"))).toBeNull();
     expect(openSession(undefined)).toBeNull();
     expect(openSession("")).toBeNull();
   });
