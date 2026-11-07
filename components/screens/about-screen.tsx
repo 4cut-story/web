@@ -184,7 +184,7 @@ function Intro() {
         </h2>
         <p className="max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
           4cut story는 친구와 나눈 대화를 받아 적고, 가장 재미있는 순간을 골라
-          네 컷으로 그려 주는 서비스예요. 마이크로서비스 다섯 개가 쿠버네티스
+          4~10컷으로 그려 주는 서비스예요. 마이크로서비스 다섯 개가 쿠버네티스
           위에서 전체 과정을 관리하고, RTX 5060 Ti 16GB 한 장짜리 GPU PC가 음성
           인식과 그림을 맡아요. 어떤 구조로 만들었는지, 왜 그렇게 정했는지,
           성능을 어떻게 끌어올렸는지 정리했어요.
@@ -626,7 +626,7 @@ function CharacterSearch() {
       id="character-search"
       eyebrow="CHARACTER SEARCH"
       title="캐릭터 찾기"
-      description={`대화 속 사람에게 어울리는 캐릭터를 ${fmt(CHARACTER_COUNT)}명 중에서 골라 네 컷 내내 같은 얼굴로 그려요. 이름이 같으면 바로 쓰고, 아니면 외모가 비슷한 캐릭터를 벡터 검색으로 찾아요.`}
+      description={`대화 속 사람에게 어울리는 캐릭터를 ${fmt(CHARACTER_COUNT)}명 중에서 골라 모든 컷에서 같은 얼굴로 그려요. 이름이 같으면 바로 쓰고, 아니면 외모가 비슷한 캐릭터를 벡터 검색으로 찾아요.`}
     >
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="flex flex-col gap-2 rounded-2xl bg-accent/10 p-5 md:p-6">
