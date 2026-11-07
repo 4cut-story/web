@@ -133,7 +133,7 @@ export const PIPELINE: PipelineStep[] = [
     title: "컷 그리기",
     description:
       '컷마다 그림을 그리면서 찾은 캐릭터의 참조 그림을 넘겨, 얼굴·머리 모양·옷까지 모든 컷에서 같은 사람처럼 보이게 해요. 두 명이 나오는 컷은 인물마다 왼쪽·오른쪽 자리를 정해 두고 모든 컷에서 같은 쪽에 세우고, 그림 설명에 "a young woman and an old man"처럼 왼쪽부터 나이·성별로 세어 적어요. 흑백 신문 테마는 옅은 색으로 그린 뒤 합칠 때 흑백으로 바꿔요.',
-    models: ["SDXL 1.0", "SDXL-Lightning", "IP-Adapter Plus"],
+    models: ["DreamShaper XL Lightning", "IP-Adapter Plus"],
     where: "GPU PC",
   },
   {
@@ -255,15 +255,16 @@ export const MODELS: Model[] = [
   },
   {
     icon: Palette,
-    name: "Stable Diffusion XL 1.0",
-    what: "글로 설명하면 그림을 그려 주는 공개 이미지 생성 모델",
+    name: "DreamShaper XL Lightning",
+    what: "공개 이미지 생성 모델 SDXL을 일러스트에 맞게 더 학습하고, 적은 단계로 그리도록(Lightning) 합친 모델",
     role: "컷 그림 그리기",
     size: "약 35억 파라미터, 16비트 정밀도",
     where: "GPU PC",
     io: "영어 장면 설명 + 그림체 문구 → 768×768 그림",
-    why: "16GB GPU 한 장에서 돌릴 수 있고, LoRA·IP-Adapter 같은 추가 모듈을 붙일 수 있어 골랐어요. 테마 7가지 그림체는 문구만 바꿔 그려요. 메모리가 모자랄 때만 FLUX.1-schnell 양자화 모델을 비교하기로 했어요.",
+    why: "처음엔 SDXL 1.0 기본 모델에 Lightning LoRA를 얹어 썼는데, 흑백 스케치처럼 거칠고 작은 물건과 얼굴이 뭉개졌어요. 같은 SDXL 계열이라 IP-Adapter를 그대로 쓸 수 있는 DreamShaper XL Lightning으로 바꾸자 깨끗한 컬러 만화 그림이 되고 시험 묶음 점수가 81.4점에서 83.7점으로 올랐어요. 테마 7가지 그림체는 문구만 바꿔 그려요.",
     settings: [
-      "768px로 그려 16GB 안에 다 들어가게, CPU로 옮기는 기능은 꺼서 빠르게",
+      "6단계, 프롬프트 강조값(guidance) 2",
+      "768px로 그려 16GB 안에 다 들어가게, CPU로 옮기는 기능은 꺼서 빠르게 (최고 약 15.3GB)",
       "장면 설명은 짧은 영어로 쓰고, 77토큰을 넘으면 쉼표 뒤에서 75토큰씩 나눠 읽혀 뒤쪽 장면도 그림에 들어가요",
       "그림체 문구 바로 뒤에 품질 문구(high quality illustration, crisp clean lineart, well-drawn faces)를 붙여요",
       "내릴 때 지우지 않고 PC 메모리에 보관해 다음엔 1.2~1.4초 만에 다시 올림",
@@ -271,16 +272,16 @@ export const MODELS: Model[] = [
   },
   {
     icon: Zap,
-    name: "SDXL-Lightning 8 step LoRA",
-    what: "LoRA는 큰 모델에 덧붙이는 작은 추가 학습 파일이에요. Lightning은 그리는 단계 수를 크게 줄이도록 학습된 LoRA예요",
+    name: "Lightning (적은 단계로 그리기)",
+    what: "그리는 단계 수를 크게 줄이도록 학습하는 방법이에요. 지금은 DreamShaper XL에 합쳐진 것을 쓰고, 예전엔 SDXL 위에 LoRA로 얹어 썼어요",
     role: "적은 단계로 빠르게 그리기",
-    size: "작은 추가 파일 (SDXL 위에 얹어 씀)",
+    size: "그림 모델에 합쳐져 있어 따로 받지 않음",
     where: "GPU PC",
-    io: "SDXL과 같음 (그리는 단계만 30 → 8)",
-    why: "이미지 모델은 잡음에서 시작해 여러 번 다듬으며 그림을 만드는데, 기본은 30번이에요. Lightning을 얹으면 8번이면 돼서 약 7배 빨라요.",
+    io: "그림 모델과 같음 (그리는 단계만 30 → 6)",
+    why: "이미지 모델은 잡음에서 시작해 여러 번 다듬으며 그림을 만드는데, 기본은 30번이에요. Lightning이면 6~8번이면 돼서 몇 배 빨라요.",
     settings: [
-      "8단계, 프롬프트 강조값(guidance) 0",
-      "guidance 0이라 '그리지 말 것' 문구(네거티브 프롬프트)는 쓰지 않음",
+      "6단계, 단계 간격은 Lightning이 배운 방식(trailing)에 맞춤",
+      "guidance 2라 참조 인물 특징도 '빈 특징'과 한 쌍으로 넘겨요",
     ],
   },
   {
@@ -379,7 +380,7 @@ export const GLOSSARY: Term[] = [
   {
     term: "step (단계)",
     meaning:
-      "이미지 모델이 잡음에서 그림을 다듬는 횟수예요. 적을수록 빠르고, Lightning은 8번이면 충분해요.",
+      "이미지 모델이 잡음에서 그림을 다듬는 횟수예요. 적을수록 빠르고, Lightning 모델은 6번이면 충분해요.",
   },
   {
     term: "시드 (seed)",
@@ -408,7 +409,11 @@ export const VRAM_BUNDLES: Bundle[] = [
     detail: "WhisperX large-v3 + 시각 정렬 모델 + pyannote",
   },
   { name: "LLM 묶음", gb: 7, detail: "Qwen3 8B 4비트 (대체 경로일 때만)" },
-  { name: "그림 묶음", gb: 11, detail: "SDXL + Lightning + IP-Adapter" },
+  {
+    name: "그림 묶음",
+    gb: 11,
+    detail: "DreamShaper XL Lightning + IP-Adapter",
+  },
 ];
 
 export const VRAM_TOTAL_GB = 16;
@@ -620,6 +625,18 @@ export const TUNINGS: Tuning[] = [
     fix: '모든 그림체 문구 바로 뒤에 "high quality illustration, crisp clean lineart, well-drawn faces"를 붙였어요.',
     before: "화질 1.35점 (2점 만점)",
     after: "화질 1.55점",
+  },
+  {
+    icon: Palette,
+    kind: "품질",
+    title: "그림 모델 바꾸기",
+    problem:
+      "핵심 물건(망원경, 양말, 팻말)이 그림에 나오지 않고, 그림이 흑백 스케치처럼 거칠었어요.",
+    cause:
+      "프롬프트에 물건을 정확히 넣어도 SDXL 기본 모델은 작은 물건과 얼굴을 잘 그리지 못했어요. 그림 쪽에서 인물 수를 맞추려던 다시 그리기·뼈대 그림은 오히려 점수를 낮췄어요.",
+    fix: "같은 SDXL 계열이라 참조 인물 모듈을 그대로 쓸 수 있는 일러스트용 모델 DreamShaper XL Lightning으로 바꿨어요.",
+    before: "시험 묶음 81.4점",
+    after: "83.7점, 컬러 만화 그림",
   },
   {
     icon: MessageSquareText,
@@ -1238,7 +1255,7 @@ export const VRAM_RETRO: Retro[] = [
   {
     label: "내려놓은 것",
     items: [
-      "1024px 대신 768px, 30단계 대신 8단계",
+      "1024px 대신 768px, 30단계 대신 6단계",
       "LLM은 14B 대신 8B",
       "여러 작업 동시 처리 대신 한 번에 한 작업",
     ],
