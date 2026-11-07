@@ -58,6 +58,11 @@ afterEach(() => {
   });
 });
 
+/** 화면을 열 때 묻는 GPU 상태 확인을 뺀 요청들. */
+function sent(calls: { method: string; url: string; init?: RequestInit }[]) {
+  return calls.filter((c) => !c.url.includes("gpu-status"));
+}
+
 async function consent() {
   await userEvent.click(screen.getByLabelText(/동의를 받았어요/));
 }
@@ -89,7 +94,7 @@ describe("녹음 (FR-001, FR-002)", () => {
       expect(router.push).toHaveBeenCalledWith("/conversations/v1"),
     );
     expect(track.stop).toHaveBeenCalled();
-    expect(calls.map((c) => `${c.method} ${c.url}`)).toEqual([
+    expect(sent(calls).map((c) => `${c.method} ${c.url}`)).toEqual([
       "POST /api/v1/conversations",
       "PUT /api/uploads/v1/0",
       "POST /api/v1/conversations/v1/finish",
@@ -162,7 +167,7 @@ describe("녹음 파일 올리기 (FR-003)", () => {
       expect(router.push).toHaveBeenCalledWith("/conversations/v1"),
     );
     expect(calls.filter((c) => c.method === "PUT")).toHaveLength(2);
-    const body = JSON.parse(String(calls[0].init?.body));
+    const body = JSON.parse(String(sent(calls)[0].init?.body));
     expect(body).toMatchObject({ source: "UPLOAD", consent: true });
     // 기본값 자동(추천)은 보내지 않는다
     expect(body).not.toHaveProperty("concept");
@@ -189,7 +194,7 @@ describe("녹음 파일 올리기 (FR-003)", () => {
     await vi.waitFor(() =>
       expect(router.push).toHaveBeenCalledWith("/conversations/v1"),
     );
-    expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({
+    expect(JSON.parse(String(sent(calls)[0].init?.body))).toMatchObject({
       source: "UPLOAD",
       concept: "NEWSPAPER",
       dialect: "GYEONGSANG",
@@ -213,7 +218,7 @@ describe("녹음 파일 올리기 (FR-003)", () => {
     Object.defineProperty(big, "size", { value: 60_000_000 });
     await userEvent.upload(input, big);
     expect(await screen.findByText(/파일이 너무 커요/)).toBeInTheDocument();
-    expect(calls).toHaveLength(0);
+    expect(sent(calls)).toHaveLength(0);
     await userEvent.click(
       screen.getByRole("button", { name: "녹음 파일 올리기" }),
     );
@@ -242,5 +247,26 @@ describe("샘플로 만들어 보기 (데모)", () => {
     expect(
       screen.getByRole("link", { name: "녹음 없이 샘플로 만들어 보기" }),
     ).toHaveAttribute("href", "/record/samples");
+  });
+});
+
+describe("GPU PC 상태 (FR-014)", () => {
+  it("GPU PC가 꺼져 있으면 녹음 전에 알린다", async () => {
+    mockFetch({
+      "GET /api/v1/conversations/gpu-status": json({ online: false }),
+    });
+    render(<RecordScreen />);
+    expect(
+      await screen.findByText(/그림 그리는 컴퓨터가 쉬고 있어요/),
+    ).toBeInTheDocument();
+  });
+
+  it("켜져 있거나 확인하지 못하면 알리지 않는다", async () => {
+    const calls = mockFetch({
+      "GET /api/v1/conversations/gpu-status": json({ online: true }),
+    });
+    render(<RecordScreen />);
+    await vi.waitFor(() => expect(calls).toHaveLength(1));
+    expect(screen.queryByText(/쉬고 있어요/)).not.toBeInTheDocument();
   });
 });
