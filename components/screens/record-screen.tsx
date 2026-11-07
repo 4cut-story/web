@@ -10,7 +10,7 @@ import { ConceptPicker } from "@/components/concept-picker";
 import { DialectPicker } from "@/components/dialect-picker";
 import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
-import { errorMessage } from "@/lib/api";
+import { api, errorMessage } from "@/lib/api";
 import { clock } from "@/lib/format";
 import type { Concept, Dialect } from "@/lib/types";
 import {
@@ -36,6 +36,15 @@ export function RecordScreen() {
   const [error, setError] = useState<string>();
   const recorder = useRef<MediaRecorder | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const [gpuOffline, setGpuOffline] = useState(false);
+
+  // GPU PC가 꺼져 있으면 녹음 전에 알린다. 확인하지 못하면 아무것도 보이지 않는다
+  useEffect(() => {
+    api
+      .get<{ online: boolean }>("/conversations/gpu-status")
+      .then((s) => setGpuOffline(s.online === false))
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (phase !== "recording") {
@@ -134,6 +143,12 @@ export function RecordScreen() {
       <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
         {phase === "ready" && (
           <>
+            {gpuOffline && (
+              <p className="text-sm text-muted-foreground">
+                지금은 그림 그리는 컴퓨터가 쉬고 있어요. 녹음은 받아 두고,
+                컴퓨터가 켜지면 이어서 만들어요.
+              </p>
+            )}
             <ConceptPicker value={concept} onChange={setConcept} />
             <DialectPicker value={dialect} onChange={setDialect} />
             <label className="flex items-start gap-3 text-left text-base">
