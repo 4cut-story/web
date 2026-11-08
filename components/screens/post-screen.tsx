@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { AppShell, HOME, LoginButton } from "@/components/app-shell";
 import { ComicCast } from "@/components/comic-cast";
+import { ComicProduction } from "@/components/comic-production";
 import { Comments } from "@/components/comments";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
@@ -88,6 +89,7 @@ export function PostScreen({ id }: { id: string }) {
               concept={post.concept}
               dialect={post.dialect}
             />
+            <ComicProduction production={post.production} />
           </div>
           <Comments
             postId={post.postId}

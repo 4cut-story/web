@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { ComicCast } from "@/components/comic-cast";
+import { ComicProduction } from "@/components/comic-production";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
 import { PublishSheet } from "@/components/publish-sheet";
@@ -67,6 +68,7 @@ export function ComicScreen({ id }: { id: string }) {
             concept={comic.concept}
             dialect={comic.dialect}
           />
+          <ComicProduction production={comic.production} />
           {error && <ErrorText message={error} />}
           {/* 만화가 세로로 길어 버튼을 하단 탭 바로 위에 붙여 둔다 */}
           <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] grid grid-cols-2 gap-2 bg-background py-3 md:bottom-0">

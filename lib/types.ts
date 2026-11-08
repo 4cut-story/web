@@ -62,11 +62,73 @@ export type CastMember = {
   lookId: string | null;
 };
 
+/**
+ * 작업 하나를 처리한 쪽이 보낸 모델·조건. 처리한 쪽마다 키가 다르다: 전사 whisper·diarization, 외부 LLM model, 로컬 LLM
+ * ollama, 그림 flux·sdxl·sd35·qwen 중 하나와 quantization·steps·guidance·lora, 워커 gpu·loadMs·panels.
+ */
+export type ProductionJobInfo = {
+  [key: string]: unknown;
+  whisper?: string;
+  diarization?: boolean;
+  model?: string;
+  ollama?: string;
+  flux?: string;
+  sdxl?: string;
+  sd35?: string;
+  qwen?: string;
+  quantization?: string | null;
+  steps?: number;
+  guidance?: number;
+  lora?: string | null;
+  fellBackToSdxl?: boolean;
+  gpu?: string;
+  loadMs?: number;
+  panels?: {
+    name?: string;
+    ms: number;
+    seed?: number;
+    width?: number;
+    height?: number;
+  }[];
+};
+
+/** 단계의 GPU 작업 하나. runMs는 실행 시간, waitMs는 대기열에서 기다린 시간. */
+export type ProductionJob = {
+  type: "TRANSCRIBE" | "LLM" | "IMAGE";
+  worker?: string;
+  runMs: number;
+  waitMs?: number;
+  info?: ProductionJobInfo;
+};
+
+/** 단계 하나. ms는 시작부터 끝까지(대기 포함), request는 단계가 작업을 넣을 때 남긴 정보(LLM 모델·시드, 그림 시드·크기). */
+export type ProductionStep = {
+  step: string;
+  ms: number;
+  attempts: number;
+  request?: {
+    [key: string]: unknown;
+    model?: string;
+    seed?: number;
+    size?: number;
+  };
+  jobs: ProductionJob[];
+};
+
+/** 만화를 만든 과정 기록 (conversation-service Production, version 1). 예전 만화는 null. */
+export type Production = {
+  version: number;
+  totalMs?: number;
+  steps: ProductionStep[];
+  preTranscribe?: { parts: number; runMs: number };
+};
+
 /** 만화 아래에 보이는 등장인물과 만든 옵션. 예전 서버·예전 만화는 주지 않는다. */
 export type ComicExtras = {
   cast?: CastMember[];
   concept?: Concept | null;
   dialect?: Dialect | null;
+  production?: Production | null;
 };
 
 export type Comic = ComicExtras & {

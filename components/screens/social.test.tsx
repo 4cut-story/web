@@ -170,6 +170,71 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
     expect(within(cast).getByText("경상도")).toBeInTheDocument();
   });
 
+  it("등장인물 아래에 제작 정보(전체 시간, 그림 모델, 단계별 시간)를 보여 준다 (FR-006)", async () => {
+    mockFetch({
+      "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
+      "GET /api/v1/posts/p1": json(
+        post({
+          cast: [{ role: "할머니", name: "하늘", lookId: null }],
+          production: {
+            version: 1,
+            totalMs: 95_000,
+            steps: [
+              {
+                step: "DRAW",
+                ms: 41_000,
+                attempts: 1,
+                jobs: [
+                  {
+                    type: "IMAGE",
+                    runMs: 40_000,
+                    info: {
+                      flux: "black-forest-labs/FLUX.1-schnell",
+                      quantization: "nf4",
+                      steps: 4,
+                      panels: [{ ms: 8000 }],
+                    },
+                  },
+                ],
+              },
+            ],
+            preTranscribe: { parts: 3, runMs: 6000 },
+          },
+        }),
+      ),
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users": json({ items: [OTHER, ME] }),
+    });
+    render(<PostScreen id="p1" />);
+    const info = await screen.findByRole("region", { name: "제작 정보" });
+    const cast = screen.getByRole("region", { name: "등장인물" });
+    expect(
+      cast.compareDocumentPosition(info) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(within(info).getByText("1분 35초")).toBeInTheDocument();
+    expect(within(info).getAllByText("FLUX.1-schnell NF4 4bit")).toHaveLength(
+      2,
+    );
+    expect(within(info).getByText("컷 그리기")).toBeInTheDocument();
+    expect(within(info).getByText("41초")).toBeInTheDocument();
+    expect(within(info).getByText(/컷 1장, 컷당 평균 8초/)).toBeInTheDocument();
+    expect(
+      within(info).getByText("녹음 중 미리 받아쓰기 3번"),
+    ).toBeInTheDocument();
+  });
+
+  it("예전 게시물은 제작 정보가 없다", async () => {
+    mockFetch({
+      "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
+      "GET /api/v1/posts/p1": json(post({ production: null })),
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users": json({ items: [OTHER, ME] }),
+    });
+    render(<PostScreen id="p1" />);
+    expect(await screen.findByText("오늘 있었던 일")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "제작 정보" })).toBeNull();
+  });
+
   it("예전 게시물은 등장인물 소개가 없다", async () => {
     mockFetch({
       "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
