@@ -88,6 +88,7 @@ export function PostScreen({ id }: { id: string }) {
               cast={post.cast}
               concept={post.concept}
               dialect={post.dialect}
+              source={{ kind: "posts", id: post.postId }}
             />
             <ComicProduction production={post.production} />
           </div>

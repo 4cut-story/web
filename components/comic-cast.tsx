@@ -1,4 +1,5 @@
 import { CharacterImage } from "@/components/character-image";
+import { castImageUrl } from "@/lib/api";
 import { CONCEPTS, DIALECTS } from "@/lib/recording";
 import type { CastMember, Concept, Dialect } from "@/lib/types";
 
@@ -13,16 +14,19 @@ function dialectLabel(dialect: Dialect | null | undefined) {
 
 /**
  * 만화 아래 등장인물 소개와 만화를 만든 옵션. 만화 안에서는 호칭(할머니, 손녀…)으로 부르고, 여기서 캐릭터 그림과 이름을 함께
- * 보여 준다. 예전 만화처럼 소개도 옵션도 없으면 아무것도 그리지 않는다.
+ * 보여 준다. 캐릭터를 못 찾은 인물은 만화 컷에서 잘라 낸 얼굴 그림을 보여 준다(source: 그 그림을 받을 게시물·만화). 예전 만화처럼
+ * 소개도 옵션도 없으면 아무것도 그리지 않는다.
  */
 export function ComicCast({
   cast,
   concept,
   dialect,
+  source,
 }: {
   cast?: CastMember[] | null;
   concept?: Concept | null;
   dialect?: Dialect | null;
+  source?: { kind: "posts" | "comics"; id: string };
 }) {
   const people = cast ?? [];
   const style = conceptLabel(concept);
@@ -36,9 +40,17 @@ export function ComicCast({
         <>
           <h2 className="text-base font-semibold">등장인물</h2>
           <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-            {people.map((p) => (
+            {people.map((p, i) => (
               <li key={`${p.role}-${p.name}`} className="flex flex-col gap-1.5">
-                <CharacterImage lookId={p.lookId} alt={`${p.role} ${p.name}`} />
+                <CharacterImage
+                  lookId={p.lookId}
+                  src={
+                    p.portrait && source
+                      ? castImageUrl(source.kind, source.id, i)
+                      : null
+                  }
+                  alt={`${p.role} ${p.name}`}
+                />
                 <span className="text-sm leading-tight font-semibold">
                   {p.role}
                 </span>

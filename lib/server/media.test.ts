@@ -55,6 +55,36 @@ describe("이미지 중계", () => {
     expect(calls[0].url).toBe(`${GW}/api/v1/characters/looks/${ID}/image`);
   });
 
+  it("등장인물 얼굴 그림은 같은 이미지 API에 cast 순서로 받고 더 오래 둔다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/posts/${ID}/image`]: json({
+        url: `${STORE}/cast-1.png?sig`,
+      }),
+      [`GET ${STORE}`]: png(),
+    });
+    const response = await image(
+      anonymous(`/api/images/posts/${ID}?cast=1`),
+      params({ kind: "posts", id: ID }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?cast=1`);
+  });
+
+  it("cast 값이 숫자가 아니면 무시하고 만화 그림을 준다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/comics/${ID}/image`]: json({
+        url: `${STORE}/full.png?sig`,
+      }),
+      [`GET ${STORE}`]: png(),
+    });
+    await image(
+      loggedIn(`/api/images/comics/${ID}?cast=x`),
+      params({ kind: "comics", id: ID }),
+    );
+    expect(calls[0].url).toBe(`${GW}/api/v1/comics/${ID}/image?size=full`);
+  });
+
   it("모르는 종류는 404", async () => {
     mockFetch({});
     const response = await image(

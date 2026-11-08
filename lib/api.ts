@@ -112,3 +112,12 @@ export function imageUrl(
 ): string {
   return `/api/images/${kind}/${id}${thumb ? "?size=thumb" : ""}`;
 }
+
+/** 게시물·만화의 index번째(0부터) 등장인물 얼굴 그림 (캐릭터를 못 찾아 만화 컷에서 잘라 낸 것). */
+export function castImageUrl(
+  kind: "posts" | "comics",
+  id: string,
+  index: number,
+): string {
+  return `/api/images/${kind}/${id}?cast=${index}`;
+}
