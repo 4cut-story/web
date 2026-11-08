@@ -4,15 +4,24 @@ import { callAs, errorResponse, readCaller } from "./bff";
 import { isPublicId } from "./ids";
 import { writeSession } from "./session";
 
-/** 이미지 종류 → 게이트웨이에서 사전 서명 주소를 받는 경로. looks는 캐릭터 모습 그림이다 (로그인 필요). */
-const SOURCES: Record<string, (id: string, size: string) => string> = {
-  posts: (id, size) => `/api/v1/posts/${id}/image?size=${size}`,
-  comics: (id, size) => `/api/v1/comics/${id}/image?size=${size}`,
+/**
+ * 이미지 종류 → 게이트웨이에서 사전 서명 주소를 받는 경로. looks는 캐릭터 모습 그림이다. 게시물·만화는 cast(등장인물 순서)가
+ * 있으면 그 인물의 얼굴 그림(캐릭터를 못 찾아 만화 컷에서 잘라 낸 것)이다.
+ */
+const SOURCES: Record<
+  string,
+  (id: string, size: string, cast: string | null) => string
+> = {
+  posts: (id, size, cast) =>
+    `/api/v1/posts/${id}/image?${cast ? `cast=${cast}` : `size=${size}`}`,
+  comics: (id, size, cast) =>
+    `/api/v1/comics/${id}/image?${cast ? `cast=${cast}` : `size=${size}`}`,
   looks: (id) => `/api/v1/characters/looks/${id}/image`,
 };
 
-/** 캐릭터 그림은 거의 바뀌지 않아 더 오래 둔다. */
+/** 캐릭터 그림·얼굴 그림은 거의 바뀌지 않아 더 오래 둔다. */
 const MAX_AGE: Record<string, number> = { looks: 3600 };
+const CAST_MAX_AGE = 3600;
 
 /**
  * 이미지 권한은 content-service가 확인하고 미리 서명된 주소를 준다. web이 그 주소에서 바이트를 받아 그대로 넘긴다.
@@ -31,7 +40,9 @@ export async function proxyImage(
   const caller = readCaller(request);
   const size =
     request.nextUrl.searchParams.get("size") === "thumb" ? "thumb" : "full";
-  const result = await callAs(caller, source(id, size));
+  const rawCast = request.nextUrl.searchParams.get("cast");
+  const cast = rawCast !== null && /^\d{1,2}$/.test(rawCast) ? rawCast : null;
+  const result = await callAs(caller, source(id, size, cast));
   let response: NextResponse;
   if (!result.response.ok) {
     response = new NextResponse(null, { status: result.response.status });
@@ -43,7 +54,7 @@ export async function proxyImage(
           status: 200,
           headers: {
             "content-type": image.headers.get("content-type") ?? "image/png",
-            "cache-control": `private, max-age=${MAX_AGE[kind] ?? 300}`,
+            "cache-control": `private, max-age=${cast ? CAST_MAX_AGE : (MAX_AGE[kind] ?? 300)}`,
             vary: "Cookie",
           },
         })

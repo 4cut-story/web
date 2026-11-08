@@ -67,6 +67,7 @@ export function ComicScreen({ id }: { id: string }) {
             cast={comic.cast}
             concept={comic.concept}
             dialect={comic.dialect}
+            source={{ kind: "comics", id: comic.id }}
           />
           <ComicProduction production={comic.production} />
           {error && <ErrorText message={error} />}

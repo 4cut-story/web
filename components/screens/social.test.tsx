@@ -150,7 +150,8 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
         post({
           cast: [
             { role: "할머니", name: "하늘", lookId: "l1" },
-            { role: "손녀", name: "도윤", lookId: null },
+            { role: "손녀", name: "도윤", lookId: null, portrait: true },
+            { role: "친구", name: "시온", lookId: null },
           ],
           concept: "WATERCOLOR",
           dialect: "GYEONGSANG",
@@ -166,6 +167,13 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
     expect(
       within(cast).getByRole("img", { name: "할머니 하늘" }),
     ).toHaveAttribute("src", expect.stringContaining("/api/images/looks/l1"));
+    // 캐릭터를 못 찾은 인물은 만화 컷에서 잘라 낸 얼굴 그림, 그것도 없으면 회색 칸
+    expect(
+      within(cast).getByRole("img", { name: "손녀 도윤" }),
+    ).toHaveAttribute("src", "/api/images/posts/p1?cast=1");
+    expect(
+      within(cast).queryByRole("img", { name: "친구 시온" }),
+    ).not.toBeInTheDocument();
     expect(within(cast).getByText("수채화 애니메이션")).toBeInTheDocument();
     expect(within(cast).getByText("경상도")).toBeInTheDocument();
   });

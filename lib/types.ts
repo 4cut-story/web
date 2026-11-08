@@ -55,11 +55,15 @@ export type Concept =
   | "JOSEON"
   | "WUXIA";
 
-/** 만화 아래 등장인물 한 명. lookId는 캐릭터 모습 그림 (캐릭터를 못 찾았으면 null). */
+/**
+ * 만화 아래 등장인물 한 명. lookId는 캐릭터 모습 그림 (캐릭터를 못 찾았으면 null). 캐릭터를 못 찾은 인물은 만화 컷에서 잘라 낸
+ * 얼굴 그림이 있으면 portrait가 true다 (예전 서버는 주지 않는다).
+ */
 export type CastMember = {
   role: string;
   name: string;
   lookId: string | null;
+  portrait?: boolean;
 };
 
 /**
