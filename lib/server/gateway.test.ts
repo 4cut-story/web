@@ -52,6 +52,54 @@ describe("BFF API 중계", () => {
     expect(calls[2].init?.body).toBe('{"source":"UPLOAD"}');
   });
 
+  it("만료된 토큰으로 여러 요청이 한꺼번에 와도 갱신은 한 번만 보내고 모두 새 토큰으로 부른다", async () => {
+    let refreshes = 0;
+    const calls = mockFetch({
+      [`POST ${GW}/auth/refresh`]: () => {
+        refreshes++;
+        return json({ accessToken: "new", expiresIn: 600, refreshToken: "r2" });
+      },
+      [`GET ${GW}/api/v1/feed`]: (init?: RequestInit) =>
+        json(
+          {},
+          (init?.headers as Record<string, string>).Authorization ===
+            "Bearer new"
+            ? 200
+            : 401,
+        ),
+    });
+    const responses = await Promise.all(
+      [1, 2, 3].map(() => proxyApi(loggedIn("/api/v1/feed"), ["feed"])),
+    );
+    expect(responses.map((r) => r.status)).toEqual([200, 200, 200]);
+    for (const r of responses) {
+      expect(r.headers.get("set-cookie")).toContain("fourcut_session=");
+    }
+    expect(refreshes).toBe(1);
+    expect(calls.filter((c) => c.url.endsWith("/auth/refresh"))).toHaveLength(
+      1,
+    );
+
+    // 조금 뒤 옛 쿠키로 온 요청도 같은 결과를 쓴다
+    const late = await proxyApi(loggedIn("/api/v1/feed"), ["feed"]);
+    expect(late.status).toBe(200);
+    expect(refreshes).toBe(1);
+  });
+
+  it("갱신에 실패한 결과는 나눠 쓰지 않는다", async () => {
+    let refreshes = 0;
+    mockFetch({
+      [`POST ${GW}/auth/refresh`]: () => {
+        refreshes++;
+        return json({}, 503);
+      },
+      [`GET ${GW}/api/v1/feed`]: json({}, 401),
+    });
+    await proxyApi(loggedIn("/api/v1/feed"), ["feed"]);
+    await proxyApi(loggedIn("/api/v1/feed"), ["feed"]);
+    expect(refreshes).toBe(2);
+  });
+
   it("갱신도 실패하면 401을 돌려주고 쿠키를 지운다", async () => {
     mockFetch({
       [`POST ${GW}/auth/refresh`]: json({}, 401),

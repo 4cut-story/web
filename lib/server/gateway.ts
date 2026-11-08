@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { gatewayUrl } from "./config";
 import { patAccessToken } from "./pat";
 import { fromTokens, type Session, type TokenPair } from "./session";
@@ -41,7 +43,57 @@ export function postJson(path: string, body: unknown): Promise<Response> {
   });
 }
 
-export async function refresh(session: Session): Promise<Session | null> {
+/**
+ * Refresh Token → 갱신 결과. 페이지 하나가 이미지·API를 여러 개 한꺼번에 부르면 Access Token이 만료된 순간 갱신이 동시에 여러 번
+ * 나갔다. auth-service는 한 번 쓴 Refresh Token이 다시 오면 탈취로 보고 그 로그인을 모두 끊어서, 등장인물 그림이 빠지고 로그인이
+ * 풀렸다. 같은 토큰의 갱신은 한 번만 보내고, 끝난 뒤 잠깐(뒤늦게 온 요청이 같은 쿠키를 들고 오는 동안) 결과를 나눠 쓴다.
+ */
+const refreshing = new Map<
+  string,
+  { at: number; result: Promise<Session | null> }
+>();
+const SHARE_MS = 30_000;
+const MAX_SHARED = 1000;
+
+function refreshKey(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+/** 테스트 전용: 나눠 쓰던 갱신 결과를 잊는다. */
+export function forgetRefreshes(): void {
+  refreshing.clear();
+}
+
+export function refresh(session: Session): Promise<Session | null> {
+  const key = refreshKey(session.refreshToken);
+  const now = Date.now();
+  const shared = refreshing.get(key);
+  if (shared && now - shared.at < SHARE_MS) {
+    return shared.result;
+  }
+  for (const [k, v] of refreshing) {
+    if (now - v.at >= SHARE_MS || refreshing.size >= MAX_SHARED) {
+      refreshing.delete(k);
+    }
+  }
+  const result = renew(session).then(
+    (renewed) => {
+      // 실패는 나눠 쓰지 않는다 (잠깐 게이트웨이가 안 될 때 계속 로그아웃되지 않게)
+      if (!renewed) {
+        refreshing.delete(key);
+      }
+      return renewed;
+    },
+    (error: unknown) => {
+      refreshing.delete(key);
+      throw error;
+    },
+  );
+  refreshing.set(key, { at: now, result });
+  return result;
+}
+
+async function renew(session: Session): Promise<Session | null> {
   const response = await postJson("/auth/refresh", {
     refreshToken: session.refreshToken,
   });
