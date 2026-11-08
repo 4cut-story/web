@@ -148,7 +148,8 @@ export function ProfileView({
           </div>
         </div>
         {((canFollow && stats.data) || actions) && (
-          <div className="flex gap-2 md:shrink-0">
+          // 휴대폰은 버튼이 한 줄에 다 안 들어가면 다음 줄로 넘긴다 (좁은 화면에서 카드 밖으로 삐져나오지 않게)
+          <div className="flex flex-wrap gap-2 md:shrink-0 md:flex-nowrap">
             {canFollow && stats.data && (
               <Button
                 variant={stats.data.followedByMe ? "secondary" : "default"}
