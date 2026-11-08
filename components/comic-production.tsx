@@ -29,6 +29,18 @@ export function ComicProduction({
     <section aria-label="제작 정보" className="flex flex-col gap-3">
       <h2 className="text-base font-semibold">제작 정보</h2>
       <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        {top.test && (
+          <div className="flex gap-1.5">
+            <dt className="text-muted-foreground">시험</dt>
+            <dd className="font-medium">{top.test}</dd>
+          </div>
+        )}
+        {top.score && (
+          <div className="flex gap-1.5">
+            <dt className="text-muted-foreground">점수</dt>
+            <dd className="font-medium">{top.score}</dd>
+          </div>
+        )}
         {top.total && (
           <div className="flex gap-1.5">
             <dt className="text-muted-foreground">전체</dt>

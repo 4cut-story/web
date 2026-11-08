@@ -118,6 +118,12 @@ export type ProductionStep = {
 /** 만화를 만든 과정 기록 (conversation-service Production, version 1). 예전 만화는 null. */
 export type Production = {
   version: number;
+  /** 시험 만화: 회차와 비교한 변형 이름 (예: schnell-nf4). 파이프라인 만화는 없다. */
+  round?: number;
+  variant?: string;
+  /** 시험 만화 품질 점수와 만점. */
+  score?: number;
+  scoreMax?: number;
   totalMs?: number;
   steps: ProductionStep[];
   preTranscribe?: { parts: number; runMs: number };
