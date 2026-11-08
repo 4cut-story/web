@@ -59,7 +59,7 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
     <Button
       variant="outline"
       onClick={copyAddress}
-      className="flex-1 md:flex-none"
+      className="grow basis-32 md:grow-0 md:basis-auto"
     >
       {copied ? (
         <Check aria-hidden className="text-success" />
@@ -116,7 +116,7 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
                 <Button
                   asChild
                   variant="outline"
-                  className="flex-1 md:flex-none"
+                  className="grow basis-32 md:grow-0 md:basis-auto"
                 >
                   <Link href="/me/tokens">
                     <KeyRound aria-hidden />
@@ -126,7 +126,7 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
                 <Button
                   variant="outline"
                   onClick={() => setConfirm(true)}
-                  className="flex-1 text-destructive hover:text-destructive md:flex-none"
+                  className="grow basis-32 text-destructive hover:text-destructive md:grow-0 md:basis-auto"
                 >
                   <UserX aria-hidden />
                   탈퇴하기

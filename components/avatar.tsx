@@ -21,7 +21,7 @@ export function Avatar({
         src={src}
         alt=""
         style={style}
-        className={cn("rounded-full object-cover", className)}
+        className={cn("shrink-0 rounded-full object-cover", className)}
       />
     );
   }
@@ -30,7 +30,7 @@ export function Avatar({
       aria-hidden
       style={style}
       className={cn(
-        "inline-flex items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground",
+        "inline-flex shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground",
         className,
       )}
     >
