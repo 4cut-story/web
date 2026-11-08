@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { FlaskConical, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -43,7 +43,7 @@ export function GitHubIconLink({ className }: { className?: string }) {
 }
 
 /**
- * 모든 화면 아래의 바닥글: 서비스 소개, 소개 페이지(/about)와 GitHub 링크, 저작권, 기술 스택.
+ * 모든 화면 아래의 바닥글: 서비스 소개, 소개 페이지(/about)·그림 모델 비교(/lab)와 GitHub 링크, 저작권, 기술 스택.
  * 본문 폭과 상관없이 화면 끝까지 깔고, 안쪽은 상단 메뉴와 같은 폭(1152px)에 맞춘다.
  * 휴대폰은 한 줄씩 쌓고 GitHub 버튼을 꽉 채우며, 하단 탭이 있으면 className으로 아래를 띄운다.
  */
@@ -70,6 +70,13 @@ export function SiteFooter({ className }: { className?: string }) {
             >
               <Sparkles aria-hidden className="size-4" />
               서비스 소개 · 기술 스택
+            </Link>
+            <Link
+              href="/lab"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-muted md:w-fit"
+            >
+              <FlaskConical aria-hidden className="size-4" />
+              그림 모델 비교
             </Link>
             <a
               href={GITHUB_URL}

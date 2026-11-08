@@ -109,6 +109,10 @@ describe("첫 화면 포털", () => {
     expect(
       screen.getByRole("link", { name: "무료로 시작하기" }),
     ).toHaveAttribute("href", "/login");
+    // 소개 띠 바로 아래에 그림 모델 비교로 가는 띠가 있다
+    expect(
+      screen.getByRole("link", { name: /비교 페이지 보기/ }),
+    ).toHaveAttribute("href", "/lab");
     expect(screen.getByRole("link", { name: "내 페이지" })).toHaveAttribute(
       "href",
       "/login",
