@@ -140,11 +140,31 @@ describe("제작 정보 (FR-006)", () => {
 
   it("요약에 전체 시간, 그림 모델, GPU를 넣는다", () => {
     expect(summary(PRODUCTION)).toEqual({
+      test: null,
+      score: null,
       total: "1분 35초",
       image: "FLUX.1-schnell NF4 4bit",
       gpu: "NVIDIA GeForce RTX 5060 Ti",
     });
+    expect(
+      summary({
+        version: 1,
+        steps: [],
+        round: 29,
+        variant: "schnell-nf4",
+        score: 4.256,
+        scoreMax: 5,
+      }),
+    ).toMatchObject({ test: "29회차 · schnell-nf4", score: "4.26 / 5" });
+    expect(
+      summary({ version: 1, steps: [], variant: "dev", score: 3 }),
+    ).toMatchObject({
+      test: "dev",
+      score: "3",
+    });
     expect(summary({ version: 1, steps: [] })).toEqual({
+      test: null,
+      score: null,
       total: null,
       image: null,
       gpu: null,

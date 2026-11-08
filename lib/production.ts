@@ -150,7 +150,21 @@ export function summary(production: Production) {
     .flatMap((s) => s.jobs)
     .map((j) => j.info?.gpu)
     .find((g): g is string => typeof g === "string" && g.length > 0);
+  const score =
+    typeof production.score === "number"
+      ? `${Math.round(production.score * 100) / 100}${
+          typeof production.scoreMax === "number"
+            ? ` / ${production.scoreMax}`
+            : ""
+        }`
+      : null;
+  const test =
+    typeof production.variant === "string" && production.variant
+      ? `${typeof production.round === "number" ? `${production.round}회차 · ` : ""}${production.variant}`
+      : null;
   return {
+    test,
+    score,
     total:
       typeof production.totalMs === "number"
         ? duration(production.totalMs)
