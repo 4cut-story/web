@@ -7,8 +7,10 @@ import { json, mockFetch } from "@/test/fetch-mock";
 import {
   orderVariants,
   parseTree,
+  isReference,
   rawUrl,
   roundTitle,
+  splitByReference,
   summarizeTiming,
   variantLabel,
 } from "@/lib/lab";
@@ -30,6 +32,8 @@ const TREE = {
     blob(`${R}/dev-nf4/love-07-panel-1.png`),
     blob(`${R}/dev-nf4/timing.json`),
     blob(`${R}/schnell-fp8/timing.json`),
+    blob(`${R}/schnell-nf4-ref/love-07-panel-1.png`),
+    blob(`${R}/schnell-nf4-ref/scores.json`),
   ],
 };
 
@@ -61,6 +65,10 @@ const ROUTES = {
     perComic: { "love-07": 87.1 },
     note: "지금 운영 중.",
   }),
+  [`GET ${rawUrl(`${R}/schnell-nf4-ref/scores.json`)}`]: json({
+    label: "schnell NF4 참조",
+    average: 92.5,
+  }),
   [`GET ${rawUrl(`${R}/dev-nf4/timing.json`)}`]: json({
     model: "black-forest-labs/FLUX.1-dev",
     quant: "nf4",
@@ -77,8 +85,14 @@ describe("그림 모델 비교 (/lab)", () => {
     expect(
       await screen.findByRole("heading", { name: "회차 29 그림 모델 비교" }),
     ).toBeInTheDocument();
-    const table = screen.getByRole("table");
+    const table = screen.getByRole("table", { name: "참조 없이 그림" });
     expect(within(table).getByText("90.8")).toBeInTheDocument();
+    expect(within(table).queryByText("92.5")).not.toBeInTheDocument();
+    const ref = screen.getByRole("table", { name: "캐릭터 참조로 그림" });
+    expect(within(ref).getByText("92.5")).toBeInTheDocument();
+    expect(
+      within(ref).getByRole("rowheader", { name: "schnell NF4 참조" }),
+    ).toBeInTheDocument();
     expect(within(table).getByText("기준")).toBeInTheDocument();
     expect(within(table).getByText(/실패 1/)).toBeInTheDocument();
     expect(screen.getByText(/느려서 멈춤/)).toBeInTheDocument();
@@ -90,9 +104,12 @@ describe("그림 모델 비교 (/lab)", () => {
     );
     expect(screen.getByAltText("dev NF4 1컷")).toBeInTheDocument();
     expect(screen.getByText(/이 편 87.1점/)).toBeInTheDocument();
-    expect(screen.getAllByText("그림 없음")).toHaveLength(1);
+    expect(screen.getAllByText("그림 없음")).toHaveLength(2);
     expect(screen.getByText("rainy street")).toBeInTheDocument();
 
+    await userEvent.click(
+      screen.getByRole("button", { name: "schnell NF4 참조" }),
+    );
     await userEvent.click(screen.getByRole("button", { name: "dev NF4" }));
     expect(screen.queryByAltText("dev NF4 1컷")).not.toBeInTheDocument();
 
@@ -131,6 +148,30 @@ describe("그림 모델 비교 (/lab)", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "테스트 기록을 불러오지 못했어요",
     );
+  });
+
+  it("참조로 그린 방식을 표시나 폴더 이름으로 가려 각각 점수 순으로 둔다", () => {
+    const v = (id: string, extra: object = {}) => ({
+      id,
+      comics: {},
+      ...extra,
+    });
+    expect(isReference(v("dev-nf4-ref"))).toBe(true);
+    expect(isReference(v("ref-schnell"))).toBe(true);
+    expect(isReference(v("dev-nf4-prefer"))).toBe(false);
+    expect(isReference(v("a", { timing: { reference: true } }))).toBe(true);
+    expect(isReference(v("a-ref", { scores: { reference: false } }))).toBe(
+      false,
+    );
+    const { plain, reference } = splitByReference([
+      v("low", { scores: { average: 70 } }),
+      v("x-ref", { scores: { average: 80 } }),
+      v("high", { scores: { average: 90 } }),
+      v("none"),
+      v("y-ref", { scores: { average: 95 } }),
+    ]);
+    expect(plain.map((x) => x.id)).toEqual(["high", "low", "none"]);
+    expect(reference.map((x) => x.id)).toEqual(["y-ref", "x-ref"]);
   });
 
   it("폴더 구조를 회차·방식·편으로 나누고 컷 순서대로 둔다", () => {

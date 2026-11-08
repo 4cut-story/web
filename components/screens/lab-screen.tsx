@@ -9,6 +9,7 @@ import {
   loadRound,
   rawUrl,
   roundTitle,
+  splitByReference,
   summarizeTiming,
   variantLabel,
   type Round,
@@ -42,14 +43,26 @@ function Status({ value }: { value?: string }) {
   );
 }
 
-/** 회차의 방식마다 점수·속도·메모리·라이선스를 한 줄씩 보인다. */
-function VariantTable({ round }: { round: Round }) {
+/** 방식마다 순위·점수·속도·메모리·라이선스를 한 줄씩 보인다. */
+function VariantTable({
+  title,
+  variants,
+}: {
+  title: string;
+  variants: Variant[];
+}) {
+  if (variants.length === 0) return null;
+  const notes = variants.filter((v) => v.scores?.note || v.timing?.aborted);
   return (
     <div className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full text-left text-sm">
+        <caption className="px-3 py-2 text-left text-sm font-semibold">
+          {title}
+        </caption>
         <thead className="bg-muted text-xs text-muted-foreground">
           <tr>
             {[
+              "순위",
               "방식",
               "판단",
               "그림 점수",
@@ -70,10 +83,13 @@ function VariantTable({ round }: { round: Round }) {
           </tr>
         </thead>
         <tbody>
-          {round.variants.map((v) => {
+          {variants.map((v, i) => {
             const t = summarizeTiming(v.timing);
             return (
               <tr key={v.id} className="border-t border-border align-top">
+                <td className="px-3 py-2 tabular-nums">
+                  {v.scores?.average === undefined ? "–" : i + 1}
+                </td>
                 <th
                   scope="row"
                   className="px-3 py-2 font-medium whitespace-nowrap"
@@ -123,16 +139,16 @@ function VariantTable({ round }: { round: Round }) {
           })}
         </tbody>
       </table>
-      <ul className="flex flex-col gap-1 border-t border-border p-3 text-xs text-muted-foreground">
-        {round.variants
-          .filter((v) => v.scores?.note || v.timing?.aborted)
-          .map((v) => (
+      {notes.length > 0 && (
+        <ul className="flex flex-col gap-1 border-t border-border p-3 text-xs text-muted-foreground">
+          {notes.map((v) => (
             <li key={v.id}>
               <strong className="text-foreground">{variantLabel(v)}</strong>:{" "}
               {v.scores?.note ?? v.timing?.aborted}
             </li>
           ))}
-      </ul>
+        </ul>
+      )}
     </div>
   );
 }
@@ -241,6 +257,7 @@ function RoundView({ round }: { round: Round }) {
   const [comic, setComic] = useState(round.comics[0]);
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const shown = drawn.filter((v) => !hidden.has(v.id) && v.comics[comic]);
+  const { plain, reference } = splitByReference(round.variants);
   const toggle = (id: string) =>
     setHidden((prev) => {
       const next = new Set(prev);
@@ -255,7 +272,8 @@ function RoundView({ round }: { round: Round }) {
           {round.info.description}
         </p>
       )}
-      <VariantTable round={round} />
+      <VariantTable title="참조 없이 그림" variants={plain} />
+      <VariantTable title="캐릭터 참조로 그림" variants={reference} />
       <div className="flex flex-col gap-2">
         <h2 className="text-base font-semibold">편 고르기</h2>
         <div className="flex flex-wrap gap-2">
