@@ -176,6 +176,9 @@ describe("소개 페이지로 가는 링크", () => {
       within(footer).getByRole("link", { name: "서비스 소개 · 기술 스택" }),
     ).toHaveAttribute("href", "/about");
     expect(
+      within(footer).getByRole("link", { name: "그림 모델 비교" }),
+    ).toHaveAttribute("href", "/lab");
+    expect(
       within(footer).getByRole("link", { name: "GitHub에서 소스 보기" }),
     ).toBeInTheDocument();
   });

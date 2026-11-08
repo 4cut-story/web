@@ -2,6 +2,7 @@ import {
   ArrowRight,
   AudioLines,
   Cpu,
+  FlaskConical,
   Heart,
   Images,
   type LucideIcon,
@@ -94,7 +95,7 @@ export function Landing({
       className="flex flex-col gap-16 pb-16 md:gap-24 md:pb-20"
     >
       <Hero signedIn={signedIn} posts={posts.slice(0, 4)} />
-      <AboutCallout />
+      <Callouts />
       <Steps />
       <Features signedIn={signedIn} />
     </section>
@@ -148,35 +149,68 @@ function Hero({ signedIn, posts }: { signedIn: boolean; posts: Post[] }) {
   );
 }
 
-/** 히어로 바로 아래에서 서비스 소개(/about)로 이끄는 눈에 띄는 띠. 4컷 틀과 같은 굵은 선·그림자를 쓴다. */
-function AboutCallout() {
+/** 히어로 바로 아래에서 소개 페이지로 이끄는 눈에 띄는 띠. 4컷 틀과 같은 굵은 선·그림자를 쓴다. */
+function Callout({
+  href,
+  icon: Icon,
+  eyebrow,
+  title,
+  description,
+  cta,
+}: {
+  href: string;
+  icon: LucideIcon;
+  eyebrow: string;
+  title: string;
+  description: string;
+  cta: string;
+}) {
   return (
     <Link
-      href="/about"
+      href={href}
       className="group flex flex-col gap-4 rounded-2xl border-2 border-foreground bg-accent/10 p-5 shadow-[6px_6px_0_0_var(--color-foreground)] transition-transform hover:-translate-y-0.5 md:flex-row md:items-center md:justify-between md:p-6"
     >
       <div className="flex items-start gap-4">
         <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-foreground text-background">
-          <Cpu aria-hidden className="size-6" />
+          <Icon aria-hidden className="size-6" />
         </span>
         <div className="flex flex-col gap-1">
-          <p className="text-sm font-semibold text-accent-strong">
-            4cut 기술 소개
-          </p>
-          <p className="text-lg font-bold md:text-xl">
-            이 서비스는 어떻게 만들었을까요?
-          </p>
+          <p className="text-sm font-semibold text-accent-strong">{eyebrow}</p>
+          <p className="text-lg font-bold md:text-xl">{title}</p>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            마이크로서비스 아키텍처, RTX 5060 Ti 16GB 한 장으로 돌리는 AI 모델
-            9개, 직접 재고 고친 튜닝 기록을 모았어요.
+            {description}
           </p>
         </div>
       </div>
       <span className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground group-hover:bg-primary/90">
-        소개 페이지 보기
+        {cta}
         <ArrowRight aria-hidden className="size-4" />
       </span>
     </Link>
+  );
+}
+
+/** 서비스 소개(/about)와 그 아래 그림 모델 비교(/lab)로 가는 띠 두 개. */
+function Callouts() {
+  return (
+    <div className="flex flex-col gap-4">
+      <Callout
+        href="/about"
+        icon={Cpu}
+        eyebrow="4cut 기술 소개"
+        title="이 서비스는 어떻게 만들었을까요?"
+        description="마이크로서비스 아키텍처, RTX 5060 Ti 16GB 한 장으로 돌리는 AI 모델 9개, 직접 재고 고친 튜닝 기록을 모았어요."
+        cta="소개 페이지 보기"
+      />
+      <Callout
+        href="/lab"
+        icon={FlaskConical}
+        eyebrow="그림 모델 비교"
+        title="어떤 그림 모델이 4컷을 더 잘 그릴까요?"
+        description="같은 콘티를 여러 그림 모델과 양자화 방식으로 그린 테스트 컷을 점수, 컷당 시간과 함께 나란히 비교해요."
+        cta="비교 페이지 보기"
+      />
+    </div>
   );
 }
 
