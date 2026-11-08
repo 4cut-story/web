@@ -25,6 +25,8 @@ export type Timing = {
   peakVramGiB?: number;
   peakRamGiB?: number;
   aborted?: string;
+  /** 캐릭터 참조 그림을 넣고 그렸는지. */
+  reference?: boolean;
 };
 
 export type Scores = {
@@ -36,6 +38,8 @@ export type Scores = {
   criticalComics?: number;
   perComic?: Record<string, number>;
   note?: string;
+  /** 캐릭터 참조 그림을 넣고 그렸는지. */
+  reference?: boolean;
 };
 
 export type RoundInfo = {
@@ -136,6 +140,21 @@ export function orderVariants(
   return [...variants].sort(
     (a, b) => rank(b) - rank(a) || a.id.localeCompare(b.id),
   );
+}
+
+/** 캐릭터 참조 그림을 넣고 그린 방식인지: scores.json·timing.json의 reference, 없으면 폴더 이름의 "-ref". */
+export const isReference = (v: Variant) =>
+  v.scores?.reference ?? v.timing?.reference ?? /(^|-)ref(-|$)/.test(v.id);
+
+/** 참조 없이 그린 방식과 참조로 그린 방식을 나눠 각각 점수 높은 순(점수 없으면 이름순 뒤)으로 둔다. */
+export function splitByReference(variants: Variant[]): {
+  plain: Variant[];
+  reference: Variant[];
+} {
+  return {
+    plain: orderVariants(variants.filter((v) => !isReference(v))),
+    reference: orderVariants(variants.filter(isReference)),
+  };
 }
 
 export async function loadRound(skeleton: Skeleton): Promise<Round> {
