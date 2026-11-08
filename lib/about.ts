@@ -1,7 +1,7 @@
 /**
  * 서비스 소개(/about) 페이지에 싣는 사실. 값은 각 레포의 설정과 커밋 기록에서 옮겼다.
  * - 모델·설정: conversation-service application.yml·ScenarioProperties·TranscriptCorrector·ClaudeClient·GeminiClient,
- *   model-runtime config.py·backends(whisper, ollama, sdxl), docs architecture.md
+ *   model-runtime config.py·backends(whisper, ollama, flux, sdxl), docs architecture.md
  * - 튜닝 수치: conversation-service #8·#18·#20~#27·#34~#40·#63~#70·#73, model-runtime #6·#8·#10~#16·#18
  * - 품질 점수: docs comic-quality-plan.md(고정 시험 세트 채점), image-quality-log.md
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
@@ -132,8 +132,8 @@ export const PIPELINE: PipelineStep[] = [
     icon: Brush,
     title: "컷 그리기",
     description:
-      '컷마다 그림을 그리면서 찾은 캐릭터의 참조 그림을 넘겨, 얼굴·머리 모양·옷까지 모든 컷에서 같은 사람처럼 보이게 해요. 두 명이 나오는 컷은 인물마다 왼쪽·오른쪽 자리를 정해 두고 모든 컷에서 같은 쪽에 세우고, 그림 설명에 "a young woman and an old man"처럼 왼쪽부터 나이·성별로 세어 적어요. 흑백 신문 테마는 옅은 색으로 그린 뒤 합칠 때 흑백으로 바꿔요.',
-    models: ["DreamShaper XL Lightning", "IP-Adapter Plus"],
+      '컷마다 그림을 그려요. 그림 모델 FLUX.1-schnell은 긴 장면 설명을 읽어 물건과 인물 수를 잘 따르지만, 참조 그림을 넘기는 모듈이 없어 인물의 옷·머리는 콘티의 외모 글로만 맞춰요. 두 명이 나오는 컷은 인물마다 왼쪽·오른쪽 자리를 정해 두고 모든 컷에서 같은 쪽에 세우고, 그림 설명에 "a young woman and an old man"처럼 왼쪽부터 나이·성별로 세어 적어요. 흑백 신문 테마는 옅은 색으로 그린 뒤 합칠 때 흑백으로 바꿔요.',
+    models: ["FLUX.1-schnell"],
     where: "GPU PC",
   },
   {
@@ -255,9 +255,25 @@ export const MODELS: Model[] = [
   },
   {
     icon: Palette,
+    name: "FLUX.1-schnell",
+    what: "글을 긴 문장까지 읽는 T5 글 인코더를 쓰는 공개 이미지 생성 모델. 4단계만 다듬어 그리도록 학습됐어요",
+    role: "컷 그림 그리기",
+    size: "그림 본체 약 120억 파라미터, 4비트(NF4)로 줄여 GPU는 최대 약 6.6GB만 사용",
+    where: "GPU PC",
+    io: "영어 장면 설명 + 그림체 문구 → 768×768 그림",
+    why: "SDXL 계열로 다섯 회차 동안 설정을 바꿔도 시험 묶음 점수가 82.8~83.8점에 머물렀고, 콘티의 행동·물건이 빠지거나 두 인물이 한 사람으로 섞였어요. 긴 문장을 읽는 FLUX.1-schnell로 바꾸자 망원경·토성 같은 핵심 물건과 나이·성별이 맞게 그려져 82.8점에서 87.9점으로 올랐어요. 대신 참조 그림을 쓸 수 없어 옷·머리가 컷마다 바뀌는 문제가 남았어요.",
+    settings: [
+      "4단계, 프롬프트 강조값(guidance) 0",
+      "그림 본체와 글 인코더를 4비트(NF4)로 줄이고, 지금 쓰는 부분만 GPU에 올리고 나머지는 PC 메모리에 둬요(CPU offload)",
+      "컷당 약 7초. 워커가 켜진 뒤 첫 그림 작업은 모델을 올리느라 약 45초",
+      "FLUX가 실패하면 그 컷을 SDXL(DreamShaper XL Lightning)로 다시 그리고, 그 뒤로도 SDXL로 그려요",
+    ],
+  },
+  {
+    icon: Palette,
     name: "DreamShaper XL Lightning",
     what: "공개 이미지 생성 모델 SDXL을 일러스트에 맞게 더 학습하고, 적은 단계로 그리도록(Lightning) 합친 모델",
-    role: "컷 그림 그리기",
+    role: "FLUX가 실패할 때 대신 그리기 (이전 주 그림 모델)",
     size: "약 35억 파라미터, 16비트 정밀도",
     where: "GPU PC",
     io: "영어 장면 설명 + 그림체 문구 → 768×768 그림",
@@ -288,7 +304,7 @@ export const MODELS: Model[] = [
     icon: Images,
     name: "IP-Adapter Plus (ViT-H)",
     what: "참조 그림 한 장을 보여 주면 그 인물을 닮게 그리도록 돕는 추가 모듈",
-    role: "네 컷 내내 같은 캐릭터의 얼굴·머리 모양·옷 유지",
+    role: "SDXL로 그릴 때 네 컷 내내 같은 캐릭터의 얼굴·머리 모양·옷 유지",
     size: "어댑터 + 그림 특징 추출기(ViT-H), 메모리 약 2GB 추가",
     where: "GPU PC",
     io: "캐릭터 참조 그림 + 장면 설명 → 그 캐릭터가 나오는 그림",
@@ -350,7 +366,17 @@ export const GLOSSARY: Term[] = [
   {
     term: "양자화 · 정밀도",
     meaning:
-      "숫자를 적은 자릿수로 줄여 저장하는 방법이에요. 16비트(fp16)나 4비트로 줄이면 메모리가 크게 줄고 품질은 조금만 떨어져요.",
+      "숫자를 적은 자릿수로 줄여 저장하는 방법이에요. 16비트(fp16)나 4비트로 줄이면 메모리가 크게 줄고 품질은 조금만 떨어져요. NF4는 신경망 값의 분포에 맞춘 4비트 방식이에요.",
+  },
+  {
+    term: "CPU offload",
+    meaning:
+      "GPU 메모리에 다 들어가지 않는 큰 모델을 PC 메모리에 두고, 지금 계산하는 부분만 GPU로 옮겨 쓰는 방법이에요. 느려지는 대신 작은 GPU로도 큰 모델을 돌려요.",
+  },
+  {
+    term: "글 인코더 (CLIP · T5)",
+    meaning:
+      "그림 모델이 장면 설명 글을 숫자로 바꿔 읽는 부분이에요. SDXL이 쓰는 CLIP은 짧은 글(77토큰)에 맞춰져 있고, FLUX가 함께 쓰는 T5는 긴 문장의 뜻을 더 잘 읽어요.",
   },
   {
     term: "LLM",
@@ -380,7 +406,7 @@ export const GLOSSARY: Term[] = [
   {
     term: "step (단계)",
     meaning:
-      "이미지 모델이 잡음에서 그림을 다듬는 횟수예요. 적을수록 빠르고, Lightning 모델은 6번이면 충분해요.",
+      "이미지 모델이 잡음에서 그림을 다듬는 횟수예요. 적을수록 빠르고, FLUX.1-schnell은 4번, Lightning 모델은 6번이면 충분해요.",
   },
   {
     term: "시드 (seed)",
@@ -411,8 +437,9 @@ export const VRAM_BUNDLES: Bundle[] = [
   { name: "LLM 묶음", gb: 7, detail: "Qwen3 8B 4비트 (대체 경로일 때만)" },
   {
     name: "그림 묶음",
-    gb: 11,
-    detail: "DreamShaper XL Lightning + IP-Adapter",
+    gb: 7,
+    detail:
+      "FLUX.1-schnell 4비트 (실패하면 DreamShaper XL Lightning + IP-Adapter, 약 11GB)",
   },
 ];
 
@@ -637,6 +664,18 @@ export const TUNINGS: Tuning[] = [
     fix: "같은 SDXL 계열이라 참조 인물 모듈을 그대로 쓸 수 있는 일러스트용 모델 DreamShaper XL Lightning으로 바꿨어요.",
     before: "시험 묶음 81.4점",
     after: "83.7점, 컬러 만화 그림",
+  },
+  {
+    icon: Palette,
+    kind: "품질",
+    title: "글을 더 잘 읽는 그림 모델로",
+    problem:
+      "설정을 다섯 번 바꿔도 점수가 83점 안팎에서 멈췄어요. 콘티의 행동과 물건이 빠지고, 한 컷의 두 인물이 한 사람으로 섞였어요.",
+    cause:
+      "SDXL은 CLIP 글 인코더로 장면 설명을 읽는데, 긴 문장에서 누가 무엇을 하는지까지는 잘 따르지 못했어요.",
+    fix: "긴 문장을 읽는 T5 글 인코더를 쓰는 FLUX.1-schnell로 바꾸고, 16GB GPU에 맞게 4비트로 줄였어요. 실패하면 SDXL로 저절로 되돌아가요.",
+    before: "시험 묶음 82.8점",
+    after: "87.9점",
   },
   {
     icon: MessageSquareText,
@@ -1203,7 +1242,7 @@ export const CHARACTER_SEARCH: Step[] = [
     icon: Images,
     title: "참조로 그리기",
     detail:
-      "그 캐릭터의 참조 그림을 IP-Adapter에 넘겨 얼굴·머리 모양·옷을 유지해요. 못 찾은 인물은 가명을 그대로 두고 글 설명만으로 그려요",
+      "SDXL로 그릴 때는 그 캐릭터의 참조 그림을 IP-Adapter에 넘겨 얼굴·머리 모양·옷을 유지해요. 지금 쓰는 FLUX.1-schnell은 참조 그림 대신 콘티의 외모 글로 그려요. 못 찾은 인물은 가명을 그대로 두고 글 설명만으로 그려요",
   },
 ];
 
@@ -1241,7 +1280,7 @@ export const VRAM_RETRO: Retro[] = [
   {
     label: "GPU에 남긴 것",
     items: [
-      "받아 적기(WhisperX + pyannote)와 그림(SDXL + IP-Adapter): 녹음과 그림을 밖으로 보내지 않고 직접 돌려요",
+      "받아 적기(WhisperX + pyannote)와 그림(FLUX.1-schnell, 실패하면 SDXL + IP-Adapter): 녹음과 그림을 밖으로 보내지 않고 직접 돌려요",
     ],
   },
   {
