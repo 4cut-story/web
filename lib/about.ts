@@ -3,7 +3,7 @@
  * - 모델·설정: conversation-service application.yml·ScenarioProperties·TranscriptCorrector·ClaudeClient·GeminiClient,
  *   model-runtime config.py·backends(whisper, ollama, flux, sdxl), docs architecture.md
  * - 튜닝 수치: conversation-service #8·#18·#20~#27·#34~#40·#63~#70·#73, model-runtime #6·#8·#10~#16·#18
- * - 품질 점수: docs comic-quality-plan.md(고정 시험 세트 채점), image-quality-log.md
+ * - 품질 점수: docs comic-quality-plan.md(고정 시험 세트 채점), image-quality-log.md, reviews/round-29.md(그림 모델 비교)
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
  * 기능이 바뀌면 이 파일도 함께 고친다(web CLAUDE.md "소개 페이지").
@@ -367,6 +367,11 @@ export const GLOSSARY: Term[] = [
     term: "양자화 · 정밀도",
     meaning:
       "숫자를 적은 자릿수로 줄여 저장하는 방법이에요. 16비트(fp16)나 4비트로 줄이면 메모리가 크게 줄고 품질은 조금만 떨어져요. NF4는 신경망 값의 분포에 맞춘 4비트 방식이에요.",
+  },
+  {
+    term: "GGUF",
+    meaning:
+      "미리 양자화해 둔 모델 파일 형식이에요. Q8_0은 8비트, Q4~Q6은 4~6비트로 줄인 것이에요.",
   },
   {
     term: "CPU offload",
@@ -824,6 +829,18 @@ export const TUNINGS: Tuning[] = [
     fix: "모든 응답에 HSTS, X-Frame-Options·frame-ancestors, nosniff, Referrer-Policy, Permissions-Policy(마이크는 이 사이트만)를 붙이고 x-powered-by를 껐어요.",
     before: "보안 헤더 0개",
     after: "6개",
+  },
+  {
+    icon: Images,
+    kind: "품질",
+    title: "16GB GPU에 맞는 그림 모델 고르기",
+    problem:
+      "더 큰 모델이나 더 정밀한 양자화를 쓰면 만화가 나아질지, 느려지기만 할지 알 수 없었어요.",
+    cause:
+      "서버를 거쳐 그린 그림과 바로 그린 그림은 렌더러가 달라, 점수 차이가 모델 때문인지 가릴 수 없었어요.",
+    fix: "콘티 10편, 47컷을 같은 프롬프트와 시드로 같은 렌더러에서 FLUX.1 schnell NF4·GGUF Q8_0, dev NF4로 다시 그려 편마다 두 번 채점했어요(int8은 VRAM 16GB가 넘쳐 컷당 약 20분이 걸려 멈췄어요). 그린 컷은 그림 모델 비교 화면(/lab)에서 컷끼리 나란히 볼 수 있어요.",
+    before: "dev NF4 90.7점, 컷당 42.3초",
+    after: "schnell NF4 90.8점, 컷당 8.6초로 유지",
   },
 ];
 

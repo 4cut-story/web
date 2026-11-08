@@ -1012,6 +1012,13 @@ function Tunings() {
           <TuningCard key={tuning.title} tuning={tuning} />
         ))}
       </ul>
+      <p className="text-sm text-muted-foreground">
+        같은 콘티를 여러 그림 모델로 그린 테스트 컷은{" "}
+        <Link href="/lab" className="underline underline-offset-4">
+          그림 모델 비교
+        </Link>
+        에서 점수와 함께 나란히 볼 수 있어요.
+      </p>
     </Section>
   );
 }
