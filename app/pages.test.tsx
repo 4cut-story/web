@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import ArticlePage from "./article/page";
 import CharacterPage from "./characters/[id]/page";
 import CharactersPage from "./characters/page";
 import ComicPage from "./comics/[id]/page";
@@ -51,6 +52,7 @@ describe("페이지 연결", () => {
       [FeedPage, "4cut story"],
       [InboxPage, "스토리"],
       [RecordPage, "만들기"],
+      [ArticlePage, "기사로 만들기"],
       [SamplesPage, "샘플로 만들어 보기"],
       [MePage, "프로필"],
     ];

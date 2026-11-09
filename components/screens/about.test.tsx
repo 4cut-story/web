@@ -169,6 +169,23 @@ describe("소개 페이지로 가는 링크", () => {
     expect(container.textContent).not.toMatch(/포트폴리오/);
   });
 
+  it("소개 링크 바로 아래에서 기사로 만들기로 가고, 로그인하면 히어로에도 버튼이 있다", () => {
+    const { unmount } = render(<Landing signedIn={false} posts={[]} />);
+    const links = screen
+      .getAllByRole("link")
+      .map((l) => l.getAttribute("href"));
+    expect(links.indexOf("/article")).toBe(links.indexOf("/about") + 1);
+    expect(
+      screen.getByRole("link", { name: /뉴스 기사도 4컷 만화가 돼요/ }),
+    ).toHaveAttribute("href", "/article");
+    unmount();
+    render(<Landing signedIn posts={[]} />);
+    expect(screen.getByRole("link", { name: "기사로 만들기" })).toHaveAttribute(
+      "href",
+      "/article",
+    );
+  });
+
   it("바닥글에 소개 링크가 GitHub 링크와 나란히 있다", () => {
     render(<AboutScreen />);
     const footer = screen.getByRole("contentinfo");

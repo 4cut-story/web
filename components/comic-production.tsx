@@ -71,7 +71,12 @@ export function ComicProduction({
             return (
               <li key={s.step} className="flex flex-col gap-0.5">
                 <div className="flex justify-between gap-3">
-                  <span className="font-medium">{stepLabel(s.step)}</span>
+                  <span className="font-medium">
+                    {production.source?.type === "ARTICLE" &&
+                    s.step === "TRANSCRIBE"
+                      ? "기사를 대화로 바꾸기"
+                      : stepLabel(s.step)}
+                  </span>
                   <span className="tabular-nums">{duration(s.ms)}</span>
                 </div>
                 {models.length > 0 && (

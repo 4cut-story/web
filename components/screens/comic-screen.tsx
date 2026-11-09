@@ -9,6 +9,7 @@ import { AppShell } from "@/components/app-shell";
 import { ComicCast } from "@/components/comic-cast";
 import { ComicSummary } from "@/components/comic-summary";
 import { ComicProduction } from "@/components/comic-production";
+import { ComicSource } from "@/components/comic-source";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
 import { LivePlayer } from "@/components/live-player";
@@ -73,6 +74,7 @@ export function ComicScreen({ id }: { id: string }) {
             />
           )}
           <ComicSummary summary={comic.summary} />
+          <ComicSource production={comic.production} />
           <ComicCast
             cast={comic.cast}
             concept={comic.concept}
