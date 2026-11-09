@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { AppShell, HOME, LoginButton } from "@/components/app-shell";
 import { ComicCast } from "@/components/comic-cast";
+import { ComicSummary } from "@/components/comic-summary";
 import { ComicProduction } from "@/components/comic-production";
 import { Comments } from "@/components/comments";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -100,6 +101,7 @@ export function PostScreen({ id }: { id: string }) {
                 ) : undefined
               }
             />
+            <ComicSummary summary={post.summary} />
             <ComicCast
               cast={post.cast}
               concept={post.concept}

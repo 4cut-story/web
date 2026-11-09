@@ -243,6 +243,40 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
     expect(screen.queryByRole("region", { name: "제작 정보" })).toBeNull();
   });
 
+  it("만화 바로 아래, 등장인물 위에 줄거리 요약을 보여 준다", async () => {
+    mockFetch({
+      "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
+      "GET /api/v1/posts/p1": json(
+        post({
+          summary:
+            "손녀가 할머니의 빈 접시를 보고 범인을 찾는다. 결국 할머니가 먹은 것이 들통난다.",
+          cast: [{ role: "할머니", name: "하늘", lookId: null }],
+        }),
+      ),
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users": json({ items: [OTHER, ME] }),
+    });
+    render(<PostScreen id="p1" />);
+    const story = await screen.findByRole("region", { name: "줄거리" });
+    expect(story).toHaveTextContent("결국 할머니가 먹은 것이 들통난다.");
+    const cast = screen.getByRole("region", { name: "등장인물" });
+    expect(
+      story.compareDocumentPosition(cast) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("예전 게시물은 줄거리 요약이 없다", async () => {
+    mockFetch({
+      "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
+      "GET /api/v1/posts/p1": json(post({ summary: null })),
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users": json({ items: [OTHER, ME] }),
+    });
+    render(<PostScreen id="p1" />);
+    expect(await screen.findByText("오늘 있었던 일")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "줄거리" })).toBeNull();
+  });
+
   it("라이브 정보가 있는 게시물은 라이브 모드로 볼 수 있다", async () => {
     mockFetch({
       "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),

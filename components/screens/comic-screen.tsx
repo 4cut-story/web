@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { AppShell } from "@/components/app-shell";
 import { ComicCast } from "@/components/comic-cast";
+import { ComicSummary } from "@/components/comic-summary";
 import { ComicProduction } from "@/components/comic-production";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
@@ -71,6 +72,7 @@ export function ComicScreen({ id }: { id: string }) {
               className="h-auto w-full rounded-lg bg-muted"
             />
           )}
+          <ComicSummary summary={comic.summary} />
           <ComicCast
             cast={comic.cast}
             concept={comic.concept}
