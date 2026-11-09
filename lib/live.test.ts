@@ -66,6 +66,11 @@ describe("라이브 모드 계산", () => {
       Array.from({ length: 8 }, (_, step) => frameAt(step, count));
     expect(order(2)).toEqual([0, 1, 0, 1, 0, 1, 0, 1]);
     expect(order(3)).toEqual([0, 1, 2, 1, 0, 1, 2, 1]);
+    // FR-049: 넓은 그림 컷 네 장은 끝까지 갔다가 되돌아온다
+    expect(order(4)).toEqual([0, 1, 2, 3, 2, 1, 0, 1]);
+    expect(panelImageUrl("posts", "p1", 1, 3)).toBe(
+      "/api/images/posts/p1?panel=1&frame=d",
+    );
     expect(frameAt(5, 1)).toBe(0);
   });
 

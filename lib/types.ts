@@ -161,7 +161,7 @@ export type ComicExtras = {
 
 /** 라이브 모드 움직임 종류. 모두 배경만 바뀐다 (common contracts/live-mode.yaml). */
 export type MotionType =
-  "twinkle" | "rain" | "snow" | "flicker" | "shimmer" | "petals";
+  "twinkle" | "rain" | "snow" | "flicker" | "shimmer" | "petals" | "breeze";
 
 /** 컷 배경음과 저작자 표시. */
 export type PanelSound = {
@@ -182,8 +182,11 @@ export type PanelSound = {
 /** 두 장을 번갈아 보여 주는 움직임. */
 export type PanelMotion = {
   type: MotionType;
-  /** 두 장이거나, 세 번째 그림이 있으면 세 장. */
-  frames: [string, string] | [string, string, string];
+  /** 두 장, 세 장(세 번째 그림), 또는 넓은 그림 컷의 네 장(FR-049). */
+  frames:
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string];
   intervalMs: number;
   easing?: string;
 };
