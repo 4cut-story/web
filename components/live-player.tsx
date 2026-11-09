@@ -74,8 +74,17 @@ export function LivePlayer({
     return audio.current;
   }
 
-  // 화면을 떠나면 소리를 끈다
-  useEffect(() => () => audio.current?.stop(), []);
+  // 화면을 떠나면 소리를 끄고 처음 상태로 돌린다. 뒤로 간 화면은 숨겨 둔 채 상태를 남겼다가 다시 보여 주므로,
+  // 재생 상태를 지우지 않으면 돌아왔을 때 누르지 않아도 다시 재생된다.
+  useEffect(
+    () => () => {
+      audio.current?.stop();
+      audio.current = null;
+      setStarted(false);
+      setPlaying(false);
+    },
+    [],
+  );
 
   // 컷이 바뀌면 그 컷 소리로 (같은 소리면 이어 튼다), 다음 컷 소리는 미리 받는다
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import { Activity } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { LivePlayer } from "./live-player";
@@ -145,6 +146,32 @@ describe("라이브 모드 재생기", () => {
     expect(screen.getByText("3 / 3")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "다시 재생" }),
+    ).toBeInTheDocument();
+  });
+
+  it("화면을 떠났다 돌아오면 누르기 전까지 다시 재생하지 않는다", async () => {
+    media(false);
+    mockFetch({ "GET /api/v1/posts/p1/live": json(PLAYBACK) });
+    const audio = fakeAudio();
+    const view = (mode: "visible" | "hidden") => (
+      <Activity mode={mode}>
+        <LivePlayer
+          kind="posts"
+          id="p1"
+          title="밤하늘"
+          audioFactory={audio.factory}
+        />
+      </Activity>
+    );
+    const { rerender } = render(view("visible"));
+    await screen.findByAltText("밤하늘 1컷");
+    fireEvent.click(screen.getAllByRole("button", { name: "재생" })[0]);
+    expect(audio.played).toEqual(["/api/images/sounds/a"]);
+    rerender(view("hidden"));
+    rerender(view("visible"));
+    expect(audio.played).toEqual(["/api/images/sounds/a"]);
+    expect(
+      screen.getAllByRole("button", { name: "재생" })[0],
     ).toBeInTheDocument();
   });
 
