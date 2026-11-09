@@ -13,12 +13,14 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { AmbientLayer } from "@/components/ambient-layer";
+import { DepthParallax } from "@/components/depth-parallax";
 import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { request } from "@/lib/api";
 import {
   ambientOn,
   cameraTransform,
+  depthImageUrl,
   frameAt,
   captionAt,
   isWide,
@@ -26,6 +28,7 @@ import {
   needsCredit,
   nextIndex,
   panelImageUrl,
+  parallaxOn,
   prevIndex,
   SLIDE_MS,
   swipe,
@@ -317,6 +320,28 @@ export function LivePlayer({
                   />
                 );
               })}
+              {i === index && parallaxOn(p, reduced) && (
+                <DepthParallax
+                  images={[
+                    panelImageUrl(kind, id, p.index),
+                    ...(p.motion?.frames
+                      .slice(1)
+                      .map((_, k) => panelImageUrl(kind, id, p.index, k + 1)) ??
+                      []),
+                  ]}
+                  depth={depthImageUrl(kind, id, p.index)}
+                  shown={
+                    moving ? frameAt(step, p.motion?.frames.length ?? 1) : 0
+                  }
+                  fadeMs={p.motion ? Math.round(p.motion.intervalMs * 0.6) : 0}
+                  camera={p.camera}
+                  durationMs={p.durationMs}
+                  playing={playing}
+                  width={width}
+                  height={height}
+                  className={`absolute inset-0 size-full ${full ? "object-contain" : "object-cover"}`}
+                />
+              )}
               {i === index && (
                 <AmbientLayer types={ambientOn(p, reduced)} playing={playing} />
               )}
