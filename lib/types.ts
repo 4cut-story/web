@@ -138,6 +138,8 @@ export type ComicExtras = {
   cast?: CastMember[];
   concept?: Concept | null;
   dialect?: Dialect | null;
+  /** 만화 아래 줄거리 요약(몇 문장). 예전 만화는 null. */
+  summary?: string | null;
   production?: Production | null;
 };
 

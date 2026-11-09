@@ -207,6 +207,25 @@ describe("4컷 보기와 게시 (FR-013, FR-014)", () => {
     });
   });
 
+  it("만화함 4컷 아래에 줄거리 요약을 보여 주고, 공백뿐이면 숨긴다", async () => {
+    mockFetch({
+      "GET /api/v1/comics/c1": json(
+        comic({ summary: "편의점 앞에서 친구가 아이스크림을 떨어뜨린다." }),
+      ),
+    });
+    const { unmount } = render(<ComicScreen id="c1" />);
+    expect(
+      await screen.findByRole("region", { name: "줄거리" }),
+    ).toHaveTextContent("편의점 앞에서 친구가 아이스크림을 떨어뜨린다.");
+    unmount();
+    mockFetch({ "GET /api/v1/comics/c1": json(comic({ summary: "  " })) });
+    render(<ComicScreen id="c1" />);
+    expect(
+      await screen.findByRole("button", { name: "올리기" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "줄거리" })).toBeNull();
+  });
+
   it("게시가 거절되면 이유를 보여 주고, 바깥을 누르면 닫는다", async () => {
     mockFetch({
       "GET /api/v1/comics/c1": json(comic()),
