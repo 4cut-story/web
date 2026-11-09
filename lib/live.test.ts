@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  cameraTransform,
+  captionAt,
+  isWide,
   motionOn,
   needsCredit,
   nextIndex,
@@ -88,5 +91,48 @@ describe("라이브 모드 계산", () => {
     expect(swipe(-60)).toBe("next");
     expect(swipe(60)).toBe("prev");
     expect(swipe(10)).toBeNull();
+  });
+});
+
+describe("라이브 전용 넓은 그림 (FR-031·035)", () => {
+  it("넓은 그림 컷이 하나라도 있으면 16:9 재생기다", () => {
+    expect(
+      isWide({ version: 1, panels: [panel(), panel({ aspect: "16:9" })] }),
+    ).toBe(true);
+    expect(isWide({ version: 1, panels: [panel()] })).toBe(false);
+    expect(isWide(undefined)).toBe(false);
+  });
+
+  it("자막은 넓은 그림 컷에서 시간에 맞는 것만 보여 준다", () => {
+    const captions = [
+      { speaker: "민지", text: "하나", startMs: 300, endMs: 1000 },
+      { text: "둘", startMs: 1150, endMs: 3500 },
+    ];
+    const wide = panel({ aspect: "16:9", captions });
+    expect(captionAt(wide, 100)).toBeNull();
+    expect(captionAt(wide, 500)?.text).toBe("하나");
+    expect(captionAt(wide, 1100)).toBeNull();
+    expect(captionAt(wide, 2000)?.text).toBe("둘");
+    expect(captionAt(panel({ captions }), 500)).toBeNull();
+    expect(captionAt(undefined, 500)).toBeNull();
+  });
+
+  it("카메라는 방향마다 처음·끝이 다르고, 움직임 줄이기면 움직이지 않는다", () => {
+    expect(cameraTransform("push_in", false)).toEqual({
+      from: "scale(1)",
+      to: "scale(1.08)",
+    });
+    expect(cameraTransform("pull_out", false).from).toBe("scale(1.08)");
+    expect(cameraTransform("pan_left", false).to).toContain("translateX(-3%)");
+    expect(cameraTransform("pan_right", false).to).toContain("translateX(3%)");
+    expect(cameraTransform("none", false)).toEqual({
+      from: "none",
+      to: "none",
+    });
+    expect(cameraTransform(undefined, false).to).toBe("none");
+    expect(cameraTransform("push_in", true)).toEqual({
+      from: "none",
+      to: "none",
+    });
   });
 });

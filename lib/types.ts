@@ -182,7 +182,22 @@ export type LivePanel = {
   motion: PanelMotion | null;
   /** 컷이 시작될 때 배경음 위에 한 번 트는 사건 소리(알람, 초인종…). 예전 재생 정보에는 없다. */
   effect?: PanelSound | null;
+  /** 그림 비율. 16:9는 라이브 전용 넓은 그림(말풍선 없음)이라 captions를 자막으로 보여 준다. 없으면 1:1. */
+  aspect?: "1:1" | "16:9";
+  /** 컷 안 대사 자막 (aspect 16:9일 때). */
+  captions?: Caption[];
+  /** 컷을 보여 주는 동안 그림을 천천히 확대·이동하는 방향. */
+  camera?: Camera;
 };
+
+export type Caption = {
+  speaker?: string | null;
+  text: string;
+  startMs: number;
+  endMs: number;
+};
+
+export type Camera = "none" | "push_in" | "pull_out" | "pan_left" | "pan_right";
 
 /** 라이브 모드 재생 정보 (version 1). 화면은 이 JSON만 읽고 재생한다. */
 export type LivePlayback = {

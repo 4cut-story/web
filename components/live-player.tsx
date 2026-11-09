@@ -14,6 +14,9 @@ import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { request } from "@/lib/api";
 import {
+  cameraTransform,
+  captionAt,
+  isWide,
   motionOn,
   needsCredit,
   nextIndex,
@@ -28,6 +31,13 @@ import { useLoad } from "@/lib/use-load";
 
 /** 라이브 모드 컷 그림 크기 (conversation-service ComicComposer.LIVE_SIZE). */
 const PANEL_SIZE = 752;
+
+/** 라이브 전용 넓은 그림 크기 (conversation-service DrawHandler.LIVE_WIDTH·LIVE_HEIGHT). */
+const WIDE_WIDTH = 1024;
+const WIDE_HEIGHT = 576;
+
+/** 자막을 맞추는 시계 간격. */
+const TICK_MS = 100;
 
 function reducedMotion(): boolean {
   return (
@@ -68,6 +78,8 @@ export function LivePlayer({
   const touchX = useRef<number | null>(null);
   const panel = panels[index];
   const count = panels.length;
+  const wide = isWide(loaded.data);
+  const [clock, setClock] = useState({ at: -1, ms: 0 });
 
   function player(): LiveAudio {
     audio.current ??= new LiveAudio(audioFactory);
@@ -114,6 +126,26 @@ export function LivePlayer({
     }, panel.durationMs);
     return () => clearTimeout(timer);
   }, [playing, index, panel, count]);
+
+  // 넓은 그림 컷의 자막 시계. 컷이 바뀌면 처음부터 센다
+  const hasCaptions = Boolean(panel?.captions?.length);
+  useEffect(() => {
+    if (!playing || !hasCaptions) {
+      return;
+    }
+    const begun = Date.now();
+    const timer = setInterval(
+      () => setClock({ at: index, ms: Date.now() - begun }),
+      TICK_MS,
+    );
+    return () => clearInterval(timer);
+  }, [playing, index, hasCaptions]);
+  // 멈췄거나 아직 재생 전이면 첫 자막을 보여 준다
+  const elapsed = clock.at === index ? clock.ms : 0;
+  const caption = captionAt(
+    panel,
+    playing ? elapsed : (panel?.captions?.[0]?.startMs ?? 0),
+  );
 
   // 움직이는 컷은 재생하는 동안 두 그림을 번갈아 보여 준다
   const moving = playing && motionOn(panel, reduced);
@@ -172,7 +204,7 @@ export function LivePlayer({
     return (
       <div
         aria-busy="true"
-        className="aspect-square w-full animate-pulse rounded-lg bg-muted"
+        className={`${wide ? "aspect-video" : "aspect-square"} w-full animate-pulse rounded-lg bg-muted`}
       />
     );
   }
@@ -201,47 +233,68 @@ export function LivePlayer({
             go(prevIndex(index));
           }
         }}
-        className="relative aspect-square w-full touch-pan-y overflow-hidden rounded-lg bg-muted select-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className={`relative ${wide ? "aspect-video" : "aspect-square"} w-full touch-pan-y overflow-hidden rounded-lg bg-muted select-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none`}
       >
-        {panels.map((p, i) => (
-          <div
-            key={p.index}
-            aria-hidden={i !== index}
-            className="absolute inset-0 transition-opacity ease-in-out"
-            style={{
-              opacity: i === index ? 1 : 0,
-              transitionDuration: `${SLIDE_MS}ms`,
-            }}
-          >
-            {/* 권한 확인 뒤 web이 바이트를 넘기는 주소라 next/image 최적화를 쓰지 않는다 */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={panelImageUrl(kind, id, p.index)}
-              alt={`${title ?? "4컷"} ${p.index}컷`}
-              width={PANEL_SIZE}
-              height={PANEL_SIZE}
-              draggable={false}
-              className="size-full object-contain"
-            />
-            {p.motion && (
-              /* eslint-disable-next-line @next/next/no-img-element */
+        {panels.map((p, i) => {
+          const pWide = p.aspect === "16:9";
+          const width = pWide ? WIDE_WIDTH : PANEL_SIZE;
+          const height = pWide ? WIDE_HEIGHT : PANEL_SIZE;
+          const camera = cameraTransform(p.camera, reduced);
+          const active = i === index && playing;
+          return (
+            <div
+              key={p.index}
+              aria-hidden={i !== index}
+              data-testid={`panel-${p.index}`}
+              className="absolute inset-0 transition-[opacity,transform] ease-in-out"
+              style={{
+                opacity: i === index ? 1 : 0,
+                transform: active ? camera.to : camera.from,
+                transitionDuration: `${SLIDE_MS}ms, ${active ? p.durationMs : SLIDE_MS}ms`,
+                transitionTimingFunction: "ease-in-out, linear",
+              }}
+            >
+              {/* 권한 확인 뒤 web이 바이트를 넘기는 주소라 next/image 최적화를 쓰지 않는다 */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={panelImageUrl(kind, id, p.index, true)}
-                alt=""
-                aria-hidden
-                width={PANEL_SIZE}
-                height={PANEL_SIZE}
+                src={panelImageUrl(kind, id, p.index)}
+                alt={`${title ?? "4컷"} ${p.index}컷`}
+                width={width}
+                height={height}
                 draggable={false}
-                data-testid={`frame-b-${p.index}`}
-                className="absolute inset-0 size-full object-contain transition-opacity ease-in-out"
-                style={{
-                  opacity: i === index && moving && second ? 1 : 0,
-                  transitionDuration: `${Math.round(p.motion.intervalMs * 0.6)}ms`,
-                }}
+                className={`size-full ${pWide ? "object-cover" : "object-contain"}`}
               />
+              {p.motion && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={panelImageUrl(kind, id, p.index, true)}
+                  alt=""
+                  aria-hidden
+                  width={width}
+                  height={height}
+                  draggable={false}
+                  data-testid={`frame-b-${p.index}`}
+                  className={`absolute inset-0 size-full ${pWide ? "object-cover" : "object-contain"} transition-opacity ease-in-out`}
+                  style={{
+                    opacity: i === index && moving && second ? 1 : 0,
+                    transitionDuration: `${Math.round(p.motion.intervalMs * 0.6)}ms`,
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
+        {caption && (
+          <p
+            aria-live="polite"
+            className="absolute inset-x-4 bottom-4 mx-auto w-fit max-w-[90%] rounded-md bg-foreground/75 px-3 py-1.5 text-center text-sm text-background sm:text-base"
+          >
+            {caption.speaker && (
+              <span className="mr-1.5 font-semibold">{caption.speaker}</span>
             )}
-          </div>
-        ))}
+            {caption.text}
+          </p>
+        )}
         {!playing && (
           <button
             type="button"
