@@ -3,6 +3,8 @@
 import {
   ChevronLeft,
   ChevronRight,
+  Maximize,
+  Minimize,
   Pause,
   Play,
   Volume2,
@@ -42,6 +44,11 @@ const WIDE_HEIGHT = 576;
 /** 자막을 맞추는 시계 간격. */
 const TICK_MS = 100;
 
+/** 이 브라우저가 요소 전체 화면을 지원하는지 (아이폰 Safari 등은 아니다). */
+function fullscreenEnabled(): boolean {
+  return typeof document !== "undefined" && Boolean(document.fullscreenEnabled);
+}
+
 function reducedMotion(): boolean {
   return (
     typeof window !== "undefined" &&
@@ -79,6 +86,23 @@ export function LivePlayer({
   const [reduced] = useState(reducedMotion);
   const audio = useRef<LiveAudio | null>(null);
   const touchX = useRef<number | null>(null);
+  const stage = useRef<HTMLDivElement | null>(null);
+  const [full, setFull] = useState(false);
+  const [canFull] = useState(fullscreenEnabled);
+  useEffect(() => {
+    const sync = () => setFull(document.fullscreenElement === stage.current);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
+  // 휴대폰에서는 가로 16:9 그림이 작으니 전체 화면으로 크게 본다
+  function toggleFull() {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => undefined);
+    } else {
+      void stage.current?.requestFullscreen().catch(() => undefined);
+    }
+  }
   const panel = panels[index];
   const count = panels.length;
   const wide = isWide(loaded.data);
@@ -219,6 +243,7 @@ export function LivePlayer({
       className="flex flex-col gap-3"
     >
       <div
+        ref={stage}
         tabIndex={0}
         onKeyDown={onKey}
         onPointerDown={(e) => {
@@ -236,7 +261,7 @@ export function LivePlayer({
             go(prevIndex(index));
           }
         }}
-        className={`relative ${wide ? "aspect-video" : "aspect-square"} w-full touch-pan-y overflow-hidden rounded-lg bg-muted select-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none`}
+        className={`relative ${wide ? "aspect-video" : "aspect-square"} w-full touch-pan-y overflow-hidden rounded-lg bg-muted select-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${full ? "rounded-none bg-foreground" : ""}`}
       >
         {panels.map((p, i) => {
           const pWide = p.aspect === "16:9";
@@ -265,7 +290,7 @@ export function LivePlayer({
                 width={width}
                 height={height}
                 draggable={false}
-                className={`size-full ${pWide ? "object-cover" : "object-contain"}`}
+                className={`size-full ${pWide && !full ? "object-cover" : "object-contain"}`}
               />
               {p.motion?.frames.slice(1).map((_, k) => {
                 const n = k + 1;
@@ -284,7 +309,7 @@ export function LivePlayer({
                     height={height}
                     draggable={false}
                     data-testid={`frame-${n === 1 ? "b" : "c"}-${p.index}`}
-                    className={`absolute inset-0 size-full ${pWide ? "object-cover" : "object-contain"} transition-opacity ease-in-out`}
+                    className={`absolute inset-0 size-full ${pWide && !full ? "object-cover" : "object-contain"} transition-opacity ease-in-out`}
                     style={{
                       opacity: shown ? 1 : 0,
                       transitionDuration: `${Math.round(p.motion!.intervalMs * 0.6)}ms`,
@@ -375,6 +400,17 @@ export function LivePlayer({
           onChange={(e) => setVolume(Number(e.target.value))}
           className="w-24 accent-primary"
         />
+        {canFull && (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={full ? "전체 화면 끝내기" : "전체 화면"}
+            aria-pressed={full}
+            onClick={toggleFull}
+          >
+            {full ? <Minimize aria-hidden /> : <Maximize aria-hidden />}
+          </Button>
+        )}
       </div>
       <Credit sound={panel.sound} />
       <Credit sound={panel.effect ?? null} label="효과음" />

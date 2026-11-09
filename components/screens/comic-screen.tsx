@@ -44,6 +44,8 @@ export function ComicScreen({ id }: { id: string }) {
     <AppShell
       title={comic?.title ?? "4컷"}
       tab="inbox"
+      // 라이브 모드는 가로 16:9라 좁은 폭에서는 키가 낮아진다. PC에서는 본문을 넓혀 그림을 키운다
+      width={comic?.live && mode === "live" ? "medium" : "narrow"}
       actions={
         <Button
           variant="ghost"

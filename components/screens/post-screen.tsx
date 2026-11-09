@@ -86,7 +86,14 @@ export function PostScreen({ id }: { id: string }) {
       {error && <ErrorText message={error} />}
       {post && (
         // PC: 세로로 긴 4컷은 왼쪽, 댓글은 오른쪽에 붙여 둔다
-        <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] md:items-start md:gap-10 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] lg:gap-12">
+        // 라이브 모드는 가로 16:9라 같은 폭이면 키가 낮아진다. 그림 칸을 넓혀 4컷과 비슷한 크기로 보이게 한다
+        <div
+          className={
+            post.live && mode === "live"
+              ? "flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] md:items-start md:gap-8 lg:grid-cols-[minmax(0,46rem)_minmax(0,1fr)] lg:gap-10"
+              : "flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] md:items-start md:gap-10 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] lg:gap-12"
+          }
+        >
           <div className="flex flex-col gap-6">
             {post.live && <ViewModeToggle mode={mode} onChange={setMode} />}
             <PostCard
