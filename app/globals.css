@@ -113,7 +113,7 @@
 
 .ambient-rain {
   background: linear-gradient(transparent, var(--ambient-rain));
-  opacity: 0.55;
+  opacity: 0.7;
   animation-name: ambient-rain;
   animation-timing-function: linear;
 }
@@ -282,6 +282,119 @@
   }
   76% {
     opacity: 0.5;
+  }
+}
+
+/* 별똥별: 꼬리가 긴 빛줄기가 왼쪽 아래로 빠르게 지나가고, 남은 시간은 보이지 않는다 */
+.ambient-meteor {
+  background: linear-gradient(90deg, var(--ambient-light), transparent);
+  border-radius: 9999px;
+  box-shadow: 0 0 6px 1px var(--ambient-light);
+  animation-name: ambient-meteor;
+  animation-timing-function: ease-in;
+}
+
+@keyframes ambient-meteor {
+  0% {
+    opacity: 0;
+    transform: rotate(-35deg) translateX(0);
+  }
+  4% {
+    opacity: 1;
+  }
+  22% {
+    opacity: 0;
+    transform: rotate(-35deg) translateX(-260px);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-35deg) translateX(-260px);
+  }
+}
+
+/* 불꽃: 작은 점 하나에 둘레 점을 그림자로 달아 둥글게 퍼지며 사라진다 */
+.ambient-fireworks {
+  border-radius: 9999px;
+  background: var(--ambient-warm);
+  box-shadow:
+    0 -28px 0 0 var(--ambient-warm),
+    20px -20px 0 0 var(--ambient-petal),
+    28px 0 0 0 var(--ambient-light),
+    20px 20px 0 0 var(--ambient-warm),
+    0 28px 0 0 var(--ambient-petal),
+    -20px 20px 0 0 var(--ambient-light),
+    -28px 0 0 0 var(--ambient-warm),
+    -20px -20px 0 0 var(--ambient-petal);
+  animation-name: ambient-fireworks;
+  animation-timing-function: ease-out;
+}
+
+@keyframes ambient-fireworks {
+  0% {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  10% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+/* 번개: 그림 전체에 흰 빛이 짧게 두 번 번쩍인다 */
+.ambient-lightning {
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  background: var(--ambient-light);
+  mix-blend-mode: screen;
+  animation-name: ambient-lightning;
+  animation-timing-function: steps(1, end);
+}
+
+@keyframes ambient-lightning {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  70% {
+    opacity: 0.7;
+  }
+  71% {
+    opacity: 0;
+  }
+  73% {
+    opacity: 0.45;
+  }
+  75% {
+    opacity: 0;
+  }
+}
+
+/* 은은한 빛: 흐릿한 빛 방울이 천천히 떠다니며 숨 쉬듯 밝아졌다 어두워진다 */
+.ambient-glow {
+  border-radius: 9999px;
+  background: var(--ambient-glow);
+  filter: blur(8px);
+  animation-name: ambient-glow;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes ambient-glow {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: translate(0, 0) scale(0.9);
+  }
+  50% {
+    opacity: 0.32;
+    transform: translate(24px, -18px) scale(1.1);
   }
 }
 

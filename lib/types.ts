@@ -216,7 +216,11 @@ export type Ambient =
   | "leaves"
   | "steam"
   | "dust"
-  | "flicker";
+  | "flicker"
+  | "meteor"
+  | "fireworks"
+  | "lightning"
+  | "glow";
 
 export type Caption = {
   speaker?: string | null;
