@@ -226,6 +226,48 @@ describe("라이브 모드 재생기", () => {
     expect(screen.queryByText("그러게")).not.toBeInTheDocument();
   });
 
+  it("FR-042: 지금 컷에 화면 효과 층을 얹고, 멈추면 움직임도 멈추며, 움직임 줄이기 설정이면 없다", async () => {
+    for (const reduce of [false, true]) {
+      media(reduce);
+      mockFetch({
+        "GET /api/v1/posts/p1/live": json({
+          version: 1,
+          panels: [
+            { ...PLAYBACK.panels[0], ambient: ["twinkle", "fireflies"] },
+            PLAYBACK.panels[1],
+          ],
+        }),
+      });
+      const audio = fakeAudio();
+      const view = render(
+        <LivePlayer
+          kind="posts"
+          id="p1"
+          title="밤하늘"
+          audioFactory={audio.factory}
+        />,
+      );
+      await screen.findByAltText("밤하늘 1컷");
+      if (reduce) {
+        expect(screen.queryByTestId("ambient")).not.toBeInTheDocument();
+      } else {
+        const layer = screen.getByTestId("ambient");
+        expect(layer.querySelector('[data-ambient="twinkle"]')).not.toBeNull();
+        expect(
+          layer.querySelector('[data-ambient="fireflies"]'),
+        ).not.toBeNull();
+        const dot = layer.querySelector<HTMLElement>(".ambient")!;
+        expect(dot.style.animationPlayState).toBe("paused");
+        fireEvent.click(screen.getAllByRole("button", { name: "재생" })[0]);
+        expect(
+          screen.getByTestId("ambient").querySelector<HTMLElement>(".ambient")!
+            .style.animationPlayState,
+        ).toBe("running");
+      }
+      view.unmount();
+    }
+  });
+
   it("움직임 줄이기 설정이면 두 번째 그림을 보이지 않는다", async () => {
     await open(true);
     vi.useFakeTimers();

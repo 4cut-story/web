@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ambientOn,
+  ambientParticles,
+  AMBIENTS,
   cameraTransform,
   captionAt,
   isWide,
@@ -134,5 +137,44 @@ describe("라이브 전용 넓은 그림 (FR-031·035)", () => {
       from: "none",
       to: "none",
     });
+  });
+});
+
+describe("화면 효과 층", () => {
+  const panel = (ambient: unknown): LivePanel =>
+    ({
+      index: 1,
+      role: "기",
+      image: "panels/1.png",
+      durationMs: 3500,
+      sound: null,
+      motion: null,
+      ambient,
+    }) as LivePanel;
+
+  it("FR-042: 모르는 값·중복은 빼고 두 개까지, 움직임 줄이기 설정이면 없다", () => {
+    expect(
+      ambientOn(
+        panel(["flicker", "flicker", "glitter", "twinkle", "snow"]),
+        false,
+      ),
+    ).toEqual(["flicker", "twinkle"]);
+    expect(ambientOn(panel(["rain"]), true)).toEqual([]);
+    expect(ambientOn(panel(undefined), false)).toEqual([]);
+  });
+
+  it("FR-043: 종류마다 알갱이가 늘 같은 자리에 있고, 재생하자마자 화면 곳곳에 있다", () => {
+    for (const type of AMBIENTS) {
+      const first = ambientParticles(type);
+      expect(first.length).toBeGreaterThan(0);
+      expect(ambientParticles(type)).toEqual(first);
+      for (const p of first) {
+        expect(p.delayMs).toBeLessThanOrEqual(0);
+        expect(p.delayMs).toBeGreaterThanOrEqual(-p.durationMs);
+      }
+    }
+    expect(ambientParticles("rain").length).toBeGreaterThan(
+      ambientParticles("fireflies").length,
+    );
   });
 });
