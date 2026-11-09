@@ -6,6 +6,7 @@
  * - 품질 점수: docs comic-quality-plan.md(고정 시험 세트 채점), image-quality-log.md, reviews/round-29.md(그림 모델 비교),
  *   model-runtime eval/round29-outputs의 scores.json·timing.json(FLUX.2 klein 4B, 콘티 틀 1~25c판)
  * - 콘티 틀·2단 그리기: conversation-service #119, model-runtime #37·#43
+ * - 콘티 틀 26판(시선·신발·시간): conversation-service #126, 필요 VRAM: model-runtime #47, 시험 31회
  * - 줄거리 요약: conversation-service #120, content-service #15
  * - 라이브 모드: docs specs/003-live-mode, conversation-service #121, model-runtime #44, content-service #16
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
@@ -964,6 +965,18 @@ export const TUNINGS: Tuning[] = [
     fix: "먼저 앞사람만, 또는 빈손 자세만 그리고, 그 그림을 다시 넣어 뒷사람이나 물건 하나만 더하게 했어요. 받침 위 물건은 자세를 그대로 두고 손은 비운 채 눈높이에 세워요.",
     before: "두 사람을 한 번에: 심각한 오류 편 8편",
     after: "두 사람 컷 10개 중 9개 정상, 물건 컷 8개 모두 정상",
+  },
+  {
+    icon: Clapperboard,
+    kind: "품질",
+    title: "같은 사람 둘·이상한 발·아침의 밤하늘 막기",
+    problem:
+      "혼자 나오는 컷에 같은 사람이 하나 더 그려지고, 맨발의 발가락이 뭉개지고, 아침 8시 이야기에 밤하늘이 그려졌어요.",
+    cause:
+      '컷에 없는 사람을 보는 시선을 "누군가를 본다"로 쓰자 그림 모델이 참조 그림 속 그 사람을 하나 더 그렸어요. 콘티가 실내 신발을 맨발로 쓰고, 장소에 시간과 빛이 없었어요.',
+    fix: '컷에 없는 사람을 볼 때는 "옆을 본다"로만 쓰고, 실내에서는 양말·슬리퍼를 신겨요. 서거나 걷는 컷만 전신으로, 앉은 컷은 허리 위로 그려요. 장소 설명 끝에 대사 속 시간과 맞는 빛(아침 햇살, 밤 등)을 붙이고, 가구 밑 들여다보기처럼 같은 것을 둘 그리기 쉬운 동작은 피해요. 그림 프로그램은 실제로 쓰는 만큼(약 3.7GB, 여유 포함 5GB)만 VRAM이 비어 있으면 그려요.',
+    before: "시험 30회: 같은 사람 둘·이상한 발·시간 어긋남이 나온 편이 있었음",
+    after: "시험 31회 13편: 같은 사람 둘 0, 이상한 발 0, 시간 어긋남 0",
   },
 ];
 
