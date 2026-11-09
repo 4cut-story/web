@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import { AppShell } from "@/components/app-shell";
 import { CharacterImage } from "@/components/character-image";
 import { EmptyState, ErrorText } from "@/components/empty-state";
 import { MoreButton } from "@/components/more-button";
+import { SearchBox } from "@/components/search-box";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import {
@@ -77,28 +78,13 @@ export function CharactersScreen({ initial }: { initial: CharacterFilter }) {
           ))}
         </div>
         <div className="flex flex-col gap-2 md:flex-row md:items-center">
-          <form
-            role="search"
-            className="relative flex-1"
-            onSubmit={(e) => {
-              e.preventDefault();
-              apply({ q });
-            }}
-          >
-            <Search
-              aria-hidden
-              className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground"
-            />
-            <input
-              type="search"
-              aria-label="이름으로 찾기"
-              placeholder="이름으로 찾기"
-              maxLength={30}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="h-11 w-full rounded-lg border border-input bg-background pr-3 pl-10 text-base"
-            />
-          </form>
+          <SearchBox
+            label="이름으로 찾기"
+            maxLength={30}
+            value={q}
+            onChange={setQ}
+            onSubmit={() => apply({ q })}
+          />
           <div className="flex gap-2">
             <select
               aria-label="직업"

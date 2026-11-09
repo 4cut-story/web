@@ -215,3 +215,34 @@ export type CharacterDetail = Omit<CharacterCard, "coverLookId"> & {
 };
 
 export type JobCount = { job: string; count: number };
+
+export type SoundKind = "AMBIENCE" | "EFFECT" | "MUSIC";
+
+/** 배경음 저작자 표시 (CC BY는 저작자·출처·라이선스를 보여 줘야 한다). */
+export type SoundCredit = {
+  source: string;
+  sourceUrl: string;
+  originalTitle: string | null;
+  author: string;
+  license: string;
+  licenseUrl: string;
+};
+
+export type Sound = {
+  id: string;
+  kind: SoundKind;
+  category: string;
+  title: string;
+  description: string;
+  moods: string[];
+  places: string[];
+  durationMs: number;
+  credit: SoundCredit;
+};
+
+export type SoundDetail = { sound: Sound; similar: Sound[] };
+
+export type SoundFacets = {
+  categories: { kind: SoundKind; category: string; count: number }[];
+  moods: { mood: string; count: number }[];
+};

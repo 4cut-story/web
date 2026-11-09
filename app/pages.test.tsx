@@ -13,6 +13,8 @@ import FeedPage from "./page";
 import PostPage from "./posts/[id]/page";
 import RecordPage from "./record/page";
 import SamplesPage from "./record/samples/page";
+import SoundPage from "./sounds/[id]/page";
+import SoundsPage from "./sounds/page";
 import UserPage from "./u/[nickname]/page";
 import ProfilePage from "./users/[id]/page";
 import { Awaited, Resolve } from "@/components/awaited";
@@ -86,6 +88,13 @@ describe("페이지 연결", () => {
         CharacterPage({ params, searchParams: Promise.resolve({}) } as never),
         "캐릭터",
       ],
+      [
+        SoundsPage({
+          searchParams: Promise.resolve({ kind: "MUSIC", mood: "SAD" }),
+        } as never),
+        "배경음",
+      ],
+      [SoundPage({ params } as never), "배경음"],
       [
         UserPage({
           params: Promise.resolve({ nickname: "%EB%A7%88%EB%A5%B4%EC%BD%94" }),
