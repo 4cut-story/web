@@ -279,21 +279,13 @@ describe("라이브 모드 재생기", () => {
     }
   });
 
-  it("FR-048: 깊이 지도가 있는 넓은 그림 컷은 패럴랙스 층을 얹고, 움직임 줄이기 설정이면 없다", async () => {
-    for (const reduce of [false, true]) {
-      const view = await renderFirst(reduce, {
-        aspect: "16:9",
-        depth: "panels/1-depth.png",
-      });
-      if (reduce) {
-        expect(screen.queryByTestId("depth-parallax")).not.toBeInTheDocument();
-      } else {
-        // WebGL이 없는 곳에서는 그리지 않아 평면 그림이 보인다
-        const layer = screen.getByTestId("depth-parallax");
-        expect(layer.style.opacity).toBe("0");
-      }
-      view.unmount();
-    }
+  it("FR-048: 깊이 패럴랙스는 꺼 두어 깊이 지도가 있어도 평면 그림만 보인다", async () => {
+    const view = await renderFirst(false, {
+      aspect: "16:9",
+      depth: "panels/1-depth.png",
+    });
+    expect(screen.queryByTestId("depth-parallax")).not.toBeInTheDocument();
+    view.unmount();
   });
 
   it("FR-044: 그림이 세 장인 움직임 컷은 a→b→c→b 순서로 오간다", async () => {
