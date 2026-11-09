@@ -119,19 +119,24 @@ describe("이미지 중계", () => {
     expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2&frame=b`);
   });
 
-  it("FR-044: 움직임 컷의 세 번째 그림은 frame=c로 받는다", async () => {
-    const calls = mockFetch({
-      [`GET ${GW}/api/v1/posts/${ID}/image`]: json({
-        url: `${STORE}/panels/2-c.png?sig`,
-      }),
-      [`GET ${STORE}`]: png(),
-    });
-    await image(
-      anonymous(`/api/images/posts/${ID}?panel=2&frame=c`),
-      params({ kind: "posts", id: ID }),
-    );
-    expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2&frame=c`);
-  });
+  it.each(["c", "d"])(
+    "FR-044·049: 움직임 컷의 세·네 번째 그림은 frame=%s로 받는다",
+    async (frame) => {
+      const calls = mockFetch({
+        [`GET ${GW}/api/v1/posts/${ID}/image`]: json({
+          url: `${STORE}/panels/2-${frame}.png?sig`,
+        }),
+        [`GET ${STORE}`]: png(),
+      });
+      await image(
+        anonymous(`/api/images/posts/${ID}?panel=2&frame=${frame}`),
+        params({ kind: "posts", id: ID }),
+      );
+      expect(calls[0].url).toBe(
+        `${GW}/api/v1/posts/${ID}/image?panel=2&frame=${frame}`,
+      );
+    },
+  );
 
   it("FR-048: 넓은 그림 컷의 깊이 지도는 frame=depth로 받는다", async () => {
     const calls = mockFetch({

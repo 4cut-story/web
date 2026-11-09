@@ -20,7 +20,7 @@ export function panelImageUrl(
   frame: boolean | number = 0,
 ): string {
   const n = frame === true ? 1 : Number(frame);
-  const query = n === 1 ? "&frame=b" : n === 2 ? "&frame=c" : "";
+  const query = n >= 1 && n <= 3 ? `&frame=${"bcd"[n - 1]}` : "";
   return `/api/images/${kind}/${id}?panel=${index}${query}`;
 }
 
@@ -46,7 +46,6 @@ export function depthImageUrl(
   return `/api/images/${kind}/${id}?panel=${index}&frame=depth`;
 }
 
-/** 깊이 패럴랙스를 켤지. 깊이 지도가 있는 넓은 그림 컷이고 움직임 줄이기 설정이 아닐 때만. */
 /**
  * 깊이 패럴랙스를 쓸지. 한 장의 깊이 지도로 픽셀을 밀면 인물 경계가 늘어나 목이 뒤로 빠지는 것처럼 보여 꺼 둔다. 깊이 지도는
  * 계속 만들어 두므로 층을 나눠 그리는 방식이 생기면 다시 켠다.
