@@ -67,6 +67,7 @@ const ROUTES = {
   }),
   [`GET ${rawUrl(`${R}/schnell-nf4-ref/scores.json`)}`]: json({
     label: "schnell NF4 참조",
+    status: "채택",
     average: 92.5,
   }),
   [`GET ${rawUrl(`${R}/dev-nf4/timing.json`)}`]: json({
@@ -94,6 +95,9 @@ describe("그림 모델 비교 (/lab)", () => {
       within(ref).getByRole("rowheader", { name: "schnell NF4 참조" }),
     ).toBeInTheDocument();
     expect(within(table).getByText("기준")).toBeInTheDocument();
+    // 채택만 채운 초록 배지로 다른 판단과 색이 다르다
+    expect(within(ref).getByText("채택")).toHaveClass("bg-success");
+    expect(within(table).getByText("기준")).not.toHaveClass("bg-success");
     expect(within(table).getByText(/실패 1/)).toBeInTheDocument();
     expect(screen.getByText(/느려서 멈춤/)).toBeInTheDocument();
 

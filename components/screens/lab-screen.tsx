@@ -24,10 +24,13 @@ const sec = (n?: number | null) => (n == null ? "–" : `${n.toFixed(1)}초`);
 const gib = (n?: number | null) => (n == null ? "–" : `${n.toFixed(1)}GiB`);
 const score = (n?: number | null) => (n == null ? "–" : n.toFixed(1));
 
+// 채택만 눈에 띄게 채운 초록으로, 나머지는 옅게 둔다.
 const STATUS_STYLE: Record<string, string> = {
-  기준: "bg-primary text-primary-foreground",
-  채택: "bg-success text-primary-foreground",
-  탈락: "bg-muted text-muted-foreground",
+  채택: "bg-success font-semibold text-primary-foreground",
+  "이전 채택": "border border-success text-success",
+  기준: "border border-border text-foreground",
+  비교: "bg-secondary text-secondary-foreground",
+  탈락: "bg-muted text-muted-foreground line-through",
 };
 
 function Status({ value }: { value?: string }) {
@@ -36,7 +39,7 @@ function Status({ value }: { value?: string }) {
     <span
       className={cn(
         "rounded-full px-2 py-0.5 text-xs whitespace-nowrap",
-        STATUS_STYLE[value] ?? "bg-accent text-primary-foreground",
+        STATUS_STYLE[value] ?? "bg-muted text-muted-foreground",
       )}
     >
       {value}
