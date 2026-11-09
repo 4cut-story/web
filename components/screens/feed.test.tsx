@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -113,9 +113,10 @@ describe("첫 화면 포털", () => {
     expect(
       screen.getByRole("link", { name: /비교 페이지 보기/ }),
     ).toHaveAttribute("href", "/lab");
+    // 배경음은 소개 띠 대신 메뉴에서 캐릭터 바로 옆으로 들어간다
     expect(
-      screen.getByRole("link", { name: /배경음 둘러보기/ }),
-    ).toHaveAttribute("href", "/sounds");
+      screen.queryByRole("link", { name: /배경음 둘러보기/ }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "내 페이지" })).toHaveAttribute(
       "href",
       "/login",
@@ -131,9 +132,17 @@ describe("첫 화면 포털", () => {
     expect(link).toHaveAttribute("href", "/posts/p1");
     expect(link).not.toHaveAttribute("target");
     expect(screen.queryByText("오늘 있었던 일")).not.toBeInTheDocument();
+    // 로그인하지 않아도 메뉴에서 캐릭터와 배경음으로 들어갈 수 있다
+    const menu = screen.getByRole("navigation", { name: "주요 메뉴" });
     expect(
-      screen.queryByRole("navigation", { name: "주요 메뉴" }),
-    ).not.toBeInTheDocument();
+      within(menu)
+        .getAllByRole("link")
+        .map((a) => a.textContent),
+    ).toEqual(["홈", "캐릭터", "배경음", "로그인"]);
+    expect(within(menu).getByRole("link", { name: "배경음" })).toHaveAttribute(
+      "href",
+      "/sounds",
+    );
     expect(toLogin).not.toHaveBeenCalled();
   });
 

@@ -198,7 +198,8 @@ describe("4컷 보기와 게시 (FR-013, FR-014)", () => {
     await userEvent.click(screen.getByLabelText(/게시에 동의했어요/));
     await userEvent.click(submit);
     expect(router.push).toHaveBeenCalledWith("/posts/p9");
-    expect(JSON.parse(String(calls[1].init?.body))).toEqual({
+    const posted = calls.find((c) => c.method === "POST");
+    expect(JSON.parse(String(posted?.init?.body))).toEqual({
       comicId: "c1",
       caption: "편의점 대소동",
       visibility: "FOLLOWERS",

@@ -120,6 +120,11 @@ describe("로그인 확인 (FR 로그인)", () => {
     expect(needsLogin("/", false)).toBe(false);
     expect(needsLogin("/about", false)).toBe(false);
     expect(needsLogin("/lab", false)).toBe(false);
+    expect(needsLogin("/characters", false)).toBe(false);
+    expect(needsLogin("/characters/c1", false)).toBe(false);
+    expect(needsLogin("/sounds", false)).toBe(false);
+    expect(needsLogin("/sounds/s1", false)).toBe(false);
+    expect(needsLogin("/sounds/s1/edit", false)).toBe(true);
     expect(needsLogin("/@%EB%A7%88%EB%A5%B4%EC%BD%94", false)).toBe(false);
     expect(needsLogin("/u/marco", false)).toBe(false);
     expect(needsLogin("/users/u1", false)).toBe(false);
