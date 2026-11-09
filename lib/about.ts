@@ -1,9 +1,11 @@
 /**
  * 서비스 소개(/about) 페이지에 싣는 사실. 값은 각 레포의 설정과 커밋 기록에서 옮겼다.
  * - 모델·설정: conversation-service application.yml·ScenarioProperties·TranscriptCorrector·ClaudeClient·GeminiClient,
- *   model-runtime config.py·backends(whisper, ollama, flux, sdxl), docs architecture.md
+ *   model-runtime config.py·backends(whisper, ollama, flux, diffusion, sdxl), docs architecture.md
  * - 튜닝 수치: conversation-service #8·#18·#20~#27·#34~#40·#63~#70·#73, model-runtime #6·#8·#10~#16·#18
- * - 품질 점수: docs comic-quality-plan.md(고정 시험 세트 채점), image-quality-log.md, reviews/round-29.md(그림 모델 비교)
+ * - 품질 점수: docs comic-quality-plan.md(고정 시험 세트 채점), image-quality-log.md, reviews/round-29.md(그림 모델 비교),
+ *   model-runtime eval/round29-outputs의 scores.json·timing.json(FLUX.2 klein 4B, 콘티 틀 1~25c판)
+ * - 콘티 틀·2단 그리기: conversation-service #119, model-runtime #37·#43
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
  * 기능이 바뀌면 이 파일도 함께 고친다(web CLAUDE.md "소개 페이지").
@@ -68,7 +70,7 @@ export const STATS: Stat[] = [
     value: `${CHARACTER_IMAGES.toLocaleString("ko-KR")}장`,
     label: `캐릭터 ${CHARACTER_COUNT.toLocaleString("ko-KR")}명의 참조 그림`,
   },
-  { value: "약 5.6초", label: "4컷 그림 네 장 그리기" },
+  { value: "약 5.4초", label: "캐릭터를 참조해 컷 한 장 그리기" },
 ];
 
 export type PipelineStep = {
@@ -116,7 +118,7 @@ export const PIPELINE: PipelineStep[] = [
     icon: Clapperboard,
     title: "콘티와 대사 쓰기",
     description:
-      "고른 장면을 기·승·전·결 이야기로 나눠요. 컷 수는 이야기에 맞게 Claude가 4~10컷 중에서 골라요. 한마디 반전이면 4컷, 사건이 여러 단계로 이어지거나 반전이 두 번 이상이면 6·8컷으로 늘리고, 컷마다 서로 다른 대사가 있어야 해서 쓸 만한 말이 적으면 늘리지 않아요. 그림 테마 7가지마다 작가 역할과 말투를 정해 두고(무협은 무협지 말투, 조선은 사극 말투), 사용자가 고른 사투리로 말끝을 바꾸고, 맞춤법과 띄어쓰기까지 다듬어요. 인물마다 호칭(할머니, 손녀, 친구…)을 정해 대사와 말풍선에서는 이름 대신 호칭으로 불러요. 규칙을 어긴 콘티는 다섯 번까지 다시 써요.",
+      "고른 장면을 기·승·전·결 이야기로 나눠요. 컷 수는 이야기에 맞게 Claude가 4~10컷 중에서 골라요. 한마디 반전이면 4컷, 사건이 여러 단계로 이어지거나 반전이 두 번 이상이면 6·8컷으로 늘리고, 컷마다 서로 다른 대사가 있어야 해서 쓸 만한 말이 적으면 늘리지 않아요. 그림 테마 7가지마다 작가 역할과 말투를 정해 두고(무협은 무협지 말투, 조선은 사극 말투), 사용자가 고른 사투리로 말끝을 바꾸고, 맞춤법과 띄어쓰기까지 다듬어요. 인물마다 호칭(할머니, 손녀, 친구…)을 정해 대사와 말풍선에서는 이름 대신 호칭으로 불러요. 콘티는 칸을 나눈 틀로 받아요. 인물 옷 한 벌, 소품, 장소를 처음에 한 번만 정하고 컷에서는 이름표(예: {목검})로만 가리키면, 코드가 모든 컷에 같은 말을 넣어 1컷의 목검이 2컷에서 쇠칼로 바뀌지 않아요. 한 컷에는 한 사람, 한 동작, 물건 하나를 한 번만 그리게 하고, 두 사람이 함께 나와야 읽히는 컷은 한 편에 두 컷까지만 써요. 규칙을 어긴 콘티는 다섯 번까지 다시 써요.",
     models: ["Claude Opus 5.5", "Gemini", "Qwen3 8B"],
     where: "클라우드 API",
   },
@@ -132,8 +134,8 @@ export const PIPELINE: PipelineStep[] = [
     icon: Brush,
     title: "컷 그리기",
     description:
-      '컷마다 그림을 그려요. 그림 모델 FLUX.1-schnell은 긴 장면 설명을 읽어 물건과 인물 수를 잘 따르지만, 참조 그림을 넘기는 모듈이 없어 인물의 옷·머리는 콘티의 외모 글로만 맞춰요. 두 명이 나오는 컷은 인물마다 왼쪽·오른쪽 자리를 정해 두고 모든 컷에서 같은 쪽에 세우고, 그림 설명에 "a young woman and an old man"처럼 왼쪽부터 나이·성별로 세어 적어요. 흑백 신문 테마는 옅은 색으로 그린 뒤 합칠 때 흑백으로 바꿔요.',
-    models: ["FLUX.1-schnell"],
+      "컷마다 그림을 그려요. 그림 모델 FLUX.2 klein 4B는 캐릭터 DB의 그림을 참조 그림으로 직접 받아, 모든 컷에서 같은 얼굴·머리·옷으로 그려요. 물건을 손에 드는 컷과 두 사람이 나오는 컷은 두 번에 나눠 그려요(2단 그리기). 먼저 빈손 자세나 앞사람만 그리고, 그 그림을 다시 넣어 물건 하나나 뒷사람만 더해요. 한 번에 그리면 물건이 두 개로 늘거나 두 사람이 한 사람으로 섞였기 때문이에요. 두 명이 나오는 컷은 인물마다 왼쪽·오른쪽 자리를 정해 두고 모든 컷에서 같은 쪽에 세워요. 흑백 신문 테마는 옅은 색으로 그린 뒤 합칠 때 흑백으로 바꿔요.",
+    models: ["FLUX.2 klein 4B"],
     where: "GPU PC",
   },
   {
@@ -255,25 +257,26 @@ export const MODELS: Model[] = [
   },
   {
     icon: Palette,
-    name: "FLUX.1-schnell",
-    what: "글을 긴 문장까지 읽는 T5 글 인코더를 쓰는 공개 이미지 생성 모델. 4단계만 다듬어 그리도록 학습됐어요",
-    role: "컷 그림 그리기",
-    size: "그림 본체 약 120억 파라미터, 미리 4비트(FP4)로 줄인 파일을 써서 GPU는 최대 약 6.1GB만 사용",
+    name: "FLUX.2 klein 4B",
+    what: "참조 그림을 여러 장 함께 입력으로 받아 그 인물을 그리는 공개 이미지 생성 모델. 4단계만 다듬어 그리도록 학습됐어요",
+    role: "컷 그림 그리기 (캐릭터 참조, 2단 그리기)",
+    size: "그림 본체 약 40억 파라미터, 4비트(NF4)로 줄여 GPU는 최대 약 3.7GB만 사용",
     where: "GPU PC",
-    io: "영어 장면 설명 + 그림체 문구 → 768×768 그림",
-    why: "SDXL 계열로 다섯 회차 동안 설정을 바꿔도 시험 묶음 점수가 82.8~83.8점에 머물렀고, 콘티의 행동·물건이 빠지거나 두 인물이 한 사람으로 섞였어요. 긴 문장을 읽는 FLUX.1-schnell로 바꾸자 망원경·토성 같은 핵심 물건과 나이·성별이 맞게 그려져 82.8점에서 87.9점으로 올랐어요. 대신 참조 그림을 쓸 수 없어 옷·머리가 컷마다 바뀌는 문제가 남았어요.",
+    io: "영어 장면 설명 + 그림체 문구 + 캐릭터 참조 그림(최대 4장) → 768×768 그림",
+    why: "이전 그림 모델 FLUX.1-schnell은 참조 그림을 받을 수 없어 옷·머리가 컷마다 바뀌었어요. 상업에 쓸 수 있고(Apache 2.0) 16GB에 들어가며 참조 그림을 받는 모델 중에서 같은 시험 묶음으로 겨뤄, klein 4B에 캐릭터 참조를 넣었을 때 91.2점에서 92.7점이 됐어요. 여기에 콘티 틀과 2단 그리기를 더해 97.5점, 심각한 오류가 나온 편은 4편에서 0편이 됐어요.",
     settings: [
-      "4단계, 프롬프트 강조값(guidance) 0",
-      "그림 본체는 미리 4비트(FP4)로 줄여 둔 파일을 nunchaku 엔진으로 돌려 50번대 GPU의 4비트 연산을 써요. 지금 쓰는 부분만 GPU에 올리고 나머지는 PC 메모리에 둬요(CPU offload)",
-      "컷당 약 2.9초(4비트 NF4로 돌릴 때는 약 8.6초)",
-      "FLUX가 실패하면 그 컷을 SDXL(DreamShaper XL Lightning)로 다시 그리고, 그 뒤로도 SDXL로 그려요",
+      "4단계, 프롬프트 강조값(guidance) 1, 768px (1024px·6단계는 시험 묶음 점수가 더 낮았어요)",
+      "캐릭터 참조 그림은 같은 캐릭터를 한 번만, 최대 4장 넘겨요",
+      "2단 그리기: 1차 그림을 첫 참조로 넣고 같은 시드로 물건이나 뒷사람만 더해 그린 최종 그림만 올려요",
+      "컷당 약 5.4초, 모델 올리기 약 46.5초",
+      "klein이 실패하면 그 컷을 SDXL(DreamShaper XL Lightning)로 다시 그리고, 그 뒤로도 SDXL로 그려요",
     ],
   },
   {
     icon: Palette,
     name: "DreamShaper XL Lightning",
     what: "공개 이미지 생성 모델 SDXL을 일러스트에 맞게 더 학습하고, 적은 단계로 그리도록(Lightning) 합친 모델",
-    role: "FLUX가 실패할 때 대신 그리기 (이전 주 그림 모델)",
+    role: "그림 모델이 실패할 때 대신 그리기 (이전 주 그림 모델)",
     size: "약 35억 파라미터, 16비트 정밀도",
     where: "GPU PC",
     io: "영어 장면 설명 + 그림체 문구 → 768×768 그림",
@@ -416,7 +419,7 @@ export const GLOSSARY: Term[] = [
   {
     term: "step (단계)",
     meaning:
-      "이미지 모델이 잡음에서 그림을 다듬는 횟수예요. 적을수록 빠르고, FLUX.1-schnell은 4번, Lightning 모델은 6번이면 충분해요.",
+      "이미지 모델이 잡음에서 그림을 다듬는 횟수예요. 적을수록 빠르고, FLUX.2 klein과 FLUX.1-schnell은 4번, Lightning 모델은 6번이면 충분해요.",
   },
   {
     term: "시드 (seed)",
@@ -427,6 +430,16 @@ export const GLOSSARY: Term[] = [
     term: "시험 세트 · 품질 점수",
     meaning:
       "고치기 전과 후를 같은 조건에서 비교하려고 고정해 둔 시험용 대화 녹음 묶음이에요. 만화 한 편을 화질, 캐릭터 일관성, 말풍선 자리 등 여섯 항목으로 나눠 컷마다 0~2점을 매기고, 평균이 오르면 수정을 유지해요.",
+  },
+  {
+    term: "참조 그림",
+    meaning:
+      "그림 모델에게 '이 인물을 그려 줘' 하고 함께 보여 주는 그림이에요. 캐릭터 DB의 그림을 참조로 넘기면 컷이 바뀌어도 같은 얼굴·머리·옷으로 그려요.",
+  },
+  {
+    term: "2단 그리기",
+    meaning:
+      "한 컷을 두 번에 나눠 그리는 방법이에요. 먼저 사람 한 명이나 빈손 자세를 그리고, 그 그림을 다시 넣어 물건이나 다른 사람만 더해요. 한 번에 많이 그리면 섞이거나 늘어나는 것을 막아요.",
   },
   {
     term: "모델 라이선스 (Apache · 비상업)",
@@ -454,7 +467,7 @@ export const VRAM_BUNDLES: Bundle[] = [
     name: "그림 묶음",
     gb: 7,
     detail:
-      "FLUX.1-schnell 4비트 (실패하면 DreamShaper XL Lightning + IP-Adapter, 약 11GB)",
+      "FLUX.2 klein 4B 4비트 + 캐릭터 참조 그림, 최대 약 3.7GB (실패하면 DreamShaper XL Lightning + IP-Adapter, 약 11GB)",
   },
 ];
 
@@ -888,6 +901,41 @@ export const TUNINGS: Tuning[] = [
     after:
       "schnell nunchaku FP4 91.2점, 컷당 2.9초 (schnell NF4는 90.8점, 8.6초)",
   },
+  {
+    icon: Images,
+    kind: "품질",
+    title: "캐릭터 그림을 직접 참조하는 그림 모델로",
+    problem: "같은 인물인데 컷마다 옷과 머리 모양이 바뀌었어요.",
+    cause:
+      "FLUX.1-schnell은 참조 그림을 넘길 방법이 없어 인물을 외모 글로만 맞췄고, 참조 모듈이 있던 SDXL은 그림 점수가 낮았어요.",
+    fix: "참조 그림을 입력으로 받는 FLUX.2 klein 4B로 바꾸고, 캐릭터 DB의 그림을 컷마다 넘겨요. 콘티 외모와 성별·동물이 다른 캐릭터 그림은 넘기지 않아요.",
+    before: "schnell nunchaku FP4 91.2점",
+    after: "klein 4B + 캐릭터 참조 92.7점",
+  },
+  {
+    icon: Clapperboard,
+    kind: "품질",
+    title: "콘티를 칸 나눈 틀로 받기",
+    problem:
+      "1컷의 목검이 2컷에서 쇠칼로 바뀌고, 옷·장소가 컷마다 달라졌어요. 같은 물건이나 같은 사람이 한 컷에 둘로 그려지기도 했어요.",
+    cause:
+      "LLM이 컷마다 옷·소품·장소를 새 말로 썼어요. 한 컷에 사람과 물건이 많으면 그림 모델이 섞거나 복제했어요.",
+    fix: "인물 옷·소품·장소를 한 번만 정하고 컷에서는 이름표로만 가리키게 했어요. 한 컷에 한 사람, 한 동작, 물건 하나를 한 번만 쓰는 규칙을 두고, 시험 묶음 10편을 25판까지 고쳐 그리며 채점했어요. 한 편만 고치는 수정은 하지 않고 틀과 코드만 고쳤어요.",
+    before: "92.7점, 심각한 오류 편 4편",
+    after: "97.5점, 심각한 오류 편 0편",
+  },
+  {
+    icon: Brush,
+    kind: "품질",
+    title: "두 번에 나눠 그리기",
+    problem:
+      "두 사람을 한 번에 그리면 한 사람으로 섞이거나 같은 사람이 둘로 그려졌어요. 망원경을 들여다보는 컷에는 망원경이 둘로 그려졌어요.",
+    cause:
+      "그림 모델이 한 장면 안에서 인물 둘과 물건을 함께 배치하다 서로 섞었어요.",
+    fix: "먼저 앞사람만, 또는 빈손 자세만 그리고, 그 그림을 다시 넣어 뒷사람이나 물건 하나만 더하게 했어요. 받침 위 물건은 자세를 그대로 두고 손은 비운 채 눈높이에 세워요.",
+    before: "두 사람을 한 번에: 심각한 오류 편 8편",
+    after: "두 사람 컷 10개 중 9개 정상, 물건 컷 8개 모두 정상",
+  },
 ];
 
 export type Hardware = { icon: LucideIcon; title: string; specs: string[] };
@@ -1255,7 +1303,7 @@ export const DECISIONS: Decision[] = [
     choice:
       "라이선스·16GB 메모리·속도·캐릭터 참조 네 조건을 먼저 거른 뒤, 남은 모델끼리 같은 시험 묶음으로 점수 비교",
     instead: "점수가 가장 높은 모델을 그대로 쓰기",
-    why: "공개된 모델이라도 상업 사용이 막혀 있거나 조건이 붙은 경우가 많아요. 16GB GPU에 넣으려면 4비트로 줄여야 하는 모델도 많고요. 무엇보다 캐릭터 DB의 그림을 참조해 같은 인물로 그려야 해서, 참조 그림을 받지 못하는 모델은 점수가 높아도 뺐어요. 참조 없이 그린 FLUX.1-schnell은 90.5~91.2점, 참조해서 그린 SDXL은 82.8점이라, 참조할 수 있는 모델끼리 따로 표를 만들어 겨뤄요.",
+    why: "공개된 모델이라도 상업 사용이 막혀 있거나 조건이 붙은 경우가 많아요. 16GB GPU에 넣으려면 4비트로 줄여야 하는 모델도 많고요. 무엇보다 캐릭터 DB의 그림을 참조해 같은 인물로 그려야 해서, 참조 그림을 받지 못하는 모델은 점수가 높아도 뺐어요. 참조 없이 그린 FLUX.1-schnell은 90.5~91.2점, 참조해서 그린 SDXL은 82.8점이라, 참조할 수 있는 모델끼리 따로 표를 만들어 겨뤘고 FLUX.2 klein 4B(참조해서 92.7점)를 골랐어요.",
   },
   {
     icon: Languages,
@@ -1314,7 +1362,7 @@ export const CHARACTER_SEARCH: Step[] = [
     icon: Images,
     title: "참조로 그리기",
     detail:
-      "SDXL로 그릴 때는 그 캐릭터의 참조 그림을 IP-Adapter에 넘겨 얼굴·머리 모양·옷을 유지해요. 지금 쓰는 FLUX.1-schnell은 참조 그림 대신 콘티의 외모 글로 그려요. 못 찾은 인물은 가명을 그대로 두고 글 설명만으로 그려요. 등장인물 소개에는 다 그린 컷에서 그 인물 얼굴을 잘라 보여 줘요",
+      "지금 쓰는 FLUX.2 klein 4B에는 그 캐릭터의 그림을 참조 그림으로 그대로 넘겨 얼굴·머리 모양·옷을 유지해요. SDXL로 대신 그릴 때는 IP-Adapter에 넘겨요. 못 찾은 인물은 가명을 그대로 두고 글 설명만으로 그려요. 등장인물 소개에는 다 그린 컷에서 그 인물 얼굴을 잘라 보여 줘요",
   },
 ];
 
@@ -1352,7 +1400,7 @@ export const VRAM_RETRO: Retro[] = [
   {
     label: "GPU에 남긴 것",
     items: [
-      "받아 적기(WhisperX + pyannote)와 그림(FLUX.1-schnell, 실패하면 SDXL + IP-Adapter): 녹음과 그림을 밖으로 보내지 않고 직접 돌려요",
+      "받아 적기(WhisperX + pyannote)와 그림(FLUX.2 klein 4B, 실패하면 SDXL + IP-Adapter): 녹음과 그림을 밖으로 보내지 않고 직접 돌려요",
     ],
   },
   {
@@ -1366,7 +1414,7 @@ export const VRAM_RETRO: Retro[] = [
   {
     label: "내려놓은 것",
     items: [
-      "1024px 대신 768px, 30단계 대신 6단계",
+      "1024px 대신 768px, 30단계 대신 4단계",
       "LLM은 14B 대신 8B",
       "여러 작업 동시 처리 대신 한 번에 한 작업",
     ],
@@ -1374,7 +1422,7 @@ export const VRAM_RETRO: Retro[] = [
   {
     label: "얻은 것",
     items: [
-      "4컷 그림 약 5.6초, 모델 전환 1.2~1.4초",
+      "캐릭터를 참조한 컷 한 장 약 5.4초(GPU 약 3.7GB), SDXL 모델 전환 1.2~1.4초",
       "GPU 한 장으로 받아 적기부터 그림까지 전 과정 운영",
     ],
   },
