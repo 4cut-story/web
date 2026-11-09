@@ -175,6 +175,57 @@ describe("라이브 모드 재생기", () => {
     ).toBeInTheDocument();
   });
 
+  it("FR-031·035: 넓은 그림 컷은 16:9로 보여 주고 대사를 시간에 맞춰 자막으로 바꾸며 카메라가 움직인다", async () => {
+    media(false);
+    mockFetch({
+      "GET /api/v1/posts/p1/live": json({
+        version: 1,
+        panels: [
+          {
+            ...PLAYBACK.panels[0],
+            motion: null,
+            aspect: "16:9",
+            camera: "push_in",
+            captions: [
+              { speaker: "민지", text: "별이 많다", startMs: 300, endMs: 1500 },
+              { speaker: null, text: "그러게", startMs: 1650, endMs: 3500 },
+            ],
+          },
+          { ...PLAYBACK.panels[2], aspect: "1:1", camera: "pan_left" },
+        ],
+      }),
+    });
+    const audio = fakeAudio();
+    render(
+      <LivePlayer
+        kind="posts"
+        id="p1"
+        title="밤하늘"
+        audioFactory={audio.factory}
+      />,
+    );
+    const image = await screen.findByAltText("밤하늘 1컷");
+    expect(image).toHaveAttribute("width", "1024");
+    expect(image.parentElement?.parentElement?.className).toContain(
+      "aspect-video",
+    );
+    // 재생 전에는 첫 자막을 보여 준다
+    expect(screen.getByText("별이 많다")).toBeInTheDocument();
+    expect(screen.getByText("민지")).toBeInTheDocument();
+    vi.useFakeTimers();
+    fireEvent.click(screen.getAllByRole("button", { name: "재생" })[0]);
+    expect(screen.getByTestId("panel-1").style.transform).toBe("scale(1.08)");
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.getByText("별이 많다")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(800));
+    expect(screen.queryByText("별이 많다")).not.toBeInTheDocument();
+    expect(screen.getByText("그러게")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1800));
+    // 1:1 컷(말풍선이 있는 컷 그림)은 자막이 없다
+    expect(screen.getByText("2 / 2")).toBeInTheDocument();
+    expect(screen.queryByText("그러게")).not.toBeInTheDocument();
+  });
+
   it("움직임 줄이기 설정이면 두 번째 그림을 보이지 않는다", async () => {
     await open(true);
     vi.useFakeTimers();
