@@ -207,8 +207,9 @@ describe("화면 효과 층", () => {
 describe("깊이 패럴랙스 (FR-048)", () => {
   it("깊이 지도가 있는 넓은 그림 컷만 켜고, 움직임 줄이기 설정이면 끈다", () => {
     const wide = panel({ aspect: "16:9", depth: "panels/1-depth.png" });
-    expect(parallaxOn(wide, false)).toBe(true);
-    expect(parallaxOn(wide, true)).toBe(false);
+    expect(parallaxOn(wide, false, true)).toBe(true);
+    expect(parallaxOn(wide, false)).toBe(false);
+    expect(parallaxOn(wide, true, true)).toBe(false);
     expect(parallaxOn(panel({ aspect: "16:9" }), false)).toBe(false);
     expect(parallaxOn(panel({ depth: "panels/1-depth.png" }), false)).toBe(
       false,
