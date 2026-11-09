@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { AppShell, HOME, LoginButton } from "@/components/app-shell";
 import { ComicCast } from "@/components/comic-cast";
+import { ComicSummary } from "@/components/comic-summary";
 import { ComicProduction } from "@/components/comic-production";
 import { Comments } from "@/components/comments";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -84,6 +85,7 @@ export function PostScreen({ id }: { id: string }) {
         <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] md:items-start md:gap-10 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] lg:gap-12">
           <div className="flex flex-col gap-6">
             <PostCard post={post} author={users[post.authorId]} />
+            <ComicSummary summary={post.summary} />
             <ComicCast
               cast={post.cast}
               concept={post.concept}
