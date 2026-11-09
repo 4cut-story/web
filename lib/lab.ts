@@ -34,8 +34,9 @@ export type Scores = {
   status?: string;
   license?: string;
   scores?: number[];
-  average?: number;
-  criticalComics?: number;
+  /** 한 컷도 그리지 못한 방식은 null이다. */
+  average?: number | null;
+  criticalComics?: number | null;
   perComic?: Record<string, number>;
   note?: string;
   /** 캐릭터 참조 그림을 넣고 그렸는지. */
