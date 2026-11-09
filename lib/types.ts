@@ -180,6 +180,8 @@ export type LivePanel = {
   durationMs: number;
   sound: PanelSound | null;
   motion: PanelMotion | null;
+  /** 컷이 시작될 때 배경음 위에 한 번 트는 사건 소리(알람, 초인종…). 예전 재생 정보에는 없다. */
+  effect?: PanelSound | null;
 };
 
 /** 라이브 모드 재생 정보 (version 1). 화면은 이 JSON만 읽고 재생한다. */

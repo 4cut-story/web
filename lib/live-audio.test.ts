@@ -155,6 +155,33 @@ describe("라이브 모드 배경음", () => {
     expect(audios).toHaveLength(1);
   });
 
+  it("사건 효과음은 배경음을 끊지 않고 한 번만 겹쳐 튼다", () => {
+    const { f, audios, gains } = factory(true);
+    const audio = new LiveAudio(f);
+    audio.start();
+    audio.play(sound("rain"));
+    audio.effect({ ...sound("alarm"), loop: false, volume: 0.9, fadeMs: 0 });
+    audio.effect(null);
+    expect(audios).toHaveLength(2);
+    expect(audios[1].loop).toBe(false);
+    expect(audios[1].play).toHaveBeenCalled();
+    expect(audios[0].pause).not.toHaveBeenCalled();
+    expect(gains.at(-1)?.gain.value).toBe(0.9);
+    audio.stop();
+    expect(audios[1].pause).toHaveBeenCalled();
+  });
+
+  it("Web Audio가 없으면 효과음 크기를 바로 정하고, 음소거하면 멈춘다", () => {
+    const { f, audios } = factory(false);
+    const audio = new LiveAudio(f);
+    audio.start();
+    audio.setVolume(0.5);
+    audio.effect({ ...sound("alarm"), loop: false, volume: 0.8, fadeMs: 0 });
+    expect(audios[0].volume).toBeCloseTo(0.4);
+    audio.setMuted(true);
+    expect(audios[0].pause).toHaveBeenCalled();
+  });
+
   it("소리 장치를 만들지 못해도 소리 없이 넘긴다", () => {
     const { f } = factory(false);
     const audio = new LiveAudio({

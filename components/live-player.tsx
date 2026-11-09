@@ -74,8 +74,17 @@ export function LivePlayer({
     return audio.current;
   }
 
-  // 화면을 떠나면 소리를 끈다
-  useEffect(() => () => audio.current?.stop(), []);
+  // 화면을 떠나면 소리를 끄고 처음 상태로 돌린다. 뒤로 간 화면은 숨겨 둔 채 상태를 남겼다가 다시 보여 주므로,
+  // 재생 상태를 지우지 않으면 돌아왔을 때 누르지 않아도 다시 재생된다.
+  useEffect(
+    () => () => {
+      audio.current?.stop();
+      audio.current = null;
+      setStarted(false);
+      setPlaying(false);
+    },
+    [],
+  );
 
   // 컷이 바뀌면 그 컷 소리로 (같은 소리면 이어 튼다), 다음 컷 소리는 미리 받는다
   useEffect(() => {
@@ -83,7 +92,9 @@ export function LivePlayer({
       return;
     }
     player().play(panel.sound);
+    player().effect(panel.effect);
     player().preload(panels[index + 1]?.sound);
+    player().preload(panels[index + 1]?.effect);
     // panels는 불러온 뒤 바뀌지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, index, panel]);
@@ -299,19 +310,26 @@ export function LivePlayer({
         />
       </div>
       <Credit sound={panel.sound} />
+      <Credit sound={panel.effect ?? null} label="효과음" />
     </section>
   );
 }
 
 /** CC BY 소리는 저작자를 밝힌다. */
-function Credit({ sound }: { sound: PanelSound | null }) {
+function Credit({
+  sound,
+  label = "소리",
+}: {
+  sound: PanelSound | null;
+  label?: string;
+}) {
   if (!sound) {
     return null;
   }
   const credit = sound.credit;
   return (
     <p className="text-xs text-muted-foreground">
-      소리: {sound.title}
+      {label}: {sound.title}
       {needsCredit(sound) && credit && (
         <>
           {" · "}
