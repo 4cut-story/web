@@ -190,7 +190,7 @@ function Callout({
   );
 }
 
-/** 서비스 소개(/about)와 그 아래 그림 모델 비교(/lab)로 가는 띠 두 개. */
+/** 서비스 소개(/about)와 그 아래 그림 모델 비교(/lab), 배경음 라이브러리(/sounds)로 가는 띠. */
 function Callouts() {
   return (
     <div className="flex flex-col gap-4">
@@ -209,6 +209,14 @@ function Callouts() {
         title="어떤 그림 모델이 4컷을 더 잘 그릴까요?"
         description="같은 콘티를 여러 그림 모델과 양자화 방식으로 그린 테스트 컷을 점수, 컷당 시간과 함께 나란히 비교해요."
         cta="비교 페이지 보기"
+      />
+      <Callout
+        href="/sounds"
+        icon={AudioLines}
+        eyebrow="배경음 라이브러리"
+        title="장면에 어울리는 소리를 찾아볼까요?"
+        description="파도, 밤 귀뚜라미, 학교에서 아이들 떠드는 소리부터 긴장·파티·엄숙한 분위기의 배경음악까지, 상업적으로 쓸 수 있는 소리를 듣고 찾아요."
+        cta="배경음 둘러보기"
       />
     </div>
   );

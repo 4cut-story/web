@@ -55,6 +55,25 @@ describe("이미지 중계", () => {
     expect(calls[0].url).toBe(`${GW}/api/v1/characters/looks/${ID}/image`);
   });
 
+  it("배경음 미리 듣기 MP3는 배경음 API에서 주소를 받아 소리 형식 그대로 넘긴다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/sounds/${ID}/audio`]: json({
+        url: `${STORE}/audio.mp3?sig`,
+      }),
+      [`GET ${STORE}`]: new Response(new Uint8Array([73, 68, 51]), {
+        headers: { "content-type": "audio/mpeg" },
+      }),
+    });
+    const response = await image(
+      loggedIn(`/api/images/sounds/${ID}`),
+      params({ kind: "sounds", id: ID }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("audio/mpeg");
+    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    expect(calls[0].url).toBe(`${GW}/api/v1/sounds/${ID}/audio`);
+  });
+
   it("등장인물 얼굴 그림은 같은 이미지 API에 cast 순서로 받고 더 오래 둔다", async () => {
     const calls = mockFetch({
       [`GET ${GW}/api/v1/posts/${ID}/image`]: json({

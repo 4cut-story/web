@@ -6,7 +6,7 @@ import { writeSession } from "./session";
 
 /**
  * 이미지 종류 → 게이트웨이에서 사전 서명 주소를 받는 경로. looks는 캐릭터 모습 그림이다. 게시물·만화는 cast(등장인물 순서)가
- * 있으면 그 인물의 얼굴 그림(캐릭터를 못 찾아 만화 컷에서 잘라 낸 것)이다.
+ * 있으면 그 인물의 얼굴 그림(캐릭터를 못 찾아 만화 컷에서 잘라 낸 것)이다. sounds는 그림이 아니라 배경음 미리 듣기 MP3다(같은 방식으로 중계한다).
  */
 const SOURCES: Record<
   string,
@@ -17,10 +17,11 @@ const SOURCES: Record<
   comics: (id, size, cast) =>
     `/api/v1/comics/${id}/image?${cast ? `cast=${cast}` : `size=${size}`}`,
   looks: (id) => `/api/v1/characters/looks/${id}/image`,
+  sounds: (id) => `/api/v1/sounds/${id}/audio`,
 };
 
 /** 캐릭터 그림·얼굴 그림은 거의 바뀌지 않아 더 오래 둔다. */
-const MAX_AGE: Record<string, number> = { looks: 3600 };
+const MAX_AGE: Record<string, number> = { looks: 3600, sounds: 3600 };
 const CAST_MAX_AGE = 3600;
 
 /**

@@ -113,6 +113,9 @@ describe("첫 화면 포털", () => {
     expect(
       screen.getByRole("link", { name: /비교 페이지 보기/ }),
     ).toHaveAttribute("href", "/lab");
+    expect(
+      screen.getByRole("link", { name: /배경음 둘러보기/ }),
+    ).toHaveAttribute("href", "/sounds");
     expect(screen.getByRole("link", { name: "내 페이지" })).toHaveAttribute(
       "href",
       "/login",
