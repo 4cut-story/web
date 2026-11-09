@@ -12,6 +12,7 @@ import { LivePlayer } from "./live-player";
 import { ViewModeToggle } from "./view-mode";
 import { json, mockFetch } from "@/test/fetch-mock";
 import type { AudioFactory } from "@/lib/live-audio";
+import type { LivePanel } from "@/lib/types";
 
 const sound = (publicId: string, license = "CC0-1.0") => ({
   publicId,
@@ -106,6 +107,27 @@ async function open(reduce = false) {
   );
   await screen.findByAltText("밤하늘 1컷");
   return { calls, played: audio.played };
+}
+
+/** 첫 컷만 바꾼 재생 정보로 재생기를 띄운다. */
+async function renderFirst(reduce: boolean, first: Partial<LivePanel>) {
+  media(reduce);
+  mockFetch({
+    "GET /api/v1/posts/p1/live": json({
+      version: 1,
+      panels: [{ ...PLAYBACK.panels[0], ...first }, PLAYBACK.panels[1]],
+    }),
+  });
+  const view = render(
+    <LivePlayer
+      kind="posts"
+      id="p1"
+      title="밤하늘"
+      audioFactory={fakeAudio().factory}
+    />,
+  );
+  await screen.findByAltText("밤하늘 1컷");
+  return view;
 }
 
 describe("라이브 모드 재생기", () => {
@@ -234,26 +256,9 @@ describe("라이브 모드 재생기", () => {
 
   it("FR-042: 지금 컷에 화면 효과 층을 얹고, 멈추면 움직임도 멈추며, 움직임 줄이기 설정이면 없다", async () => {
     for (const reduce of [false, true]) {
-      media(reduce);
-      mockFetch({
-        "GET /api/v1/posts/p1/live": json({
-          version: 1,
-          panels: [
-            { ...PLAYBACK.panels[0], ambient: ["twinkle", "fireflies"] },
-            PLAYBACK.panels[1],
-          ],
-        }),
+      const view = await renderFirst(reduce, {
+        ambient: ["twinkle", "fireflies"],
       });
-      const audio = fakeAudio();
-      const view = render(
-        <LivePlayer
-          kind="posts"
-          id="p1"
-          title="밤하늘"
-          audioFactory={audio.factory}
-        />,
-      );
-      await screen.findByAltText("밤하늘 1컷");
       if (reduce) {
         expect(screen.queryByTestId("ambient")).not.toBeInTheDocument();
       } else {
@@ -269,6 +274,23 @@ describe("라이브 모드 재생기", () => {
           screen.getByTestId("ambient").querySelector<HTMLElement>(".ambient")!
             .style.animationPlayState,
         ).toBe("running");
+      }
+      view.unmount();
+    }
+  });
+
+  it("FR-048: 깊이 지도가 있는 넓은 그림 컷은 패럴랙스 층을 얹고, 움직임 줄이기 설정이면 없다", async () => {
+    for (const reduce of [false, true]) {
+      const view = await renderFirst(reduce, {
+        aspect: "16:9",
+        depth: "panels/1-depth.png",
+      });
+      if (reduce) {
+        expect(screen.queryByTestId("depth-parallax")).not.toBeInTheDocument();
+      } else {
+        // WebGL이 없는 곳에서는 그리지 않아 평면 그림이 보인다
+        const layer = screen.getByTestId("depth-parallax");
+        expect(layer.style.opacity).toBe("0");
       }
       view.unmount();
     }

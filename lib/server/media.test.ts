@@ -133,6 +133,22 @@ describe("이미지 중계", () => {
     expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2&frame=c`);
   });
 
+  it("FR-048: 넓은 그림 컷의 깊이 지도는 frame=depth로 받는다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/posts/${ID}/image`]: json({
+        url: `${STORE}/panels/2-depth.png?sig`,
+      }),
+      [`GET ${STORE}`]: png(),
+    });
+    await image(
+      anonymous(`/api/images/posts/${ID}?panel=2&frame=depth`),
+      params({ kind: "posts", id: ID }),
+    );
+    expect(calls[0].url).toBe(
+      `${GW}/api/v1/posts/${ID}/image?panel=2&frame=depth`,
+    );
+  });
+
   it("panel 값이 틀리면 버리고, frame이 b가 아니면 첫 그림이다", async () => {
     const calls = mockFetch({
       [`GET ${GW}/api/v1/comics/${ID}/image`]: json({

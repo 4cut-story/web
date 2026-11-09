@@ -205,6 +205,8 @@ export type LivePanel = {
   camera?: Camera;
   /** 그림 위에 화면이 얹는 작은 움직임 층(많아야 2개). 예전 재생 정보에는 없다. */
   ambient?: Ambient[];
+  /** 넓은 그림 컷의 깊이 지도(밝을수록 가깝다). 있으면 2.5D 패럴랙스로 움직인다. 예전 재생 정보에는 없다. */
+  depth?: string | null;
 };
 
 export type Ambient =

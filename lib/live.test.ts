@@ -6,12 +6,17 @@ import {
   AMBIENTS,
   cameraTransform,
   captionAt,
+  depthImageUrl,
   frameAt,
   isWide,
   motionOn,
   needsCredit,
   nextIndex,
   panelImageUrl,
+  parallaxAt,
+  parallaxOn,
+  PARALLAX_SHIFT,
+  PARALLAX_ZOOM,
   prevIndex,
   soundChange,
   soundUrl,
@@ -196,5 +201,35 @@ describe("화면 효과 층", () => {
     expect(ambientParticles("rain").length).toBeGreaterThan(
       ambientParticles("fireflies").length,
     );
+  });
+});
+
+describe("깊이 패럴랙스 (FR-048)", () => {
+  it("깊이 지도가 있는 넓은 그림 컷만 켜고, 움직임 줄이기 설정이면 끈다", () => {
+    const wide = panel({ aspect: "16:9", depth: "panels/1-depth.png" });
+    expect(parallaxOn(wide, false)).toBe(true);
+    expect(parallaxOn(wide, true)).toBe(false);
+    expect(parallaxOn(panel({ aspect: "16:9" }), false)).toBe(false);
+    expect(parallaxOn(panel({ depth: "panels/1-depth.png" }), false)).toBe(
+      false,
+    );
+    expect(parallaxOn(undefined, false)).toBe(false);
+    expect(depthImageUrl("posts", "p1", 2)).toBe(
+      "/api/images/posts/p1?panel=2&frame=depth",
+    );
+  });
+
+  it("옆으로 훑으면 가까운 것이 같은 쪽으로 더 움직이고, 당기면 가까운 것이 더 커진다", () => {
+    expect(parallaxAt("pan_right", 0, 0).x).toBeCloseTo(-PARALLAX_SHIFT);
+    expect(parallaxAt("pan_right", 1, 0).x).toBeCloseTo(PARALLAX_SHIFT);
+    expect(parallaxAt("pan_left", 0, 0).x).toBeCloseTo(PARALLAX_SHIFT);
+    expect(parallaxAt("push_in", 1, 0).zoom).toBeCloseTo(PARALLAX_ZOOM);
+    expect(parallaxAt("pull_out", 1, 0).zoom).toBeCloseTo(0);
+    expect(parallaxAt("push_in", 5, 0).zoom).toBeCloseTo(PARALLAX_ZOOM);
+    // 가만히 있는 카메라도 천천히 흔들린다
+    const a = parallaxAt("none", 0, 0);
+    const b = parallaxAt("none", 0, 1500);
+    expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(0);
+    expect(Math.abs(b.x)).toBeLessThanOrEqual(PARALLAX_SHIFT);
   });
 });

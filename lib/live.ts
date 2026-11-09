@@ -37,6 +37,62 @@ export function frameAt(step: number, count: number): number {
   return k < count ? k : cycle - k;
 }
 
+/** 넓은 그림 컷의 깊이 지도 주소 (web 이미지 중계, FR-048). */
+export function depthImageUrl(
+  kind: "posts" | "comics",
+  id: string,
+  index: number,
+): string {
+  return `/api/images/${kind}/${id}?panel=${index}&frame=depth`;
+}
+
+/** 깊이 패럴랙스를 켤지. 깊이 지도가 있는 넓은 그림 컷이고 움직임 줄이기 설정이 아닐 때만. */
+export function parallaxOn(
+  panel: LivePanel | undefined,
+  reduced: boolean,
+): boolean {
+  return (
+    !reduced &&
+    panel?.aspect === "16:9" &&
+    typeof panel.depth === "string" &&
+    panel.depth.length > 0
+  );
+}
+
+/** 깊이 패럴랙스의 한 순간. x·y는 가까운 것이 먼 것보다 더 움직이는 거리(그림 폭 비율), zoom은 가까운 것이 더 커지는 정도. */
+export type Parallax = { x: number; y: number; zoom: number };
+
+/** 패럴랙스 세기. 그림이 찢어지지 않게 작게 둔다. */
+export const PARALLAX_SHIFT = 0.035;
+export const PARALLAX_ZOOM = 0.06;
+
+/**
+ * 컷이 시작되고 progress(0~1)만큼 지났을 때의 깊이 움직임. 카메라 방향과 같은 쪽으로 가까운 것이 더 크게 움직여 공간 안으로
+ * 들어가는 것처럼 보인다. 가만히 있는 카메라도 천천히 원을 그리며 흔들린다.
+ */
+export function parallaxAt(
+  camera: Camera | undefined,
+  progress: number,
+  elapsedMs: number,
+): Parallax {
+  const t = Math.min(1, Math.max(0, progress));
+  const sway = (elapsedMs / 6000) * 2 * Math.PI;
+  const swayX = Math.sin(sway) * PARALLAX_SHIFT * 0.35;
+  const swayY = Math.cos(sway) * PARALLAX_SHIFT * 0.2;
+  switch (camera) {
+    case "pan_right":
+      return { x: PARALLAX_SHIFT * (2 * t - 1), y: swayY, zoom: 0 };
+    case "pan_left":
+      return { x: PARALLAX_SHIFT * (1 - 2 * t), y: swayY, zoom: 0 };
+    case "push_in":
+      return { x: swayX, y: swayY, zoom: PARALLAX_ZOOM * t };
+    case "pull_out":
+      return { x: swayX, y: swayY, zoom: PARALLAX_ZOOM * (1 - t) };
+    default:
+      return { x: swayX * 2, y: swayY * 2, zoom: 0 };
+  }
+}
+
 /** 배경음 주소 (web 중계). */
 export function soundUrl(sound: PanelSound): string {
   return `/api/images/sounds/${sound.publicId}`;

@@ -32,7 +32,7 @@ export function imageQuery(params: URLSearchParams): {
   const panel = params.get("panel");
   if (panel !== null && /^([1-9]|10)$/.test(panel)) {
     const f = params.get("frame");
-    const frame = f === "b" || f === "c" ? `&frame=${f}` : "";
+    const frame = f === "b" || f === "c" || f === "depth" ? `&frame=${f}` : "";
     return { query: `panel=${panel}${frame}`, fixed: true };
   }
   return {
