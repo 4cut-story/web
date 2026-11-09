@@ -31,7 +31,7 @@ export function FeedScreen() {
     <AppShell
       title={anonymous || checking ? "4cut story" : "피드"}
       brand={anonymous || checking}
-      tab={anonymous || checking ? undefined : "feed"}
+      tab={checking ? undefined : "feed"}
       actions={anonymous && <LoginButton />}
       width="wide"
     >

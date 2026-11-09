@@ -53,11 +53,7 @@ export function SoundsScreen({ initial }: { initial: SoundFilter }) {
   const kinds = [{ value: "" as const, label: "전체" }, ...SOUND_KINDS];
 
   return (
-    <AppShell
-      title="배경음"
-      back={{ href: "/", label: "처음으로" }}
-      width="wide"
-    >
+    <AppShell title="배경음" tab="sounds" width="wide">
       <div className="flex flex-col gap-3 pb-4">
         <p className="text-sm text-muted-foreground">
           만화 장면에 어울리는 장소 소리, 효과음, 배경음악이에요. 모두
