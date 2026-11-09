@@ -148,7 +148,7 @@ uniform vec3 weight;
 uniform vec2 offset;
 uniform float zoom;
 void main() {
-  vec2 base = (uv - 0.5) / 1.06 + 0.5;
+  vec2 base = (uv - 0.5) / 1.12 + 0.5;
   float d = texture2D(depth, base).r - 0.45;
   vec2 at = base - offset * d - (base - 0.5) * zoom * d;
   at = clamp(at, 0.001, 0.999);

@@ -62,9 +62,9 @@ export function parallaxOn(
 /** 깊이 패럴랙스의 한 순간. x·y는 가까운 것이 먼 것보다 더 움직이는 거리(그림 폭 비율), zoom은 가까운 것이 더 커지는 정도. */
 export type Parallax = { x: number; y: number; zoom: number };
 
-/** 패럴랙스 세기. 그림이 찢어지지 않게 작게 둔다. */
-export const PARALLAX_SHIFT = 0.035;
-export const PARALLAX_ZOOM = 0.06;
+/** 패럴랙스 세기. 가까운 것이 그림 폭의 4% 남짓 움직여 눈에 띄고, 가장자리는 확대(1.12배)로 덮는다. */
+export const PARALLAX_SHIFT = 0.08;
+export const PARALLAX_ZOOM = 0.12;
 
 /**
  * 컷이 시작되고 progress(0~1)만큼 지났을 때의 깊이 움직임. 카메라 방향과 같은 쪽으로 가까운 것이 더 크게 움직여 공간 안으로
