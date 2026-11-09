@@ -12,14 +12,29 @@ import type {
 /** 컷이 넘어갈 때 그림이 겹쳐 바뀌는 시간. */
 export const SLIDE_MS = 400;
 
-/** 컷 그림 주소 (web 이미지 중계). second면 움직임 컷의 두 번째 그림. */
+/** 컷 그림 주소 (web 이미지 중계). frame 1·2(또는 true)면 움직임 컷의 두 번째·세 번째 그림. */
 export function panelImageUrl(
   kind: "posts" | "comics",
   id: string,
   index: number,
-  second = false,
+  frame: boolean | number = 0,
 ): string {
-  return `/api/images/${kind}/${id}?panel=${index}${second ? "&frame=b" : ""}`;
+  const n = frame === true ? 1 : Number(frame);
+  const query = n === 1 ? "&frame=b" : n === 2 ? "&frame=c" : "";
+  return `/api/images/${kind}/${id}?panel=${index}${query}`;
+}
+
+/**
+ * 움직임 컷에서 step번째 바뀔 때 보여 줄 그림 번호(0부터). 두 장이면 0,1을, 세 장이면 0,1,2,1을 되풀이해 끊기지 않고
+ * 오간다 (FR-044).
+ */
+export function frameAt(step: number, count: number): number {
+  if (count < 2) {
+    return 0;
+  }
+  const cycle = 2 * (count - 1);
+  const k = ((step % cycle) + cycle) % cycle;
+  return k < count ? k : cycle - k;
 }
 
 /** 배경음 주소 (web 중계). */

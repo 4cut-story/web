@@ -17,6 +17,7 @@ import { request } from "@/lib/api";
 import {
   ambientOn,
   cameraTransform,
+  frameAt,
   captionAt,
   isWide,
   motionOn,
@@ -72,7 +73,7 @@ export function LivePlayer({
   const [index, setIndex] = useState(0);
   const [started, setStarted] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [second, setSecond] = useState(false);
+  const [step, setStep] = useState(0);
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState(1);
   const [reduced] = useState(reducedMotion);
@@ -149,17 +150,17 @@ export function LivePlayer({
     playing ? elapsed : (panel?.captions?.[0]?.startMs ?? 0),
   );
 
-  // 움직이는 컷은 재생하는 동안 두 그림을 번갈아 보여 준다
+  // 움직이는 컷은 재생하는 동안 그림 두세 장을 차례로 오가며 보여 준다
   const moving = playing && motionOn(panel, reduced);
   const interval = panel?.motion?.intervalMs ?? 0;
   useEffect(() => {
     if (!moving) {
       return;
     }
-    const timer = setInterval(() => setSecond((s) => !s), interval);
+    const timer = setInterval(() => setStep((s) => s + 1), interval);
     return () => {
       clearInterval(timer);
-      setSecond(false);
+      setStep(0);
     };
   }, [moving, interval, index]);
 
@@ -266,23 +267,31 @@ export function LivePlayer({
                 draggable={false}
                 className={`size-full ${pWide ? "object-cover" : "object-contain"}`}
               />
-              {p.motion && (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={panelImageUrl(kind, id, p.index, true)}
-                  alt=""
-                  aria-hidden
-                  width={width}
-                  height={height}
-                  draggable={false}
-                  data-testid={`frame-b-${p.index}`}
-                  className={`absolute inset-0 size-full ${pWide ? "object-cover" : "object-contain"} transition-opacity ease-in-out`}
-                  style={{
-                    opacity: i === index && moving && second ? 1 : 0,
-                    transitionDuration: `${Math.round(p.motion.intervalMs * 0.6)}ms`,
-                  }}
-                />
-              )}
+              {p.motion?.frames.slice(1).map((_, k) => {
+                const n = k + 1;
+                const shown =
+                  i === index &&
+                  moving &&
+                  frameAt(step, p.motion!.frames.length) === n;
+                return (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    key={n}
+                    src={panelImageUrl(kind, id, p.index, n)}
+                    alt=""
+                    aria-hidden
+                    width={width}
+                    height={height}
+                    draggable={false}
+                    data-testid={`frame-${n === 1 ? "b" : "c"}-${p.index}`}
+                    className={`absolute inset-0 size-full ${pWide ? "object-cover" : "object-contain"} transition-opacity ease-in-out`}
+                    style={{
+                      opacity: shown ? 1 : 0,
+                      transitionDuration: `${Math.round(p.motion!.intervalMs * 0.6)}ms`,
+                    }}
+                  />
+                );
+              })}
               {i === index && (
                 <AmbientLayer types={ambientOn(p, reduced)} playing={playing} />
               )}

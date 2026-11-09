@@ -6,7 +6,7 @@ import { writeSession } from "./session";
 
 /**
  * 이미지 종류 → 게이트웨이에서 사전 서명 주소를 받는 경로. looks는 캐릭터 모습 그림이다. 게시물·만화는 cast(등장인물 순서)가
- * 있으면 그 인물의 얼굴 그림(캐릭터를 못 찾아 만화 컷에서 잘라 낸 것)이고, panel(컷 번호)이 있으면 라이브 모드 컷 그림(frame=b면
+ * 있으면 그 인물의 얼굴 그림(캐릭터를 못 찾아 만화 컷에서 잘라 낸 것)이고, panel(컷 번호)이 있으면 라이브 모드 컷 그림(frame=b·c면
  * 움직임 컷의 두 번째 그림)이다. sounds는 그림이 아니라 배경음 미리 듣기 MP3다(같은 방식으로 중계한다).
  */
 const SOURCES: Record<string, (id: string, query: string) => string> = {
@@ -31,7 +31,8 @@ export function imageQuery(params: URLSearchParams): {
   }
   const panel = params.get("panel");
   if (panel !== null && /^([1-9]|10)$/.test(panel)) {
-    const frame = params.get("frame") === "b" ? "&frame=b" : "";
+    const f = params.get("frame");
+    const frame = f === "b" || f === "c" ? `&frame=${f}` : "";
     return { query: `panel=${panel}${frame}`, fixed: true };
   }
   return {

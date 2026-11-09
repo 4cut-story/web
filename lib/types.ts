@@ -168,7 +168,8 @@ export type PanelSound = {
 /** 두 장을 번갈아 보여 주는 움직임. */
 export type PanelMotion = {
   type: MotionType;
-  frames: [string, string];
+  /** 두 장이거나, 세 번째 그림이 있으면 세 장. */
+  frames: [string, string] | [string, string, string];
   intervalMs: number;
   easing?: string;
 };
