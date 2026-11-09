@@ -43,6 +43,7 @@ const PLAYBACK = {
       durationMs: 4000,
       sound: sound("a"),
       motion: null,
+      effect: { ...sound("e", "CC-BY-4.0"), loop: false, fadeMs: 0 },
     },
     {
       index: 3,
@@ -127,10 +128,16 @@ describe("라이브 모드 재생기", () => {
     expect(second.style.opacity).toBe("1");
     act(() => vi.advanceTimersByTime(2800));
     expect(screen.getByText("2 / 3")).toBeInTheDocument();
-    expect(played).toEqual(["/api/images/sounds/a"]);
+    // 같은 배경음은 이어 틀고, 사건 효과음만 한 번 더 튼다
+    expect(played).toEqual(["/api/images/sounds/a", "/api/images/sounds/e"]);
+    expect(screen.getByText(/효과음: 소리 e/)).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(4000));
     expect(screen.getByText("3 / 3")).toBeInTheDocument();
-    expect(played).toEqual(["/api/images/sounds/a", "/api/images/sounds/b"]);
+    expect(played).toEqual([
+      "/api/images/sounds/a",
+      "/api/images/sounds/e",
+      "/api/images/sounds/b",
+    ]);
     // CC BY 소리는 저작자를 밝힌다
     expect(screen.getByRole("link", { name: "CC-BY-4.0" })).toBeInTheDocument();
     expect(screen.getByText(/kim/)).toBeInTheDocument();

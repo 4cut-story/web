@@ -53,6 +53,7 @@ export class LiveAudio {
   private master: Gain | null = null;
   private current: Track | null = null;
   private readonly cache = new Map<string, HTMLAudioElement>();
+  private readonly effects = new Set<HTMLAudioElement>();
   private volume = 1;
   private muted = false;
 
@@ -100,6 +101,30 @@ export class LiveAudio {
     }
   }
 
+  /** 사건 효과음을 배경음 위에 한 번 튼다(이어 틀기·서서히 키우기 없음). */
+  effect(sound: PanelSound | null | undefined): void {
+    if (!sound) {
+      return;
+    }
+    const el = this.element(sound);
+    el.loop = false;
+    if (this.ctx && this.master) {
+      const gain = this.ctx.createGain();
+      gain.gain.value = sound.volume;
+      this.ctx.createMediaElementSource(el).connect(gain);
+      gain.connect(this.master);
+    } else {
+      el.volume = sound.volume * this.level();
+    }
+    this.effects.add(el);
+    el.onended = () => this.effects.delete(el);
+    try {
+      void el.play()?.catch(() => undefined);
+    } catch {
+      // 재생을 막은 브라우저는 소리 없이 넘긴다
+    }
+  }
+
   setVolume(volume: number): void {
     this.volume = Math.min(1, Math.max(0, volume));
     this.apply();
@@ -118,6 +143,8 @@ export class LiveAudio {
     }
     this.cache.forEach((el) => el.pause());
     this.cache.clear();
+    this.effects.forEach((el) => el.pause());
+    this.effects.clear();
     void this.ctx?.close?.();
     this.ctx = null;
     this.master = null;
@@ -132,6 +159,9 @@ export class LiveAudio {
       this.master.gain.value = this.level();
     } else if (this.current) {
       this.current.el.volume = this.current.sound.volume * this.level();
+    }
+    if (!this.master && this.muted) {
+      this.effects.forEach((el) => el.pause());
     }
   }
 

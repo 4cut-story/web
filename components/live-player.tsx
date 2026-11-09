@@ -83,7 +83,9 @@ export function LivePlayer({
       return;
     }
     player().play(panel.sound);
+    player().effect(panel.effect);
     player().preload(panels[index + 1]?.sound);
+    player().preload(panels[index + 1]?.effect);
     // panels는 불러온 뒤 바뀌지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, index, panel]);
@@ -299,19 +301,26 @@ export function LivePlayer({
         />
       </div>
       <Credit sound={panel.sound} />
+      <Credit sound={panel.effect ?? null} label="효과음" />
     </section>
   );
 }
 
 /** CC BY 소리는 저작자를 밝힌다. */
-function Credit({ sound }: { sound: PanelSound | null }) {
+function Credit({
+  sound,
+  label = "소리",
+}: {
+  sound: PanelSound | null;
+  label?: string;
+}) {
   if (!sound) {
     return null;
   }
   const credit = sound.credit;
   return (
     <p className="text-xs text-muted-foreground">
-      소리: {sound.title}
+      {label}: {sound.title}
       {needsCredit(sound) && credit && (
         <>
           {" · "}
