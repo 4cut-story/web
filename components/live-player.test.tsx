@@ -1,4 +1,10 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { Activity } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -309,6 +315,50 @@ describe("라이브 모드 재생기", () => {
       );
     }
     expect(seen).toEqual(["b", "c", "b", "a"]);
+  });
+
+  it("전체 화면을 지원하면 버튼으로 재생 화면을 전체 화면으로 키우고, 아니면 버튼이 없다", async () => {
+    await open();
+    expect(
+      screen.queryByRole("button", { name: "전체 화면" }),
+    ).not.toBeInTheDocument();
+    cleanup();
+
+    Object.defineProperty(document, "fullscreenEnabled", {
+      configurable: true,
+      value: true,
+    });
+    const request = vi.fn(() => Promise.resolve());
+    HTMLElement.prototype.requestFullscreen = request;
+    try {
+      await open();
+      fireEvent.click(screen.getByRole("button", { name: "전체 화면" }));
+      expect(request).toHaveBeenCalledTimes(1);
+      const stage = screen.getByTestId("panel-1").parentElement!;
+      Object.defineProperty(document, "fullscreenElement", {
+        configurable: true,
+        value: stage,
+      });
+      act(() => {
+        document.dispatchEvent(new Event("fullscreenchange"));
+      });
+      expect(
+        screen.getByRole("button", { name: "전체 화면 끝내기" }),
+      ).toBeInTheDocument();
+      // 전체 화면에서는 넓은 그림도 잘리지 않게 다 보여 준다
+      expect(screen.getByAltText("밤하늘 1컷").className).toContain(
+        "object-contain",
+      );
+    } finally {
+      Object.defineProperty(document, "fullscreenEnabled", {
+        configurable: true,
+        value: undefined,
+      });
+      Object.defineProperty(document, "fullscreenElement", {
+        configurable: true,
+        value: null,
+      });
+    }
   });
 
   it("움직임 줄이기 설정이면 두 번째 그림을 보이지 않는다", async () => {
