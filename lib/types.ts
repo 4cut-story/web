@@ -188,7 +188,20 @@ export type LivePanel = {
   captions?: Caption[];
   /** 컷을 보여 주는 동안 그림을 천천히 확대·이동하는 방향. */
   camera?: Camera;
+  /** 그림 위에 화면이 얹는 작은 움직임 층(많아야 2개). 예전 재생 정보에는 없다. */
+  ambient?: Ambient[];
 };
+
+export type Ambient =
+  | "twinkle"
+  | "rain"
+  | "snow"
+  | "fireflies"
+  | "petals"
+  | "leaves"
+  | "steam"
+  | "dust"
+  | "flicker";
 
 export type Caption = {
   speaker?: string | null;

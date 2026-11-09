@@ -24,6 +24,14 @@
   --destructive: #dc2626;
   --success: #15803d;
   --ring: #18181b;
+
+  /* 라이브 모드 화면 효과 층(그림 위 알갱이). 어떤 그림 위에서도 보이게 밝게 둔다. */
+  --ambient-light: #fffbea;
+  --ambient-rain: #dbe7f5;
+  --ambient-warm: #ffc56b;
+  --ambient-glow: #ffd27a;
+  --ambient-petal: #f8b4c8;
+  --ambient-leaf: #d9822b;
 }
 
 @theme inline {
@@ -69,6 +77,211 @@
   h2,
   h3 {
     letter-spacing: -0.02em;
+  }
+}
+
+/*
+ * 라이브 모드 화면 효과 층 (components/ambient-layer.tsx). 위치·크기·시간은 알갱이마다 style로 받는다.
+ * 떨어지는 것(비·눈·꽃잎·낙엽)은 애니메이션이 위에서 아래로 옮긴다.
+ */
+.ambient {
+  position: absolute;
+  display: block;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+.ambient-twinkle {
+  border-radius: 9999px;
+  background: var(--ambient-light);
+  box-shadow: 0 0 6px 2px var(--ambient-light);
+  animation-name: ambient-twinkle;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes ambient-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+.ambient-rain {
+  background: linear-gradient(transparent, var(--ambient-rain));
+  opacity: 0.55;
+  animation-name: ambient-rain;
+  animation-timing-function: linear;
+}
+
+@keyframes ambient-rain {
+  from {
+    top: -10%;
+    transform: translateX(0) rotate(12deg);
+  }
+  to {
+    top: 110%;
+    transform: translateX(-40px) rotate(12deg);
+  }
+}
+
+.ambient-snow {
+  border-radius: 9999px;
+  background: var(--ambient-light);
+  opacity: 0.85;
+  animation-name: ambient-snow;
+  animation-timing-function: linear;
+}
+
+@keyframes ambient-snow {
+  0% {
+    top: -5%;
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(18px);
+  }
+  100% {
+    top: 105%;
+    transform: translateX(-6px);
+  }
+}
+
+.ambient-fireflies {
+  border-radius: 9999px;
+  background: var(--ambient-warm);
+  box-shadow: 0 0 8px 3px var(--ambient-warm);
+  animation-name: ambient-fireflies;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes ambient-fireflies {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: translate(0, 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(14px, -10px);
+  }
+  60% {
+    opacity: 0.5;
+    transform: translate(-8px, -22px);
+  }
+}
+
+.ambient-petals,
+.ambient-leaves {
+  border-radius: 80% 0 80% 0;
+  animation-timing-function: linear;
+}
+
+.ambient-petals {
+  background: var(--ambient-petal);
+  opacity: 0.9;
+  animation-name: ambient-fall;
+}
+
+.ambient-leaves {
+  background: var(--ambient-leaf);
+  opacity: 0.9;
+  animation-name: ambient-fall;
+}
+
+@keyframes ambient-fall {
+  0% {
+    top: -8%;
+    transform: translateX(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(36px) rotate(200deg);
+  }
+  100% {
+    top: 108%;
+    transform: translateX(-10px) rotate(400deg);
+  }
+}
+
+.ambient-steam {
+  border-radius: 9999px;
+  background: var(--ambient-light);
+  filter: blur(8px);
+  animation-name: ambient-steam;
+  animation-timing-function: ease-out;
+}
+
+@keyframes ambient-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  30% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px) scale(1.6);
+  }
+}
+
+.ambient-dust {
+  border-radius: 9999px;
+  background: var(--ambient-light);
+  animation-name: ambient-dust;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes ambient-dust {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: translate(0, 0);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translate(20px, 12px);
+  }
+}
+
+/* 불빛 흔들림은 알갱이가 아니라 그림 전체에 얹는 따뜻한 빛 한 장이다 */
+.ambient-flicker {
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  background: radial-gradient(
+    ellipse at 50% 70%,
+    var(--ambient-glow),
+    transparent 65%
+  );
+  mix-blend-mode: soft-light;
+  animation-name: ambient-flicker;
+  animation-timing-function: steps(1, end);
+}
+
+@keyframes ambient-flicker {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  12% {
+    opacity: 0.55;
+  }
+  25% {
+    opacity: 0.3;
+  }
+  41% {
+    opacity: 0.6;
+  }
+  58% {
+    opacity: 0.4;
+  }
+  76% {
+    opacity: 0.5;
   }
 }
 

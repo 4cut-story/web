@@ -10,10 +10,12 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { AmbientLayer } from "@/components/ambient-layer";
 import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { request } from "@/lib/api";
 import {
+  ambientOn,
   cameraTransform,
   captionAt,
   isWide,
@@ -280,6 +282,9 @@ export function LivePlayer({
                     transitionDuration: `${Math.round(p.motion.intervalMs * 0.6)}ms`,
                   }}
                 />
+              )}
+              {i === index && (
+                <AmbientLayer types={ambientOn(p, reduced)} playing={playing} />
               )}
             </div>
           );

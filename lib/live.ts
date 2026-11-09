@@ -1,4 +1,5 @@
 import type {
+  Ambient,
   Camera,
   Caption,
   LivePanel,
@@ -117,4 +118,155 @@ export function cameraTransform(
     default:
       return still;
   }
+}
+
+/** 화면 효과 층 종류. 재생 정보의 다른 값은 무시한다. */
+export const AMBIENTS: readonly Ambient[] = [
+  "twinkle",
+  "rain",
+  "snow",
+  "fireflies",
+  "petals",
+  "leaves",
+  "steam",
+  "dust",
+  "flicker",
+];
+
+/** 컷에 얹을 화면 효과 층. 움직임 줄이기 설정이면 없고, 모르는 값·중복은 빼고 두 개까지. */
+export function ambientOn(
+  panel: LivePanel | undefined,
+  reduced: boolean,
+): Ambient[] {
+  if (reduced || !panel?.ambient) {
+    return [];
+  }
+  return [...new Set(panel.ambient)]
+    .filter((a) => AMBIENTS.includes(a))
+    .slice(0, 2);
+}
+
+/** 화면 효과 알갱이 하나. 위치는 그림 기준 %, 크기는 px, 시간은 ms. */
+export type Particle = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  delayMs: number;
+  durationMs: number;
+};
+
+type Recipe = {
+  count: number;
+  /** 알갱이가 나타나는 세로 범위(%). 떨어지는 것은 애니메이션이 위에서 아래로 옮긴다. */
+  y: [number, number];
+  x: [number, number];
+  width: [number, number];
+  /** 없으면 width와 같다(둥근 알갱이). */
+  height?: [number, number];
+  durationMs: [number, number];
+};
+
+/** 종류별 알갱이 수·크기·속도. 화면 효과는 그림을 가리지 않게 작고 옅게 둔다. */
+const RECIPES: Record<Ambient, Recipe> = {
+  twinkle: {
+    count: 18,
+    y: [2, 55],
+    x: [2, 98],
+    width: [2, 4],
+    durationMs: [1400, 3200],
+  },
+  rain: {
+    count: 56,
+    y: [0, 100],
+    x: [-5, 100],
+    width: [1, 1.5],
+    height: [14, 26],
+    durationMs: [550, 900],
+  },
+  snow: {
+    count: 36,
+    y: [0, 100],
+    x: [0, 100],
+    width: [3, 6],
+    durationMs: [7000, 12000],
+  },
+  fireflies: {
+    count: 12,
+    y: [35, 92],
+    x: [5, 95],
+    width: [3, 5],
+    durationMs: [4000, 7500],
+  },
+  petals: {
+    count: 16,
+    y: [0, 100],
+    x: [0, 100],
+    width: [7, 10],
+    height: [5, 7],
+    durationMs: [7000, 11000],
+  },
+  leaves: {
+    count: 10,
+    y: [0, 100],
+    x: [0, 100],
+    width: [9, 13],
+    height: [6, 8],
+    durationMs: [6000, 10000],
+  },
+  steam: {
+    count: 5,
+    y: [55, 72],
+    x: [38, 62],
+    width: [18, 30],
+    durationMs: [3200, 4800],
+  },
+  dust: {
+    count: 22,
+    y: [5, 90],
+    x: [5, 95],
+    width: [1.5, 3],
+    durationMs: [8000, 14000],
+  },
+  flicker: {
+    count: 1,
+    y: [0, 0],
+    x: [0, 0],
+    width: [0, 0],
+    durationMs: [2600, 2600],
+  },
+};
+
+/** 같은 종류는 늘 같은 자리에 둔다(화면이 다시 그려져도 알갱이가 튀지 않는다). */
+function random(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function between(r: () => number, [lo, hi]: [number, number]): number {
+  return Math.round((lo + (hi - lo) * r()) * 10) / 10;
+}
+
+/** 종류별 알갱이 목록. 시작 지연은 음수라 재생하자마자 화면 곳곳에 알갱이가 있다. */
+export function ambientParticles(type: Ambient): Particle[] {
+  const recipe = RECIPES[type];
+  const r = random(AMBIENTS.indexOf(type) * 7919 + 17);
+  return Array.from({ length: recipe.count }, () => {
+    const durationMs = Math.round(between(r, recipe.durationMs));
+    const width = between(r, recipe.width);
+    return {
+      x: between(r, recipe.x),
+      y: between(r, recipe.y),
+      width,
+      height: recipe.height ? between(r, recipe.height) : width,
+      durationMs,
+      delayMs: -Math.round(durationMs * r()),
+    };
+  });
 }
