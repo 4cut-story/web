@@ -6,16 +6,12 @@ import { writeSession } from "./session";
 
 /**
  * 이미지 종류 → 게이트웨이에서 사전 서명 주소를 받는 경로. looks는 캐릭터 모습 그림이다. 게시물·만화는 cast(등장인물 순서)가
- * 있으면 그 인물의 얼굴 그림(캐릭터를 못 찾아 만화 컷에서 잘라 낸 것)이다. sounds는 그림이 아니라 배경음 미리 듣기 MP3다(같은 방식으로 중계한다).
+ * 있으면 그 인물의 얼굴 그림(캐릭터를 못 찾아 만화 컷에서 잘라 낸 것)이고, panel(컷 번호)이 있으면 라이브 모드 컷 그림(frame=b면
+ * 움직임 컷의 두 번째 그림)이다. sounds는 그림이 아니라 배경음 미리 듣기 MP3다(같은 방식으로 중계한다).
  */
-const SOURCES: Record<
-  string,
-  (id: string, size: string, cast: string | null) => string
-> = {
-  posts: (id, size, cast) =>
-    `/api/v1/posts/${id}/image?${cast ? `cast=${cast}` : `size=${size}`}`,
-  comics: (id, size, cast) =>
-    `/api/v1/comics/${id}/image?${cast ? `cast=${cast}` : `size=${size}`}`,
+const SOURCES: Record<string, (id: string, query: string) => string> = {
+  posts: (id, query) => `/api/v1/posts/${id}/image?${query}`,
+  comics: (id, query) => `/api/v1/comics/${id}/image?${query}`,
   looks: (id) => `/api/v1/characters/looks/${id}/image`,
   sounds: (id) => `/api/v1/sounds/${id}/audio`,
 };
@@ -23,6 +19,26 @@ const SOURCES: Record<
 /** 캐릭터 그림·얼굴 그림은 거의 바뀌지 않아 더 오래 둔다. */
 const MAX_AGE: Record<string, number> = { looks: 3600, sounds: 3600 };
 const CAST_MAX_AGE = 3600;
+
+/** 게시물·만화 이미지 쿼리: 얼굴 그림(cast), 라이브 컷 그림(panel, frame), 아니면 크기. 틀린 값은 버린다. */
+export function imageQuery(params: URLSearchParams): {
+  query: string;
+  fixed: boolean;
+} {
+  const cast = params.get("cast");
+  if (cast !== null && /^\d{1,2}$/.test(cast)) {
+    return { query: `cast=${cast}`, fixed: true };
+  }
+  const panel = params.get("panel");
+  if (panel !== null && /^([1-9]|10)$/.test(panel)) {
+    const frame = params.get("frame") === "b" ? "&frame=b" : "";
+    return { query: `panel=${panel}${frame}`, fixed: true };
+  }
+  return {
+    query: `size=${params.get("size") === "thumb" ? "thumb" : "full"}`,
+    fixed: false,
+  };
+}
 
 /**
  * 이미지 권한은 content-service가 확인하고 미리 서명된 주소를 준다. web이 그 주소에서 바이트를 받아 그대로 넘긴다.
@@ -39,11 +55,8 @@ export async function proxyImage(
   }
   // 세션이 없어도 부른다. 전체 공개 게시물이 아니면 게이트웨이·content-service가 401·404로 답한다.
   const caller = readCaller(request);
-  const size =
-    request.nextUrl.searchParams.get("size") === "thumb" ? "thumb" : "full";
-  const rawCast = request.nextUrl.searchParams.get("cast");
-  const cast = rawCast !== null && /^\d{1,2}$/.test(rawCast) ? rawCast : null;
-  const result = await callAs(caller, source(id, size, cast));
+  const { query, fixed } = imageQuery(request.nextUrl.searchParams);
+  const result = await callAs(caller, source(id, query));
   let response: NextResponse;
   if (!result.response.ok) {
     response = new NextResponse(null, { status: result.response.status });
@@ -55,7 +68,7 @@ export async function proxyImage(
           status: 200,
           headers: {
             "content-type": image.headers.get("content-type") ?? "image/png",
-            "cache-control": `private, max-age=${cast ? CAST_MAX_AGE : (MAX_AGE[kind] ?? 300)}`,
+            "cache-control": `private, max-age=${fixed ? CAST_MAX_AGE : (MAX_AGE[kind] ?? 300)}`,
             vary: "Cookie",
           },
         })

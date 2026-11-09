@@ -243,6 +243,35 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
     expect(screen.queryByRole("region", { name: "제작 정보" })).toBeNull();
   });
 
+  it("라이브 정보가 있는 게시물은 라이브 모드로 볼 수 있다", async () => {
+    mockFetch({
+      "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
+      "GET /api/v1/posts/p1/live": json({
+        version: 1,
+        panels: [
+          {
+            index: 1,
+            role: "기",
+            image: "panels/1.png",
+            durationMs: 3500,
+            sound: null,
+            motion: null,
+          },
+        ],
+      }),
+      "GET /api/v1/posts/p1": json(post({ live: true })),
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users": json({ items: [OTHER, ME] }),
+    });
+    render(<PostScreen id="p1" />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "라이브" }),
+    );
+    expect(await screen.findByAltText("편의점 대소동 1컷")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "만화보기" }));
+    expect(screen.getByAltText("오늘 있었던 일")).toBeInTheDocument();
+  });
+
   it("예전 게시물은 등장인물 소개가 없다", async () => {
     mockFetch({
       "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),

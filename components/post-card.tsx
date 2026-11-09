@@ -13,8 +13,16 @@ import { cn } from "@/lib/utils";
 const ACTION =
   "flex h-10 items-center gap-1.5 rounded-full px-2 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** 피드·게시물 상세의 게시물 하나: 작성자 줄 → 만화 → 행동 줄 → 캡션. */
-export function PostCard({ post, author }: { post: Post; author?: User }) {
+/** 피드·게시물 상세의 게시물 하나: 작성자 줄 → 만화 → 행동 줄 → 캡션. media가 있으면 만화 자리에 그것을 둔다(라이브 모드). */
+export function PostCard({
+  post,
+  author,
+  media,
+}: {
+  post: Post;
+  author?: User;
+  media?: React.ReactNode;
+}) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likes, setLikes] = useState(post.likeCount);
   const name = author?.nickname ?? "알 수 없음";
@@ -70,16 +78,18 @@ export function PostCard({ post, author }: { post: Post; author?: User }) {
           />
         )}
       </div>
-      <Link href={`/posts/${post.postId}`}>
-        {/* 권한 확인 뒤 web이 바이트를 넘기는 주소라 next/image 최적화를 쓰지 않는다 */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imageUrl("posts", post.postId)}
-          alt={post.caption || `${name}님의 4컷`}
-          {...COMIC_SIZE}
-          className="h-auto w-full rounded-lg bg-muted"
-        />
-      </Link>
+      {media ?? (
+        <Link href={`/posts/${post.postId}`}>
+          {/* 권한 확인 뒤 web이 바이트를 넘기는 주소라 next/image 최적화를 쓰지 않는다 */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl("posts", post.postId)}
+            alt={post.caption || `${name}님의 4컷`}
+            {...COMIC_SIZE}
+            className="h-auto w-full rounded-lg bg-muted"
+          />
+        </Link>
+      )}
       <div className="-ml-2 flex items-center gap-1 text-sm font-semibold">
         <button
           type="button"

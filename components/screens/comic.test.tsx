@@ -250,6 +250,42 @@ describe("4컷 보기와 게시 (FR-013, FR-014)", () => {
     expect(router.push).toHaveBeenCalledWith("/comics");
   });
 
+  it("라이브 정보가 있는 4컷만 모드 버튼이 있고 라이브 모드로 바꾼다", async () => {
+    const live = {
+      version: 1,
+      panels: [
+        {
+          index: 1,
+          role: "기",
+          image: "panels/1.png",
+          durationMs: 3500,
+          sound: null,
+          motion: null,
+        },
+      ],
+    };
+    mockFetch({
+      "GET /api/v1/comics/c1/live": json(live),
+      "GET /api/v1/comics/c1": json(comic({ live: true })),
+    });
+    render(<ComicScreen id="c1" />);
+    expect(
+      await screen.findByRole("button", { name: "만화보기" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await userEvent.click(screen.getByRole("button", { name: "라이브" }));
+    expect(await screen.findByAltText("편의점 대소동 1컷")).toHaveAttribute(
+      "src",
+      "/api/images/comics/c1?panel=1",
+    );
+  });
+
+  it("예전 4컷은 모드 버튼이 없다", async () => {
+    mockFetch({ "GET /api/v1/comics/c1": json(comic()) });
+    render(<ComicScreen id="c1" />);
+    expect(await screen.findByRole("button", { name: "올리기" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "라이브" })).toBeNull();
+  });
+
   it("삭제가 실패하면 알린다", async () => {
     mockFetch({
       "GET /api/v1/comics/c1": json(comic()),

@@ -10,8 +10,10 @@ import { ComicProduction } from "@/components/comic-production";
 import { Comments } from "@/components/comments";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
+import { LivePlayer } from "@/components/live-player";
 import { PostCard } from "@/components/post-card";
 import { Button } from "@/components/ui/button";
+import { ViewModeToggle, type ViewMode } from "@/components/view-mode";
 import { api, errorMessage } from "@/lib/api";
 import type { Post } from "@/lib/types";
 import { useLoad } from "@/lib/use-load";
@@ -28,6 +30,7 @@ export function PostScreen({ id }: { id: string }) {
   const users = useUsers(post ? [post.authorId] : []);
   const [confirm, setConfirm] = useState<"UNPUBLISH" | "DELETE">();
   const [error, setError] = useState<string>();
+  const [mode, setMode] = useState<ViewMode>("comic");
   const mine = post !== undefined && post.authorId === me.data?.id;
 
   async function remove(mode: "UNPUBLISH" | "DELETE") {
@@ -83,7 +86,20 @@ export function PostScreen({ id }: { id: string }) {
         // PC: 세로로 긴 4컷은 왼쪽, 댓글은 오른쪽에 붙여 둔다
         <div className="flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] md:items-start md:gap-10 lg:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] lg:gap-12">
           <div className="flex flex-col gap-6">
-            <PostCard post={post} author={users[post.authorId]} />
+            {post.live && <ViewModeToggle mode={mode} onChange={setMode} />}
+            <PostCard
+              post={post}
+              author={users[post.authorId]}
+              media={
+                post.live && mode === "live" ? (
+                  <LivePlayer
+                    kind="posts"
+                    id={post.postId}
+                    title={post.title}
+                  />
+                ) : undefined
+              }
+            />
             <ComicCast
               cast={post.cast}
               concept={post.concept}
