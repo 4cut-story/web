@@ -146,6 +146,10 @@ export const AMBIENTS: readonly Ambient[] = [
   "steam",
   "dust",
   "flicker",
+  "meteor",
+  "fireworks",
+  "lightning",
+  "glow",
 ];
 
 /** 컷에 얹을 화면 효과 층. 움직임 줄이기 설정이면 없고, 모르는 값·중복은 빼고 두 개까지. */
@@ -185,14 +189,14 @@ type Recipe = {
 /** 종류별 알갱이 수·크기·속도. 화면 효과는 그림을 가리지 않게 작고 옅게 둔다. */
 const RECIPES: Record<Ambient, Recipe> = {
   twinkle: {
-    count: 18,
+    count: 28,
     y: [2, 55],
     x: [2, 98],
-    width: [2, 4],
-    durationMs: [1400, 3200],
+    width: [2, 5],
+    durationMs: [1200, 3000],
   },
   rain: {
-    count: 56,
+    count: 80,
     y: [0, 100],
     x: [-5, 100],
     width: [1, 1.5],
@@ -200,21 +204,21 @@ const RECIPES: Record<Ambient, Recipe> = {
     durationMs: [550, 900],
   },
   snow: {
-    count: 36,
+    count: 50,
     y: [0, 100],
     x: [0, 100],
     width: [3, 6],
     durationMs: [7000, 12000],
   },
   fireflies: {
-    count: 12,
+    count: 18,
     y: [35, 92],
     x: [5, 95],
     width: [3, 5],
     durationMs: [4000, 7500],
   },
   petals: {
-    count: 16,
+    count: 24,
     y: [0, 100],
     x: [0, 100],
     width: [7, 10],
@@ -222,7 +226,7 @@ const RECIPES: Record<Ambient, Recipe> = {
     durationMs: [7000, 11000],
   },
   leaves: {
-    count: 10,
+    count: 16,
     y: [0, 100],
     x: [0, 100],
     width: [9, 13],
@@ -230,14 +234,14 @@ const RECIPES: Record<Ambient, Recipe> = {
     durationMs: [6000, 10000],
   },
   steam: {
-    count: 5,
+    count: 7,
     y: [55, 72],
     x: [38, 62],
     width: [18, 30],
     durationMs: [3200, 4800],
   },
   dust: {
-    count: 22,
+    count: 32,
     y: [5, 90],
     x: [5, 95],
     width: [1.5, 3],
@@ -249,6 +253,39 @@ const RECIPES: Record<Ambient, Recipe> = {
     x: [0, 0],
     width: [0, 0],
     durationMs: [2600, 2600],
+  },
+  // 별똥별: 가끔 하나씩 하늘을 가로지른다(긴 주기 중 앞부분만 보인다)
+  meteor: {
+    count: 4,
+    y: [2, 30],
+    x: [30, 95],
+    width: [90, 150],
+    height: [2, 2],
+    durationMs: [3500, 6000],
+  },
+  // 불꽃: 하늘 곳곳에서 차례로 터진다
+  fireworks: {
+    count: 5,
+    y: [8, 45],
+    x: [10, 90],
+    width: [5, 5],
+    durationMs: [1800, 2800],
+  },
+  // 번개: 그림 전체가 가끔 번쩍인다
+  lightning: {
+    count: 1,
+    y: [0, 0],
+    x: [0, 0],
+    width: [0, 0],
+    durationMs: [5200, 5200],
+  },
+  // 은은한 빛: 흐릿한 빛 방울이 천천히 떠다닌다(다른 효과가 없는 컷)
+  glow: {
+    count: 10,
+    y: [5, 90],
+    x: [0, 95],
+    width: [22, 54],
+    durationMs: [9000, 15000],
   },
 };
 

@@ -185,6 +185,14 @@ describe("화면 효과 층", () => {
         expect(p.delayMs).toBeGreaterThanOrEqual(-p.durationMs);
       }
     }
+    // 별똥별은 하늘 위쪽에서 시작하는 긴 빛줄기다
+    for (const p of ambientParticles("meteor")) {
+      expect(p.y).toBeLessThanOrEqual(30);
+      expect(p.width).toBeGreaterThan(p.height * 20);
+    }
+    expect(AMBIENTS).toEqual(
+      expect.arrayContaining(["meteor", "fireworks", "lightning", "glow"]),
+    );
     expect(ambientParticles("rain").length).toBeGreaterThan(
       ambientParticles("fireflies").length,
     );
