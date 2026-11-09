@@ -11,8 +11,10 @@ import { ComicSummary } from "@/components/comic-summary";
 import { ComicProduction } from "@/components/comic-production";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
+import { LivePlayer } from "@/components/live-player";
 import { PublishSheet } from "@/components/publish-sheet";
 import { Button } from "@/components/ui/button";
+import { ViewModeToggle, type ViewMode } from "@/components/view-mode";
 import { api, COMIC_SIZE, errorMessage, imageUrl } from "@/lib/api";
 import type { Comic } from "@/lib/types";
 import { useLoad } from "@/lib/use-load";
@@ -24,6 +26,7 @@ export function ComicScreen({ id }: { id: string }) {
   const [sheet, setSheet] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string>();
+  const [mode, setMode] = useState<ViewMode>("comic");
   const comic = loaded.data;
 
   async function remove() {
@@ -57,13 +60,18 @@ export function ComicScreen({ id }: { id: string }) {
       )}
       {comic && (
         <div className="flex flex-col gap-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl("comics", comic.id)}
-            alt={comic.title ?? "4컷"}
-            {...COMIC_SIZE}
-            className="h-auto w-full rounded-lg bg-muted"
-          />
+          {comic.live && <ViewModeToggle mode={mode} onChange={setMode} />}
+          {comic.live && mode === "live" ? (
+            <LivePlayer kind="comics" id={comic.id} title={comic.title} />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageUrl("comics", comic.id)}
+              alt={comic.title ?? "4컷"}
+              {...COMIC_SIZE}
+              className="h-auto w-full rounded-lg bg-muted"
+            />
+          )}
           <ComicSummary summary={comic.summary} />
           <ComicCast
             cast={comic.cast}

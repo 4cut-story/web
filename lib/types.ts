@@ -141,6 +141,51 @@ export type ComicExtras = {
   /** 만화 아래 줄거리 요약(몇 문장). 예전 만화는 null. */
   summary?: string | null;
   production?: Production | null;
+  /** 라이브 모드 재생 정보가 있는지. 예전 만화·예전 서버는 없다(만화보기만). */
+  live?: boolean;
+};
+
+/** 라이브 모드 움직임 종류. 모두 배경만 바뀐다 (common contracts/live-mode.yaml). */
+export type MotionType =
+  "twinkle" | "rain" | "snow" | "flicker" | "shimmer" | "petals";
+
+/** 컷 배경음과 저작자 표시. */
+export type PanelSound = {
+  publicId: string;
+  title: string;
+  volume: number;
+  fadeMs: number;
+  loop: boolean;
+  credit?: {
+    author?: string | null;
+    license?: string | null;
+    licenseUrl?: string | null;
+    sourceUrl?: string | null;
+    originalTitle?: string | null;
+  };
+};
+
+/** 두 장을 번갈아 보여 주는 움직임. */
+export type PanelMotion = {
+  type: MotionType;
+  frames: [string, string];
+  intervalMs: number;
+  easing?: string;
+};
+
+export type LivePanel = {
+  index: number;
+  role: string;
+  image: string;
+  durationMs: number;
+  sound: PanelSound | null;
+  motion: PanelMotion | null;
+};
+
+/** 라이브 모드 재생 정보 (version 1). 화면은 이 JSON만 읽고 재생한다. */
+export type LivePlayback = {
+  version: number;
+  panels: LivePanel[];
 };
 
 export type Comic = ComicExtras & {

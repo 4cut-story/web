@@ -104,6 +104,40 @@ describe("이미지 중계", () => {
     expect(calls[0].url).toBe(`${GW}/api/v1/comics/${ID}/image?size=full`);
   });
 
+  it("라이브 모드 컷 그림은 panel·frame으로 받고 더 오래 둔다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/posts/${ID}/image`]: json({
+        url: `${STORE}/panels/2-b.png?sig`,
+      }),
+      [`GET ${STORE}`]: png(),
+    });
+    const response = await image(
+      anonymous(`/api/images/posts/${ID}?panel=2&frame=b`),
+      params({ kind: "posts", id: ID }),
+    );
+    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2&frame=b`);
+  });
+
+  it("panel 값이 틀리면 버리고, frame이 b가 아니면 첫 그림이다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/comics/${ID}/image`]: json({
+        url: `${STORE}/full.png?sig`,
+      }),
+      [`GET ${STORE}`]: png(),
+    });
+    await image(
+      loggedIn(`/api/images/comics/${ID}?panel=11`),
+      params({ kind: "comics", id: ID }),
+    );
+    await image(
+      loggedIn(`/api/images/comics/${ID}?panel=1&frame=../x`),
+      params({ kind: "comics", id: ID }),
+    );
+    expect(calls[0].url).toBe(`${GW}/api/v1/comics/${ID}/image?size=full`);
+    expect(calls.at(-2)?.url).toBe(`${GW}/api/v1/comics/${ID}/image?panel=1`);
+  });
+
   it("모르는 종류는 404", async () => {
     mockFetch({});
     const response = await image(

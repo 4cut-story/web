@@ -7,6 +7,7 @@
  *   model-runtime eval/round29-outputs의 scores.json·timing.json(FLUX.2 klein 4B, 콘티 틀 1~25c판)
  * - 콘티 틀·2단 그리기: conversation-service #119, model-runtime #37·#43
  * - 줄거리 요약: conversation-service #120, content-service #15
+ * - 라이브 모드: docs specs/003-live-mode, conversation-service #121, model-runtime #44, content-service #16
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
  * 기능이 바뀌면 이 파일도 함께 고친다(web CLAUDE.md "소개 페이지").
@@ -147,6 +148,14 @@ export const PIPELINE: PipelineStep[] = [
       "컷을 위에서 아래로 한 장에 배치하고 말풍선과 대사를 코드로 그려 넣은 뒤 미리보기 그림을 만들어 내 스토리에 넣어요. 말풍선은 말한 인물의 얼굴 곁에 붙고, 꼬리가 그 얼굴을 가리켜요. 누가 말하는 컷은 다 그린 그림을 Claude에게 보여 주고 인물마다 실제로 선 쪽과 얼굴 위치를 받아요. 말풍선은 얼굴 위, 아래, 옆 순서로 놓아 보고 얼굴과 다른 말풍선을 가리지 않는 자리에 둬요. 게시물에는 만화 아래에 줄거리 요약, 등장인물(캐릭터 그림·호칭·이름), 그림체·사투리를 차례로 보여 줘요. 요약이 생기기 전에 만든 만화는 남아 있는 대화(없으면 콘티 대사)로 Claude Haiku에게 한 번 물어 요약을 채워요. 캐릭터 DB에서 찾지 못한 인물은 Claude가 알려 준 얼굴 위치로 얼굴이 가장 크게 그려진 컷에서 얼굴과 어깨를 잘라 소개 그림으로 써요. 게시할지는 사용자가 정해요.",
     models: ["Claude Opus 5.5"],
     where: "클러스터",
+  },
+  {
+    icon: Music,
+    title: "라이브 모드 만들기",
+    description:
+      "새로 만든 만화는 만화보기와 라이브 모드 두 가지로 볼 수 있어요. 라이브 모드는 컷을 한 장씩 넘기며 컷마다 어울리는 배경음을 틀어요. 소리는 콘티가 컷마다 쓴 소리 장면 문장(예: 밤 공원의 풀벌레 소리)과 장소·대사를 배경음 라이브러리의 설명과 견줘 가장 가까운 장소·환경음을 골라요. 앞 컷과 같은 장소면 같은 소리를 끊지 않고 이어 틀어요. 별이 반짝이거나 비·눈이 내리거나 촛불이 일렁이는 것처럼 배경만 바뀌는 컷은 한 편에 두 컷까지 고르고, 다 그린 컷 그림을 다시 넣어 배경만 조금 바꾼 두 번째 그림을 그려 둘을 번갈아 보여 줘요. 인물이 움직여야 하는 컷은 고르지 않고, 두 그림이 크게 어긋나면 움직임을 빼요. 첫 그림을 그리는 지시는 바꾸지 않아 만화보기 그림은 그대로예요. 화면은 만화마다 만든 재생 정보만 읽고 재생하고, 소리는 재생 버튼을 누른 뒤에만 나와요.",
+    models: ["Claude Opus 5.5", "BGE-M3", "FLUX.2 klein 4B"],
+    where: "GPU PC",
   },
 ];
 
@@ -334,6 +343,11 @@ export const LLM_FALLBACK: { name: string; detail: string }[] = [
 export type Term = { term: string; meaning: string };
 
 export const GLOSSARY: Term[] = [
+  {
+    term: "라이브 모드",
+    meaning:
+      "만화를 컷 한 장씩 넘기며 컷마다 배경음을 틀어 보는 방식이에요. 별빛·비·눈처럼 배경만 바뀌는 컷은 그림 두 장을 번갈아 보여 줘 움직이는 것처럼 보여요.",
+  },
   {
     term: "개인 액세스 토큰(PAT)",
     meaning:
