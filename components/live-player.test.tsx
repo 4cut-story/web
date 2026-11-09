@@ -268,6 +268,49 @@ describe("라이브 모드 재생기", () => {
     }
   });
 
+  it("FR-044: 그림이 세 장인 움직임 컷은 a→b→c→b 순서로 오간다", async () => {
+    media(false);
+    mockFetch({
+      "GET /api/v1/posts/p1/live": json({
+        version: 1,
+        panels: [
+          {
+            ...PLAYBACK.panels[0],
+            durationMs: 8000,
+            motion: {
+              type: "rain",
+              frames: ["panels/1.png", "panels/1-b.png", "panels/1-c.png"],
+              intervalMs: 300,
+            },
+          },
+        ],
+      }),
+    });
+    const audio = fakeAudio();
+    render(
+      <LivePlayer
+        kind="posts"
+        id="p1"
+        title="밤하늘"
+        audioFactory={audio.factory}
+      />,
+    );
+    await screen.findByAltText("밤하늘 1컷");
+    const b = screen.getByTestId("frame-b-1");
+    const c = screen.getByTestId("frame-c-1");
+    expect(c).toHaveAttribute("src", "/api/images/posts/p1?panel=1&frame=c");
+    vi.useFakeTimers();
+    fireEvent.click(screen.getAllByRole("button", { name: "재생" })[0]);
+    const seen: string[] = [];
+    for (let k = 0; k < 4; k++) {
+      act(() => vi.advanceTimersByTime(300));
+      seen.push(
+        c.style.opacity === "1" ? "c" : b.style.opacity === "1" ? "b" : "a",
+      );
+    }
+    expect(seen).toEqual(["b", "c", "b", "a"]);
+  });
+
   it("움직임 줄이기 설정이면 두 번째 그림을 보이지 않는다", async () => {
     await open(true);
     vi.useFakeTimers();

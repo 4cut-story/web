@@ -6,6 +6,7 @@ import {
   AMBIENTS,
   cameraTransform,
   captionAt,
+  frameAt,
   isWide,
   motionOn,
   needsCredit,
@@ -50,6 +51,17 @@ describe("라이브 모드 계산", () => {
       "/api/images/comics/c1?panel=3&frame=b",
     );
     expect(soundUrl(sound("s1"))).toBe("/api/images/sounds/s1");
+  });
+
+  it("FR-044: 세 번째 그림 주소, 그림 두세 장을 끊기지 않게 오가는 순서", () => {
+    expect(panelImageUrl("posts", "p1", 1, 2)).toBe(
+      "/api/images/posts/p1?panel=1&frame=c",
+    );
+    const order = (count: number) =>
+      Array.from({ length: 8 }, (_, step) => frameAt(step, count));
+    expect(order(2)).toEqual([0, 1, 0, 1, 0, 1, 0, 1]);
+    expect(order(3)).toEqual([0, 1, 2, 1, 0, 1, 2, 1]);
+    expect(frameAt(5, 1)).toBe(0);
   });
 
   it("다음·이전 컷, 마지막 컷에서 멈춘다", () => {
