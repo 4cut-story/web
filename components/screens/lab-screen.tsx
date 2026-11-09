@@ -19,9 +19,10 @@ import { cn } from "@/lib/utils";
 
 type Skeletons = Awaited<ReturnType<typeof loadLab>>;
 
-const sec = (n?: number) => (n === undefined ? "–" : `${n.toFixed(1)}초`);
-const gib = (n?: number) => (n === undefined ? "–" : `${n.toFixed(1)}GiB`);
-const score = (n?: number) => (n === undefined ? "–" : n.toFixed(1));
+// 채점 파일은 그리지 못한 방식의 값을 null로 적는다. null도 빈 값으로 본다.
+const sec = (n?: number | null) => (n == null ? "–" : `${n.toFixed(1)}초`);
+const gib = (n?: number | null) => (n == null ? "–" : `${n.toFixed(1)}GiB`);
+const score = (n?: number | null) => (n == null ? "–" : n.toFixed(1));
 
 const STATUS_STYLE: Record<string, string> = {
   기준: "bg-primary text-primary-foreground",
@@ -88,7 +89,7 @@ function VariantTable({
             return (
               <tr key={v.id} className="border-t border-border align-top">
                 <td className="px-3 py-2 tabular-nums">
-                  {v.scores?.average === undefined ? "–" : i + 1}
+                  {v.scores?.average == null ? "–" : i + 1}
                 </td>
                 <th
                   scope="row"

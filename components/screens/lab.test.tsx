@@ -126,6 +126,32 @@ describe("그림 모델 비교 (/lab)", () => {
     );
   });
 
+  it("한 컷도 못 그려 점수가 null인 방식이 있어도 화면이 깨지지 않는다", async () => {
+    mockFetch({
+      ...ROUTES,
+      "GET https://api.github.com/": json({
+        tree: [...TREE.tree, blob(`${R}/broken-ref/scores.json`)],
+      }),
+      [`GET ${rawUrl(`${R}/broken-ref/scores.json`)}`]: json({
+        label: "못 그린 방식",
+        status: "실패(그리지 못함)",
+        reference: true,
+        scores: [],
+        average: null,
+        criticalComics: null,
+        perComic: {},
+      }),
+    });
+    render(<LabScreen />);
+    const ref = await screen.findByRole("table", {
+      name: "캐릭터 참조로 그림",
+    });
+    const row = within(ref)
+      .getByRole("rowheader", { name: "못 그린 방식" })
+      .closest("tr")!;
+    expect(within(row).getAllByText("–").length).toBeGreaterThan(0);
+  });
+
   it("회차가 여럿이면 고를 수 있다", async () => {
     mockFetch({
       ...ROUTES,
