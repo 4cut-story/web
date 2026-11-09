@@ -63,6 +63,7 @@ export function ProgressScreen({ id }: { id: string }) {
   );
   const c = loaded.data;
   const finished = c !== undefined && FINAL.includes(c.status);
+  const article = c?.source === "ARTICLE";
   const { reload } = loaded;
 
   useEffect(() => {
@@ -85,6 +86,11 @@ export function ProgressScreen({ id }: { id: string }) {
       )}
       {c && (
         <div className="flex flex-col gap-6 pt-4">
+          {article && c.sourceTitle && (
+            <p className="text-sm text-muted-foreground">
+              기사: <span className="text-foreground">{c.sourceTitle}</span>
+            </p>
+          )}
           <div
             role="progressbar"
             aria-valuenow={c.progress}
@@ -107,7 +113,9 @@ export function ProgressScreen({ id }: { id: string }) {
                   data-state={state}
                 >
                   {ICONS[state]}
-                  {step.label}
+                  {article && step.status === "TRANSCRIBING"
+                    ? "기사 읽고 대화로 바꾸는 중"
+                    : step.label}
                 </li>
               );
             })}
@@ -124,14 +132,19 @@ export function ProgressScreen({ id }: { id: string }) {
           )}
           {c.status === "FAILED" && (
             <ErrorText
-              message="4컷을 만들지 못했어요. 다시 녹음해 주세요."
+              message={
+                article
+                  ? "4컷을 만들지 못했어요. 다시 만들거나 다른 기사로 해 주세요."
+                  : "4컷을 만들지 못했어요. 다시 녹음해 주세요."
+              }
               code={c.failureReason ?? undefined}
             />
           )}
           {c.status === "NO_SCENE" && (
             <p className="text-base">
-              4컷으로 만들 만한 장면을 찾지 못했어요. 조금 더 길게 이야기해
-              보세요.
+              {article
+                ? "이 기사에서는 4컷으로 만들 만한 장면을 찾지 못했어요. 다른 기사로 해 보세요."
+                : "4컷으로 만들 만한 장면을 찾지 못했어요. 조금 더 길게 이야기해 보세요."}
             </p>
           )}
           {c.status === "DONE" && c.comicId && (
@@ -141,7 +154,11 @@ export function ProgressScreen({ id }: { id: string }) {
           )}
           {finished && c.status !== "DONE" && (
             <Button variant="secondary" asChild>
-              <Link href="/record">다시 녹음하기</Link>
+              {article ? (
+                <Link href="/article">다른 기사로 만들기</Link>
+              ) : (
+                <Link href="/record">다시 녹음하기</Link>
+              )}
             </Button>
           )}
         </div>

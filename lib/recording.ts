@@ -126,6 +126,21 @@ export const DIALECTS: { value: Dialect; label: string }[] = [
   { value: "SEOUL", label: "서울" },
 ];
 
+/** 기사 주소로 만들기를 시작한다. 서버가 기사를 읽어 바로 만들기 시작하고, 읽지 못하면 이유를 알린다. */
+export async function startArticle(
+  url: string,
+  concept: Concept = "AUTO",
+  dialect: Dialect = "NONE",
+): Promise<string> {
+  const created = await api.post<{ id: string }>("/conversations", {
+    source: "ARTICLE",
+    url,
+    ...(concept === "AUTO" ? {} : { concept }),
+    ...(dialect === "NONE" ? {} : { dialect }),
+  });
+  return created.id;
+}
+
 export async function startConversation(
   source: "RECORDING" | "UPLOAD",
   concept: Concept = "AUTO",

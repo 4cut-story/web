@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic, Sparkles, Square, Upload } from "lucide-react";
+import { Mic, Newspaper, Sparkles, Square, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -179,6 +179,17 @@ export function RecordScreen() {
               <Link href="/record/samples">
                 <Sparkles aria-hidden />
                 녹음 없이 샘플로 만들어 보기
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="-mt-5 w-full"
+              asChild
+            >
+              <Link href="/article">
+                <Newspaper aria-hidden />
+                기사 주소로 만들기
               </Link>
             </Button>
           </>

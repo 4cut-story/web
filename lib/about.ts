@@ -12,6 +12,7 @@
  * - 라이브 전용 넓은 그림·자막·카메라: conversation-service #131, model-runtime #46, 동점 다양화: conversation-service #129·#130
  * - 라이브 화면 효과 층: conversation-service #133, common #18
  * - 라이브 움직임 세 장(docs specs/003-live-mode FR-044)
+ * - 기사로 만들기: conversation-service #136(article 모듈), web 기사로 만들기 화면
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
  * 기능이 바뀌면 이 파일도 함께 고친다(web CLAUDE.md "소개 페이지").
@@ -43,6 +44,7 @@ import {
   Music,
   MessageSquareText,
   Mic,
+  Newspaper,
   Monitor,
   Network,
   Palette,
@@ -96,6 +98,14 @@ export const PIPELINE: PipelineStep[] = [
       "휴대폰 브라우저에서 1분 조각으로 녹음해 저장소로 바로 올려요. 녹음하는 동안 먼저 올라온 조각은 틈틈이 미리 받아 적어 두기 때문에, 녹음을 마치면 남은 부분만 처리하면 돼요. GPU PC가 꺼져 있으면 녹음 전에 알려 주고, 녹음은 받아 두었다가 켜지면 이어서 만들어요.",
     models: [],
     where: "클러스터",
+  },
+  {
+    icon: Newspaper,
+    title: "기사로 만들기 (녹음 대신)",
+    description:
+      "녹음 대신 뉴스 기사 주소를 넣어도 돼요. 서버가 기사 페이지를 받아 메뉴·광고·댓글·관련 기사·기자 이름·저작권 줄을 걷어 내고 본문만 6,000자까지 골라요. 본문이 200자보다 짧으면 유료 기사나 로그인이 필요한 페이지로 보고 바로 알려 줘요. 고른 본문은 기사 속 사람 2~4명이 그 일을 두고 나누는 대화로 바꿔(각색) 받아 적은 대화 자리에 넣고, 그 뒤 장면 고르기·콘티·그림·말풍선은 녹음과 똑같이 만들어요. 기사 문장은 그대로 옮기지 않고 새로 쓴 대사만 써요. 대사에 기사와 똑같은 40자 넘는 구간이 있으면 다시 바꿔요. 실명 대신 역할(주민, 감독 등)로 부르고, 완성한 만화 아래에는 원문 기사 링크를 남겨요. 서버가 대신 여는 주소는 http·https 기본 포트만 받고, 내부망·클라우드 메타데이터 같은 공개되지 않은 주소로 풀리면 막아요(SSRF 차단). 넘겨주기(리다이렉트)도 한 번마다 다시 검사해요.",
+    models: ["Claude Opus 5.5", "Gemini", "Qwen3 8B"],
+    where: "클라우드 API",
   },
   {
     icon: AudioLines,
@@ -347,6 +357,16 @@ export const LLM_FALLBACK: { name: string; detail: string }[] = [
 export type Term = { term: string; meaning: string };
 
 export const GLOSSARY: Term[] = [
+  {
+    term: "SSRF 차단",
+    meaning:
+      "사용자가 넣은 주소를 서버가 대신 열 때, 그 주소가 서버 안쪽(내부망, 클라우드 설정 정보 주소 등)을 가리키게 해서 바깥에서 못 보는 곳을 엿보는 공격을 막는 일이에요. 기사로 만들기는 주소를 IP로 풀어 공개 인터넷 주소일 때만 열어요.",
+  },
+  {
+    term: "각색",
+    meaning:
+      "원래 이야기의 사실은 그대로 두고 다른 형식으로 다시 쓰는 일이에요. 기사로 만들기는 기사를 사람들이 나누는 대화로 바꿔요.",
+  },
   {
     term: "라이브 모드",
     meaning:
@@ -1126,6 +1146,7 @@ export const SERVICES: Service[] = [
       "안쪽을 모듈 5개(흐름 관리, 받아 적기, 시나리오, 만화, 캐릭터)로 나누고 서로 공개 창구로만 불러요",
       "GPU 작업 대기열을 관리하고, 실패한 단계부터 자동으로 다시 해요",
       "외부 LLM(Claude, Gemini) 호출과 대체 순서도 여기서 정해요",
+      "기사로 만들기: 기사 주소를 SSRF 검사 뒤 대신 열어 본문만 고르고, 대화로 각색해 같은 흐름에 넣어요",
     ],
   },
   {
@@ -1301,6 +1322,15 @@ export type Decision = {
 
 /** 설계 결정과 버린 대안 (architecture.md, docs/archive 검토 기록, 커밋 기록). */
 export const DECISIONS: Decision[] = [
+  {
+    icon: Newspaper,
+    title: "기사를 만화로 만드는 방법",
+    choice:
+      "기사를 등장인물 대화로 각색해 녹음 흐름의 받아 적은 대화 자리에 넣기",
+    instead:
+      "기사 전용 콘티·그림 과정을 따로 만들거나 기사 문장을 그대로 대사로 쓰기",
+    why: "장면 고르기·콘티·캐릭터·그림·말풍선·라이브 모드가 모두 대화를 읽도록 맞춰져 있어서, 기사를 대화로 바꾸면 그 뒤를 하나도 고치지 않고 그대로 써요. 기사 문장을 그대로 옮기지 않아 원문 저작권을 지키고, 출처 링크로 원문을 보게 해요.",
+  },
   {
     icon: LayoutGrid,
     title: "만화를 몇 컷으로 그릴까",

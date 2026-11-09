@@ -26,7 +26,8 @@ export type ConversationStatus =
 
 export type Conversation = {
   id: string;
-  source: "RECORDING" | "UPLOAD";
+  /** ARTICLE은 녹음 대신 기사 주소로 만든 대화. */
+  source: "RECORDING" | "UPLOAD" | "ARTICLE";
   status: ConversationStatus;
   stage: ConversationStatus;
   progress: number;
@@ -38,6 +39,9 @@ export type Conversation = {
   concept?: Concept;
   /** 고른 사투리. 예전 서버는 주지 않는다. */
   dialect?: Dialect;
+  /** 기사로 만든 대화의 원문 주소와 제목. 녹음이면 없다. */
+  sourceUrl?: string | null;
+  sourceTitle?: string | null;
 };
 
 /** 말풍선 대사 사투리. 없거나 NONE이면 사투리로 바꾸지 않는다. */
@@ -131,6 +135,16 @@ export type Production = {
   totalMs?: number;
   steps: ProductionStep[];
   preTranscribe?: { parts: number; runMs: number };
+  /** 기사로 만든 만화의 원문 출처. 녹음으로 만든 만화는 없다. */
+  source?: ArticleSource;
+};
+
+/** 기사로 만든 만화의 원문 기사. 게시물 아래에 출처 링크로 보인다. */
+export type ArticleSource = {
+  type: "ARTICLE";
+  url: string;
+  title?: string | null;
+  site?: string | null;
 };
 
 /** 만화 아래에 보이는 등장인물과 만든 옵션. 예전 서버·예전 만화는 주지 않는다. */

@@ -7,6 +7,7 @@ import {
   Images,
   type LucideIcon,
   Mic,
+  Newspaper,
   ScanText,
   Share2,
   Sparkles,
@@ -122,12 +123,20 @@ function Hero({ signedIn, posts }: { signedIn: boolean; posts: Post[] }) {
         </p>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           {signedIn ? (
-            <Button asChild size="lg">
-              <Link href="/record">
-                <Mic aria-hidden />
-                녹음해서 만들기
-              </Link>
-            </Button>
+            <>
+              <Button asChild size="lg">
+                <Link href="/record">
+                  <Mic aria-hidden />
+                  녹음해서 만들기
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/article">
+                  <Newspaper aria-hidden />
+                  기사로 만들기
+                </Link>
+              </Button>
+            </>
           ) : (
             <Button asChild size="lg">
               <Link href="/login">
@@ -190,7 +199,7 @@ function Callout({
   );
 }
 
-/** 서비스 소개(/about)와 그 아래 그림 모델 비교(/lab)로 가는 띠. 배경음은 메뉴에서 캐릭터 옆으로 들어간다. */
+/** 서비스 소개(/about), 그 아래 기사로 만들기(/article)와 그림 모델 비교(/lab)로 가는 띠. 배경음은 메뉴에서 캐릭터 옆으로 들어간다. */
 function Callouts() {
   return (
     <div className="flex flex-col gap-4">
@@ -201,6 +210,14 @@ function Callouts() {
         title="이 서비스는 어떻게 만들었을까요?"
         description="마이크로서비스 아키텍처, RTX 5060 Ti 16GB 한 장으로 돌리는 AI 모델 9개, 직접 재고 고친 튜닝 기록을 모았어요."
         cta="소개 페이지 보기"
+      />
+      <Callout
+        href="/article"
+        icon={Newspaper}
+        eyebrow="기사로 만들기"
+        title="뉴스 기사도 4컷 만화가 돼요"
+        description="기사 주소만 넣으면 AI가 본문을 읽고 기사 속 사람들의 대화로 바꿔 4컷으로 그려요. 원문 링크도 함께 남겨요."
+        cta="기사로 만들기"
       />
       <Callout
         href="/lab"

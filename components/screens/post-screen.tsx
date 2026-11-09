@@ -8,6 +8,7 @@ import { AppShell, HOME, LoginButton } from "@/components/app-shell";
 import { ComicCast } from "@/components/comic-cast";
 import { ComicSummary } from "@/components/comic-summary";
 import { ComicProduction } from "@/components/comic-production";
+import { ComicSource } from "@/components/comic-source";
 import { Comments } from "@/components/comments";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
@@ -102,6 +103,7 @@ export function PostScreen({ id }: { id: string }) {
               }
             />
             <ComicSummary summary={post.summary} />
+            <ComicSource production={post.production} />
             <ComicCast
               cast={post.cast}
               concept={post.concept}
