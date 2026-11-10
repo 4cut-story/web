@@ -77,6 +77,8 @@ export const api = {
     request<T>(`/api/v1${path}`, { method: "POST", body: body ?? {} }),
   put: <T>(path: string, body?: unknown) =>
     request<T>(`/api/v1${path}`, { method: "PUT", body }),
+  patch: <T>(path: string, body?: unknown) =>
+    request<T>(`/api/v1${path}`, { method: "PATCH", body: body ?? {} }),
   del: <T>(path: string) => request<T>(`/api/v1${path}`, { method: "DELETE" }),
   /** 로그인하지 않았으면(401) null. 로그인 화면으로 보내지 않는다. */
   getIfSignedIn: async <T>(path: string): Promise<T | null> => {
@@ -98,8 +100,21 @@ export const api = {
 export const COMIC_SIZE = { width: 800, height: 3206 } as const;
 
 /** 사용자 페이지 주소. 블로그처럼 /@닉네임 (닉네임은 회원마다 고유하다). */
+/** 사용자의 스토리 주소(/@아이디). 공유하는 주소다. */
 export function userPath(nickname: string): string {
   return `/@${encodeURIComponent(nickname)}`;
+}
+
+/** 사용자의 프로필 주소(/@아이디/profile). */
+export function profilePath(nickname: string): string {
+  return `${userPath(nickname)}/profile`;
+}
+
+/** 화면에 보일 이름: 직접 정한 닉네임, 없으면 로그인 아이디. */
+export function displayName(
+  user: { nickname: string; displayName?: string | null } | null | undefined,
+): string | undefined {
+  return user ? user.displayName?.trim() || user.nickname : undefined;
 }
 
 export function errorMessage(error: unknown): string {

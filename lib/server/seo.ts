@@ -2,7 +2,7 @@
 import type { Metadata, MetadataRoute } from "next";
 import { cache } from "react";
 
-import { userPath } from "@/lib/api";
+import { displayName, userPath } from "@/lib/api";
 import {
   absoluteUrl,
   excerpt,
@@ -72,7 +72,7 @@ export async function postMetadata(id: string): Promise<Metadata> {
   const description =
     excerpt(post.summary) ||
     excerpt(post.caption) ||
-    `${author?.nickname ?? "누군가"}님이 대화로 만든 4컷 만화예요.`;
+    `${displayName(author) ?? "누군가"}님이 대화로 만든 4컷 만화예요.`;
   const path = `/posts/${post.postId}`;
   const image = {
     url: `/api/images/posts/${post.postId}?size=thumb`,
@@ -122,7 +122,7 @@ export async function postJsonLd(id: string): Promise<object | null> {
     author: author
       ? {
           "@type": "Person",
-          name: author.nickname,
+          name: displayName(author),
           url: absoluteUrl(userPath(author.nickname)),
         }
       : undefined,
@@ -148,8 +148,9 @@ export async function userMetadata(nickname: string): Promise<Metadata> {
     return { title: "사용자", robots: NOINDEX };
   }
   const path = userPath(user.nickname);
-  const title = `${user.nickname}님의 4컷`;
-  const description = `${user.nickname}님이 대화로 만들어 올린 4컷 만화를 모아 봤어요.`;
+  const name = displayName(user);
+  const title = `${name}님의 4컷`;
+  const description = `${name}님이 대화로 만들어 올린 4컷 만화를 모아 봤어요.`;
   return {
     title,
     description,
@@ -173,7 +174,7 @@ export async function userJsonLd(nickname: string): Promise<object | null> {
     dateCreated: user.joinedAt,
     mainEntity: {
       "@type": "Person",
-      name: user.nickname,
+      name: displayName(user),
       url,
       image: user.avatarUrl ?? undefined,
     },

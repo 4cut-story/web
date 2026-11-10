@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Avatar } from "@/components/avatar";
-import { api, COMIC_SIZE, imageUrl, userPath } from "@/lib/api";
+import { api, COMIC_SIZE, displayName, imageUrl, userPath } from "@/lib/api";
 import { count, timeAgo } from "@/lib/format";
 import type { Post, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ export function PostCard({
 }) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likes, setLikes] = useState(post.likeCount);
-  const name = author?.nickname ?? "알 수 없음";
+  const name = displayName(author) ?? "알 수 없음";
   const [shared, setShared] = useState(false);
 
   /** 휴대폰은 공유 시트, PC는 주소 복사. */

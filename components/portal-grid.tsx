@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Avatar } from "@/components/avatar";
 import { ComicCover } from "@/components/comic-cover";
-import { imageUrl } from "@/lib/api";
+import { displayName, imageUrl } from "@/lib/api";
 import { count } from "@/lib/format";
 import type { Post, User } from "@/lib/types";
 
@@ -22,7 +22,7 @@ export function PortalGrid({
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
       {posts.map((post) => {
         const author = users[post.authorId];
-        const name = author?.nickname ?? "알 수 없음";
+        const name = displayName(author) ?? "알 수 없음";
         return (
           <li key={post.postId}>
             <Link

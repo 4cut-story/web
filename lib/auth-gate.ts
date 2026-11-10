@@ -1,15 +1,15 @@
 /** 로그인 없이 열리는 경로. 나머지 화면은 세션 쿠키가 없으면 로그인으로 보낸다. */
 const PUBLIC_PREFIXES = ["/login", "/auth/", "/api/", "/_next/", "/favicon"];
 
-/** 로그인 없이 보는 화면: 첫 화면 포털, 서비스 소개, 그림 모델 비교, 캐릭터, 배경음, 사용자 페이지(/@닉네임), 게시물 상세. */
+/** 로그인 없이 보는 화면: 첫 화면 포털, 서비스 소개, 그림 모델 비교, 캐릭터, 배경음, 사용자 스토리(/@아이디)와 프로필(/@아이디/profile), 게시물 상세. */
 const PUBLIC_PAGES = [
   /^\/$/,
   /^\/about\/?$/,
   /^\/lab\/?$/,
   /^\/characters(\/[^/]+)?\/?$/,
   /^\/sounds(\/[^/]+)?\/?$/,
-  /^\/@[^/]+$/,
-  /^\/u\/[^/]+$/,
+  /^\/@[^/]+(\/profile)?\/?$/,
+  /^\/u\/[^/]+(\/profile)?\/?$/,
   /^\/users\/[^/]+$/,
   /^\/posts\/[^/]+$/,
 ];
@@ -26,12 +26,12 @@ export function needsLogin(pathname: string, hasSession: boolean): boolean {
 }
 
 /**
- * 사용자 페이지 주소 /@닉네임을 실제 화면 경로 /u/닉네임으로 바꾼다. 앱 라우터에서 @로 시작하는 폴더는
- * 병렬 경로(slot)라서 주소만 이렇게 바꿔 준다. 해당하지 않으면 null.
+ * 사용자 주소 /@아이디(스토리)와 /@아이디/profile(프로필)을 실제 화면 경로 /u/아이디(/profile)로 바꾼다.
+ * 앱 라우터에서 @로 시작하는 폴더는 병렬 경로(slot)라서 주소만 이렇게 바꿔 준다. 해당하지 않으면 null.
  */
 export function userPageRewrite(pathname: string): string | null {
-  const match = /^\/@([^/]+)\/?$/.exec(pathname);
-  return match ? `/u/${match[1]}` : null;
+  const match = /^\/@([^/]+)(\/profile)?\/?$/.exec(pathname);
+  return match ? `/u/${match[1]}${match[2] ?? ""}` : null;
 }
 
 /** 경로 조각의 퍼센트 인코딩을 푼다. 잘못된 인코딩이면 그대로 둔다. */

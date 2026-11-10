@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return userMetadata(decodeSegment((await params).nickname));
 }
 
-/** 사용자 페이지. 주소는 /@닉네임이고 proxy가 이 경로로 바꿔 그린다. */
+/** 사용자 스토리. 주소는 /@아이디이고 proxy가 이 경로로 바꿔 그린다. 공유하는 주소다. */
 export default function Page({ params }: Props) {
   return (
     <>

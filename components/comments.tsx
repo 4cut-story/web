@@ -8,7 +8,7 @@ import { Avatar } from "@/components/avatar";
 import { ErrorText } from "@/components/empty-state";
 import { MoreButton } from "@/components/more-button";
 import { Button } from "@/components/ui/button";
-import { api, errorMessage } from "@/lib/api";
+import { api, displayName, errorMessage } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
 import type { Comment } from "@/lib/types";
 import { usePaged } from "@/lib/use-paged";
@@ -70,7 +70,7 @@ export function Comments({
       )}
       <ul className="flex flex-col gap-4">
         {comments.map((c) => {
-          const name = users[c.authorId]?.nickname ?? "알 수 없음";
+          const name = displayName(users[c.authorId]) ?? "알 수 없음";
           return (
             <li key={c.id} className="flex gap-2 text-sm">
               <Avatar name={name} src={users[c.authorId]?.avatarUrl} />
