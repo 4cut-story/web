@@ -127,6 +127,21 @@ describe("BFF API 중계", () => {
     expect(response.status).toBe(204);
   });
 
+  it("004 FR-050: RSS 구독 API(/api/v1/rss-feeds)를 게이트웨이로 넘긴다", async () => {
+    const calls = mockFetch({
+      [`POST ${GW}/api/v1/rss-feeds`]: json({ id: "f1" }, 201),
+    });
+    const created = await proxyApi(
+      loggedIn("/api/v1/rss-feeds", {
+        method: "POST",
+        body: JSON.stringify({ url: "https://news.example.com/rss" }),
+      }),
+      ["rss-feeds"],
+    );
+    expect(created.status).toBe(201);
+    expect(calls[0].url).toBe(`${GW}/api/v1/rss-feeds`);
+  });
+
   it("허용하지 않은 경로와 이상한 경로 조각은 404", async () => {
     mockFetch({});
     expect(

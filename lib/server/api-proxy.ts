@@ -14,6 +14,7 @@ const ALLOWED = new Set([
   "comments",
   "characters",
   "sounds",
+  "rss-feeds",
 ]);
 
 const SAFE_SEGMENT = /^[A-Za-z0-9_-]+$/;
