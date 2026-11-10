@@ -47,7 +47,13 @@ export function AppShell({
     <>
       {tab && <TopNav tab={tab} />}
       <div className={cn("mx-auto flex w-full flex-1 flex-col", WIDTH[width])}>
-        <header className="flex h-14 items-center justify-between gap-4 px-5 md:h-16 md:px-8">
+        <header
+          className={cn(
+            "flex h-14 items-center justify-between gap-4 px-5 md:h-16 md:px-8",
+            // PC에서는 위 메뉴가 로고를 보이니, 로고만 있는 머리는 숨긴다(로고가 두 번 나오지 않게).
+            brand && tab && "md:hidden",
+          )}
+        >
           <div className="flex min-w-0 items-center gap-1">
             {back && (
               <Link
@@ -64,7 +70,12 @@ export function AppShell({
           </div>
           <div className="flex items-center gap-1">{actions}</div>
         </header>
-        <main className="flex flex-1 flex-col px-5 pb-10 md:px-8 md:pb-12">
+        <main
+          className={cn(
+            "flex flex-1 flex-col px-5 pb-10 md:px-8 md:pb-12",
+            brand && tab && "md:pt-10",
+          )}
+        >
           {children}
         </main>
         {tab && <BottomNav tab={tab} />}
