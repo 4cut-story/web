@@ -134,6 +134,7 @@ describe("진행 상태 (FR-008)", () => {
       "data-state",
       "waiting",
     );
+    expect(screen.queryByText("목소리 입히는 중")).not.toBeInTheDocument();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(POLL_MS);
     });
@@ -147,6 +148,40 @@ describe("진행 상태 (FR-008)", () => {
     expect(
       screen.queryByText(/화면을 닫아도 계속 만들어요/),
     ).not.toBeInTheDocument();
+  });
+
+  it("대사를 읽는 대화는 그리는 중과 4컷 완성 사이에 목소리 입히는 중을 보인다 (FR-050)", async () => {
+    mockFetch({
+      "GET /api/v1/conversations/v1": json(
+        conversation({ status: "SPEAKING", stage: "SPEAKING", progress: 85 }),
+      ),
+      "GET /api/v1/conversations/v2": json(
+        conversation({
+          id: "v2",
+          status: "DRAWING",
+          stage: "DRAWING",
+          voiced: true,
+        }),
+      ),
+    });
+    const { unmount } = render(<ProgressScreen id="v1" />);
+    const voice = await screen.findByText("목소리 입히는 중");
+    expect(voice.closest("li")).toHaveAttribute("data-state", "running");
+    expect(screen.getByText("그리는 중").closest("li")).toHaveAttribute(
+      "data-state",
+      "done",
+    );
+    const items = screen.getAllByRole("listitem").map((li) => li.textContent);
+    expect(items.slice(-3)).toEqual([
+      "그리는 중",
+      "목소리 입히는 중",
+      "4컷 완성",
+    ]);
+    unmount();
+    render(<ProgressScreen id="v2" />);
+    expect(
+      (await screen.findByText("목소리 입히는 중")).closest("li"),
+    ).toHaveAttribute("data-state", "waiting");
   });
 
   it("실패와 장면 없음을 알리고 다시 녹음하게 한다", async () => {
