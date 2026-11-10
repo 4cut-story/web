@@ -12,12 +12,13 @@ import { ComicSource } from "@/components/comic-source";
 import { Comments } from "@/components/comments";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ErrorText } from "@/components/empty-state";
+import { FollowButton } from "@/components/follow-button";
 import { LivePlayer } from "@/components/live-player";
 import { PostCard } from "@/components/post-card";
 import { Button } from "@/components/ui/button";
 import { ViewModeToggle, type ViewMode } from "@/components/view-mode";
 import { api, errorMessage, request } from "@/lib/api";
-import type { Post, ViewCount } from "@/lib/types";
+import type { FollowStats, Post, ViewCount } from "@/lib/types";
 import { useLoad } from "@/lib/use-load";
 import { useViewer } from "@/lib/use-me";
 import { useUsers } from "@/lib/use-users";
@@ -55,6 +56,14 @@ export function PostScreen({ id }: { id: string }) {
       alive = false;
     };
   }, [id]);
+  // 작성자 옆 팔로우 버튼 (002 FR-017). 로그인했고 남의 게시물일 때만 지금 팔로우하는지 받는다
+  const stats = useLoad(
+    post && me.data && !mine ? `stats:${post.authorId}` : "",
+    () =>
+      post && me.data && !mine
+        ? api.get<FollowStats>(`/follows/${post.authorId}/stats`)
+        : Promise.resolve(undefined),
+  );
 
   async function remove(mode: "UNPUBLISH" | "DELETE") {
     setConfirm(undefined);
@@ -120,6 +129,24 @@ export function PostScreen({ id }: { id: string }) {
             <PostCard
               post={views === undefined ? post : { ...post, viewCount: views }}
               author={users[post.authorId]}
+              follow={
+                mine || me.data === undefined ? undefined : me.data === null ? (
+                  <FollowButton
+                    userId={post.authorId}
+                    following={false}
+                    signedIn={false}
+                    size="sm"
+                  />
+                ) : (
+                  stats.data && (
+                    <FollowButton
+                      userId={post.authorId}
+                      following={stats.data.followedByMe}
+                      size="sm"
+                    />
+                  )
+                )
+              }
               media={
                 post.live && mode === "live" ? (
                   <LivePlayer

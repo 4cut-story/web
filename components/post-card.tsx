@@ -13,15 +13,20 @@ import { cn } from "@/lib/utils";
 const ACTION =
   "flex h-10 items-center gap-1.5 rounded-full px-2 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
 
-/** 피드·게시물 상세의 게시물 하나: 작성자 줄 → 만화 → 행동 줄 → 캡션. media가 있으면 만화 자리에 그것을 둔다(라이브 모드). */
+/**
+ * 피드·게시물 상세의 게시물 하나: 작성자 줄 → 만화 → 행동 줄 → 캡션. media가 있으면 만화 자리에 그것을 둔다(라이브 모드).
+ * follow가 있으면 작성자 줄 오른쪽 끝에 둔다(팔로우 버튼).
+ */
 export function PostCard({
   post,
   author,
   media,
+  follow,
 }: {
   post: Post;
   author?: User;
   media?: React.ReactNode;
+  follow?: React.ReactNode;
 }) {
   const [liked, setLiked] = useState(post.likedByMe);
   const [likes, setLikes] = useState(post.likeCount);
@@ -60,23 +65,24 @@ export function PostCard({
 
   return (
     <article className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex min-h-9 items-center gap-2 text-sm">
         <Link
           href={author ? userPath(author.nickname) : `/users/${post.authorId}`}
-          className="flex items-center gap-2 font-medium"
+          className="flex min-w-0 items-center gap-2 font-medium"
         >
           <Avatar name={name} src={author?.avatarUrl} />
-          {name}
+          <span className="truncate">{name}</span>
         </Link>
-        <span className="text-muted-foreground">
+        <span className="shrink-0 text-muted-foreground">
           {timeAgo(post.publishedAt)}
         </span>
         {post.visibility === "FOLLOWERS" && (
           <Lock
             aria-label="팔로워만"
-            className="size-4 text-muted-foreground"
+            className="size-4 shrink-0 text-muted-foreground"
           />
         )}
+        {follow && <div className="ml-auto">{follow}</div>}
       </div>
       {media ?? (
         <Link href={`/posts/${post.postId}`}>
