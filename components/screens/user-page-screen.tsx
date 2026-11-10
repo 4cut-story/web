@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, KeyRound, Link2, LogOut, UserX } from "lucide-react";
+import { Check, KeyRound, Link2, LogOut, Rss, UserX } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -113,6 +113,16 @@ export function UserPageScreen({ nickname }: { nickname: string }) {
             self && (
               <>
                 {copyButton}
+                <Button
+                  asChild
+                  variant="outline"
+                  className="grow basis-32 md:grow-0 md:basis-auto"
+                >
+                  <Link href="/rss">
+                    <Rss aria-hidden />
+                    RSS 구독
+                  </Link>
+                </Button>
                 <Button
                   asChild
                   variant="outline"

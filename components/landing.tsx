@@ -8,6 +8,7 @@ import {
   type LucideIcon,
   Mic,
   Newspaper,
+  Rss,
   ScanText,
   Share2,
   Sparkles,
@@ -199,7 +200,7 @@ function Callout({
   );
 }
 
-/** 서비스 소개(/about), 그 아래 기사로 만들기(/article)와 그림 모델 비교(/lab)로 가는 띠. 배경음은 메뉴에서 캐릭터 옆으로 들어간다. */
+/** 서비스 소개(/about), 그 아래 기사로 만들기(/article), RSS 구독(/rss), 그림 모델 비교(/lab)로 가는 띠. 배경음은 메뉴에서 캐릭터 옆으로 들어간다. */
 function Callouts() {
   return (
     <div className="flex flex-col gap-4">
@@ -218,6 +219,14 @@ function Callouts() {
         title="뉴스 기사도 4컷 만화가 돼요"
         description="기사 주소만 넣으면 AI가 본문을 읽고 기사 속 사람들의 대화로 바꿔 4컷으로 그려요. 원문 링크도 함께 남겨요."
         cta="기사로 만들기"
+      />
+      <Callout
+        href="/rss"
+        icon={Rss}
+        eyebrow="RSS 구독"
+        title="구독한 뉴스가 알아서 4컷이 돼요"
+        description="RSS 주소를 등록해 두면 30분마다 새 기사를 확인해 4컷으로 만들어요. 바로 공개할지, 확인 후 공개할지도 고를 수 있어요."
+        cta="RSS 구독하기"
       />
       <Callout
         href="/lab"

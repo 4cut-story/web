@@ -113,6 +113,11 @@ describe("첫 화면 포털", () => {
     expect(
       screen.getByRole("link", { name: /비교 페이지 보기/ }),
     ).toHaveAttribute("href", "/lab");
+    // 004 FR-067: 소개 링크 아래에 RSS 구독으로 가는 띠가 있다
+    expect(screen.getByRole("link", { name: /RSS 구독하기/ })).toHaveAttribute(
+      "href",
+      "/rss",
+    );
     // 배경음은 소개 띠 대신 메뉴에서 캐릭터 바로 옆으로 들어간다
     expect(
       screen.queryByRole("link", { name: /배경음 둘러보기/ }),

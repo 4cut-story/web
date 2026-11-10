@@ -347,3 +347,32 @@ export type SoundFacets = {
   categories: { kind: SoundKind; category: string; count: number }[];
   moods: { mood: string; count: number }[];
 };
+
+/** RSS 구독에서 본 기사의 결과 (common contracts/rss-feeds.yaml). */
+export type RssItemStatus = "MADE" | "SKIPPED" | "SIMILAR" | "FAILED";
+
+export type RssFeedItem = {
+  title: string | null;
+  link: string;
+  status: RssItemStatus;
+  reason: string | null;
+  conversationId: string | null;
+  createdAt: string;
+};
+
+/** RSS 구독 하나. autoPublish면 완성되자마자 전체 공개로 게시한다. */
+export type RssFeed = {
+  id: string;
+  url: string;
+  title: string;
+  siteUrl: string | null;
+  autoPublish: boolean;
+  enabled: boolean;
+  concept: Concept;
+  dialect: Dialect;
+  lastCheckedAt: string | null;
+  lastError: string | null;
+  made: number;
+  createdAt: string;
+  recent: RssFeedItem[];
+};
