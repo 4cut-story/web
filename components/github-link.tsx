@@ -66,14 +66,14 @@ export function SiteFooter({ className }: { className?: string }) {
           <div className="flex w-full flex-col gap-2 md:w-fit md:flex-row">
             <Link
               href="/about"
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 md:w-fit"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 md:w-fit"
             >
               <Sparkles aria-hidden className="size-4" />
               서비스 소개 · 기술 스택
             </Link>
             <Link
               href="/lab"
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-muted md:w-fit"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-muted md:w-fit"
             >
               <FlaskConical aria-hidden className="size-4" />
               그림 모델 비교
@@ -82,7 +82,7 @@ export function SiteFooter({ className }: { className?: string }) {
               href={GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-muted md:w-fit"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-5 font-medium text-foreground transition-colors hover:bg-muted md:w-fit"
             >
               <GitHubMark className="size-4" />
               GitHub에서 소스 보기

@@ -19,7 +19,7 @@ export function PortalGrid({
   users: Record<string, User | undefined>;
 }) {
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
+    <ul className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:gap-x-5 md:gap-y-8 lg:grid-cols-4">
       {posts.map((post) => {
         const author = users[post.authorId];
         const name = author?.nickname ?? "알 수 없음";
@@ -27,18 +27,19 @@ export function PortalGrid({
           <li key={post.postId}>
             <Link
               href={`/posts/${post.postId}`}
-              className="group flex flex-col gap-2"
+              className="group flex flex-col gap-2.5"
             >
               <ComicCover
+                className="outline -outline-offset-1 outline-foreground/10"
                 src={imageUrl("posts", post.postId, true)}
                 alt={post.title || post.caption || `${name}님의 4컷`}
               />
               {post.title && (
-                <span className="truncate text-sm font-medium">
+                <span className="truncate text-[15px] font-semibold group-hover:underline group-hover:underline-offset-2">
                   {post.title}
                 </span>
               )}
-              <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="-mt-1 flex min-w-0 items-center gap-1.5 text-[13px] text-muted-foreground">
                 <Avatar name={name} src={author?.avatarUrl} size={20} />
                 <span className="truncate">{name}</span>
                 {post.viewCount !== undefined && (

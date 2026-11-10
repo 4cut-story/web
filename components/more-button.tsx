@@ -15,9 +15,9 @@ export function MoreButton({
     return null;
   }
   return (
-    <div className="flex flex-col items-center gap-2 py-4">
+    <div className="flex flex-col items-center gap-2 py-8">
       {error && <ErrorText message={error} />}
-      <Button variant="ghost" onClick={onMore}>
+      <Button variant="outline" className="w-full max-w-xs" onClick={onMore}>
         더 보기
       </Button>
     </div>

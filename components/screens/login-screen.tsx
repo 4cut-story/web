@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { ErrorText } from "@/components/empty-state";
-import { SiteFooter } from "@/components/github-link";
+import { GitHubMark, SiteFooter } from "@/components/github-link";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 
 const LABELS: Record<string, string> = {
@@ -51,48 +52,64 @@ export function LoginScreen({ error }: { error?: string }) {
 
   return (
     <>
-      <main className="mx-auto flex w-full max-w-[480px] flex-1 flex-col justify-center gap-10 px-5">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-2xl font-semibold">4cut story</h1>
-          <p className="text-base text-muted-foreground">
-            대화를 녹음하면 4컷 스토리가 됩니다.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3">
-          {error && (
-            <ErrorText
-              message={ERRORS[error] ?? "로그인하지 못했어요. 다시 해 주세요."}
-              code={error}
-            />
-          )}
-          {providers && providers.items.length === 0 && !providers.devLogin && (
-            <ErrorText message="로그인 서버에 닿지 못했어요. 잠시 뒤 새로고침해 주세요." />
-          )}
-          {providers?.items.map((p) => (
-            <Button key={p} variant="secondary" asChild>
-              <a href={`/auth/login/${p}`}>{LABELS[p] ?? p}</a>
-            </Button>
-          ))}
-          {providers?.devLogin && (
-            <form onSubmit={devLogin} className="flex gap-2">
-              <input
-                aria-label="개발용 닉네임"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                maxLength={20}
-                required
-                className="h-12 flex-1 rounded-lg bg-muted px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      <main className="mx-auto flex w-full max-w-[440px] flex-1 flex-col justify-center gap-8 px-5 py-12">
+        <Link href="/" aria-label="4cut story 첫 화면" className="self-center">
+          <Logo />
+        </Link>
+        <div className="flex flex-col gap-6 rounded-xl border border-border p-6 md:p-8">
+          <div className="flex flex-col gap-1.5 text-center">
+            <h1 className="text-xl font-bold">로그인</h1>
+            <p className="text-sm text-muted-foreground">
+              쓰던 계정으로 바로 시작할 수 있어요.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            {error && (
+              <ErrorText
+                message={
+                  ERRORS[error] ?? "로그인하지 못했어요. 다시 해 주세요."
+                }
+                code={error}
               />
-              <Button type="submit" variant="ghost">
-                개발용 로그인
+            )}
+            {providers &&
+              providers.items.length === 0 &&
+              !providers.devLogin && (
+                <ErrorText message="로그인 서버에 닿지 못했어요. 잠시 뒤 새로고침해 주세요." />
+              )}
+            {providers?.items.map((p) => (
+              <Button
+                key={p}
+                variant={p === "github" ? "default" : "outline"}
+                asChild
+              >
+                <a href={`/auth/login/${p}`}>
+                  {p === "github" && <GitHubMark className="size-5" />}
+                  {LABELS[p] ?? p}
+                </a>
               </Button>
-            </form>
-          )}
-          {devError && <ErrorText message={devError} />}
-          <Button variant="link" className="text-muted-foreground" asChild>
-            <Link href="/">로그인 없이 둘러보기</Link>
-          </Button>
+            ))}
+            {providers?.devLogin && (
+              <form onSubmit={devLogin} className="flex gap-2">
+                <input
+                  aria-label="개발용 닉네임"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  maxLength={20}
+                  required
+                  className="h-12 flex-1 rounded-lg bg-muted px-4 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <Button type="submit" variant="ghost">
+                  개발용 로그인
+                </Button>
+              </form>
+            )}
+            {devError && <ErrorText message={devError} />}
+          </div>
         </div>
+        <Button variant="link" className="self-center" asChild>
+          <Link href="/">로그인 없이 둘러보기</Link>
+        </Button>
       </main>
       <SiteFooter />
     </>

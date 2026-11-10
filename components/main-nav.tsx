@@ -92,39 +92,53 @@ export function BottomNav({ tab }: { tab: Tab }) {
   );
 }
 
-/** PC(md 이상) 상단 메뉴. 본문 폭과 상관없이 화면 위에 한 줄로 둔다. 휴대폰에서는 하단 탭을 쓴다. */
+/**
+ * PC(md 이상) 상단 메뉴. 본문 폭과 상관없이 화면 위에 한 줄로 둔다. 휴대폰에서는 하단 탭을 쓴다.
+ * 왼쪽에 로고와 메뉴, 오른쪽 끝에 주요 행동(만들기·로그인)과 GitHub. 순서는 하단 탭과 같게 두고
+ * 주요 행동만 CSS order로 오른쪽 끝에 보낸다.
+ */
 export function TopNav({ tab }: { tab: Tab }) {
   const tabs = useTabs();
   return (
-    <div className="sticky top-0 z-30 hidden border-b border-border bg-background md:block">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-8">
-        <Link href="/" aria-label="4cut story 첫 화면">
+    <div className="sticky top-0 z-30 hidden border-b border-border bg-background/90 backdrop-blur md:block">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-8">
+        <Link href="/" aria-label="4cut story 첫 화면" className="shrink-0">
           <Logo />
         </Link>
-        <nav aria-label="상단 메뉴">
+        <nav aria-label="상단 메뉴" className="flex-1">
           <ul className="flex items-center gap-1">
-            {tabs.map(({ id, href, label, icon: Icon }) => (
-              <li key={id}>
-                <Link
-                  href={href}
-                  aria-current={id === tab ? "page" : undefined}
-                  className={cn(
-                    "flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors",
-                    id === "create" || id === "login"
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : id === tab
-                        ? "bg-muted text-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  <Icon aria-hidden className="size-5" />
-                  {label}
-                </Link>
-              </li>
-            ))}
+            {tabs.map(({ id, href, label, icon: Icon }) => {
+              const primary = id === "create" || id === "login";
+              const current = id === tab;
+              return (
+                <li key={id} className={cn(primary && "order-last ml-auto")}>
+                  <Link
+                    href={href}
+                    aria-current={current ? "page" : undefined}
+                    className={cn(
+                      "relative flex h-10 items-center gap-1.5 rounded-lg px-3 text-[15px] font-medium transition-colors",
+                      primary
+                        ? "bg-primary px-4 text-primary-foreground hover:bg-primary/90"
+                        : current
+                          ? "font-semibold text-foreground"
+                          : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {primary && <Icon aria-hidden className="size-4" />}
+                    {label}
+                    {current && !primary && (
+                      <span
+                        aria-hidden
+                        className="absolute inset-x-3 -bottom-3 h-0.5 rounded-full bg-foreground"
+                      />
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
-        <GitHubIconLink className="-mr-2" />
+        <GitHubIconLink className="-mr-2 -ml-6" />
       </div>
     </div>
   );
