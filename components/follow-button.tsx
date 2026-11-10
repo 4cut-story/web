@@ -4,7 +4,7 @@ import { UserCheck, UserPlus } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { api, navigation } from "@/lib/api";
+import { api, errorMessage, navigation } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,6 +18,7 @@ export function FollowButton({
   size = "default",
   className,
   onChange,
+  onError,
 }: {
   userId: string;
   following: boolean;
@@ -27,6 +28,8 @@ export function FollowButton({
   className?: string;
   /** 바뀐 뒤(성공했을 때) 새 상태. 숫자를 함께 고칠 때 쓴다. */
   onChange?: (following: boolean) => void;
+  /** 실패했을 때 오류 문구. 화면에 보여 줄 곳이 있으면 쓴다. */
+  onError?: (message: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [state, setState] = useState(following);
@@ -52,9 +55,10 @@ export function FollowButton({
         ? api.put(`/follows/${userId}`)
         : api.del(`/follows/${userId}`));
       onChange?.(next);
-    } catch {
+    } catch (e) {
       setState(!next);
       setFailed(true);
+      onError?.(errorMessage(e));
     } finally {
       setBusy(false);
     }

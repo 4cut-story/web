@@ -1,18 +1,12 @@
 "use client";
 
-import {
-  BookImage,
-  Check,
-  Link2,
-  UserCheck,
-  UserPlus,
-  UserRound,
-} from "lucide-react";
+import { BookImage, Check, Link2, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { Avatar } from "@/components/avatar";
 import { EmptyState, ErrorText } from "@/components/empty-state";
+import { FollowButton } from "@/components/follow-button";
 import { ComicGrid, PostGrid } from "@/components/story-grid";
 import { Button } from "@/components/ui/button";
 import { UserShell } from "@/components/user-shell";
@@ -117,18 +111,13 @@ function StoryHeader({
           </Button>
         )}
         {canFollow && follow.stats && (
-          <Button
-            variant={follow.stats.followedByMe ? "secondary" : "default"}
-            onClick={follow.toggle}
+          <FollowButton
+            userId={user.id}
+            following={follow.stats.followedByMe}
+            onChange={follow.set}
+            onError={follow.fail}
             className="grow basis-32 sm:grow-0 sm:basis-auto"
-          >
-            {follow.stats.followedByMe ? (
-              <UserCheck aria-hidden />
-            ) : (
-              <UserPlus aria-hidden />
-            )}
-            {follow.stats.followedByMe ? "팔로우 중" : "팔로우"}
-          </Button>
+          />
         )}
         <Button
           asChild
