@@ -43,15 +43,17 @@ export function AppShell({
   width?: ShellWidth;
   children: React.ReactNode;
 }) {
+  // PC 위 메뉴는 둘러보는 화면(넓은 틀이나 탭이 있는 화면)에 늘 둔다. 녹음·진행처럼 한 줄 흐름(narrow)인 화면만 뺀다.
+  const topNav = tab !== undefined || width !== "narrow";
   return (
     <>
-      {tab && <TopNav tab={tab} />}
+      {topNav && <TopNav tab={tab} />}
       <div className={cn("mx-auto flex w-full flex-1 flex-col", WIDTH[width])}>
         <header
           className={cn(
             "flex h-14 items-center justify-between gap-4 px-5 md:h-16 md:px-8",
             // PC에서는 위 메뉴가 로고를 보이니, 로고만 있는 머리는 숨긴다(로고가 두 번 나오지 않게).
-            brand && tab && "md:hidden",
+            brand && topNav && "md:hidden",
           )}
         >
           <div className="flex min-w-0 items-center gap-1">
@@ -59,7 +61,11 @@ export function AppShell({
               <Link
                 href={back.href}
                 aria-label={back.label}
-                className="-ml-2 flex size-10 shrink-0 items-center justify-center"
+                className={cn(
+                  "-ml-2 flex size-10 shrink-0 items-center justify-center",
+                  // 첫 화면으로 가는 ‹는 PC 위 메뉴의 로고가 대신한다
+                  topNav && back.href === "/" && "md:hidden",
+                )}
               >
                 <ChevronLeft aria-hidden className="size-6" />
               </Link>
@@ -73,7 +79,7 @@ export function AppShell({
         <main
           className={cn(
             "flex flex-1 flex-col px-5 pb-10 md:px-8 md:pb-12",
-            brand && tab && "md:pt-10",
+            brand && topNav && "md:pt-10",
           )}
         >
           {children}
@@ -94,10 +100,10 @@ export function AppShell({
 /** 첫 화면으로 돌아가는 ‹ 링크. */
 export const HOME = { href: "/", label: "첫 화면으로" };
 
-/** 로그인하지 않은 사람에게 헤더 오른쪽에 두는 로그인 버튼. */
+/** 로그인하지 않은 사람에게 헤더 오른쪽에 두는 로그인 버튼. PC에서는 위 메뉴의 로그인이 대신한다. */
 export function LoginButton() {
   return (
-    <Button asChild size="sm">
+    <Button asChild size="sm" className="md:hidden">
       <Link href="/login">로그인</Link>
     </Button>
   );

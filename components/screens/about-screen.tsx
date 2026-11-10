@@ -209,7 +209,7 @@ function Intro() {
         {STATS.map(({ value, label }) => (
           <div
             key={label}
-            className="flex flex-col gap-1 rounded-2xl border-2 border-foreground bg-background p-4 shadow-[4px_4px_0_0_var(--color-foreground)] md:p-5"
+            className="flex flex-col gap-1 rounded-xl border border-border bg-background p-4 md:p-5"
           >
             <dt className="order-2 text-sm text-muted-foreground">{label}</dt>
             <dd className="order-1 text-2xl font-bold tabular-nums md:text-3xl">
@@ -224,7 +224,7 @@ function Intro() {
 
 function ToolCard({ tool }: { tool: MyTool }) {
   return (
-    <article className="flex flex-col gap-5 rounded-2xl border-2 border-foreground bg-background p-6 shadow-[6px_6px_0_0_var(--color-foreground)] md:p-8">
+    <article className="flex flex-col gap-5 rounded-xl border border-border bg-background p-6 md:p-8">
       <div className="flex items-start gap-4">
         <IconTile icon={tool.icon} tone="dark" className="size-12" />
         <div className="flex flex-col gap-1">
@@ -401,7 +401,7 @@ function Diagram() {
         </div>
       </div>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2 rounded-2xl border-2 border-foreground p-4 md:p-5">
+        <div className="flex flex-col gap-2 rounded-xl border border-border p-4 md:p-5">
           <p className="flex items-center gap-2 text-sm font-semibold">
             <Cpu aria-hidden className="size-4" />
             GPU PC
@@ -723,7 +723,7 @@ function HardwareSection() {
           ))}
         </ul>
       </div>
-      <div className="flex flex-col gap-4 rounded-2xl border-2 border-foreground p-5 md:p-6">
+      <div className="flex flex-col gap-4 rounded-xl border border-border p-5 md:p-6">
         <p className="text-base font-semibold">
           회고: 16GB 한 장으로 끝까지 가기
         </p>
@@ -957,7 +957,7 @@ function Glossary() {
 
 function Outro() {
   return (
-    <div className="flex flex-col items-start gap-5 rounded-2xl border-2 border-foreground p-6 shadow-[6px_6px_0_0_var(--color-foreground)] md:p-8">
+    <div className="flex flex-col items-start gap-5 rounded-xl border border-border p-6 md:p-8">
       <p className="text-xl font-bold md:text-2xl">
         코드는 모두 GitHub에 공개돼 있어요
       </p>
