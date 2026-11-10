@@ -4,7 +4,7 @@ import { Pause, Play, RefreshCw, Rss, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 
-import { AppShell, HOME } from "@/components/app-shell";
+import { AppShell } from "@/components/app-shell";
 import { ChoicePicker } from "@/components/choice-picker";
 import { ConceptPicker } from "@/components/concept-picker";
 import { DialectPicker } from "@/components/dialect-picker";
@@ -87,11 +87,15 @@ export function RssScreen() {
   }
 
   return (
-    <AppShell title="RSS 구독" back={HOME}>
-      <div className="flex flex-col gap-8 pb-10">
-        <form onSubmit={submit} className="flex flex-col gap-6">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <span className="flex size-14 items-center justify-center rounded-2xl bg-foreground text-background">
+    <AppShell title="RSS 구독" tab="profile" width="wide">
+      {/* 프로필과 같은 넓은 틀: 휴대폰은 한 줄, 넓은 화면은 왼쪽 등록·오른쪽 구독 목록 */}
+      <div className="grid gap-8 pb-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-10 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+        <form
+          onSubmit={submit}
+          className="flex flex-col gap-6 md:sticky md:top-20 md:self-start"
+        >
+          <div className="flex flex-col items-center gap-3 text-center md:flex-row md:items-start md:text-left">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-foreground text-background">
               <Rss aria-hidden className="size-7" />
             </span>
             <p className="max-w-sm text-base leading-relaxed text-muted-foreground">
