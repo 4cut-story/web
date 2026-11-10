@@ -17,6 +17,11 @@ afterEach(() => {
 
 const URL_ = "https://news.example.com/article/1";
 
+/** 위 메뉴가 부르는 읽기 요청은 빼고 보낸 요청만. */
+function posts<T extends { method: string }>(calls: T[]): T[] {
+  return calls.filter((c) => c.method === "POST");
+}
+
 async function fill(url: string) {
   await userEvent.type(screen.getByLabelText("기사 주소"), url);
   await userEvent.click(screen.getByRole("button", { name: "4컷으로 만들기" }));
@@ -39,7 +44,7 @@ describe("기사로 만들기", () => {
     await vi.waitFor(() =>
       expect(router.push).toHaveBeenCalledWith("/conversations/a1"),
     );
-    expect(JSON.parse(String(calls[0].init?.body))).toEqual({
+    expect(JSON.parse(String(posts(calls)[0].init?.body))).toEqual({
       source: "ARTICLE",
       url: URL_,
     });
@@ -53,7 +58,7 @@ describe("기사로 만들기", () => {
     await userEvent.click(screen.getByRole("radio", { name: /신문/ }));
     await fill(URL_);
     await vi.waitFor(() => expect(router.push).toHaveBeenCalled());
-    expect(JSON.parse(String(calls[0].init?.body))).toMatchObject({
+    expect(JSON.parse(String(posts(calls)[0].init?.body))).toMatchObject({
       source: "ARTICLE",
       concept: "NEWSPAPER",
     });
@@ -94,7 +99,7 @@ describe("기사로 만들기", () => {
     expect(
       await screen.findByText(/http나 https로 시작하는/),
     ).toBeInTheDocument();
-    expect(calls).toHaveLength(0);
+    expect(posts(calls)).toHaveLength(0);
     expect(looksLikeUrl("javascript:alert(1)")).toBe(false);
     expect(looksLikeUrl("그냥 글")).toBe(false);
     expect(looksLikeUrl(" http://a.example.com ")).toBe(true);
