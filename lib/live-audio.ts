@@ -27,10 +27,25 @@ export type AudioContextLike = {
 export type AudioFactory = {
   context: () => AudioContextLike | null;
   audio: (src: string) => HTMLAudioElement;
+  /**
+   * 대사 음성을 모두 틀 재생기 하나. "재생"을 누를 때 만들어 소리 없이 한 번 틀어 둔다. 휴대폰 브라우저(iOS Safari 등)는 누른 직후가 아닌
+   * 때 새로 만든 재생기의 소리를 막아서, 대사마다 새 재생기를 만들면 첫 대사만 들렸다. 없으면 대사마다 새로 만든다.
+   */
+  blank?: () => HTMLAudioElement;
 };
+
+/** 길이 0인 무음 WAV. 재생기를 누른 순간에 한 번 틀어 두는 데 쓴다. */
+const SILENCE =
+  "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
 
 /** 배경음을 줄이고 되돌리는 시간(초). */
 const DUCK_S = 0.25;
+
+/**
+ * 바탕 배경음(장소 소리·배경음악)에 거는 배율. 배경음 파일이 대사 음성보다 4~8dB 크게 녹음돼 있어 대사를 가렸다. 받은 크기(volume, duckVolume)에
+ * 이 배율을 곱해 이미 만든 만화에도 똑같이 걸린다.
+ */
+export const BACKGROUND_LEVEL = 0.5;
 
 type Track = { sound: PanelSound; el: HTMLAudioElement; gain: Gain | null };
 
@@ -45,6 +60,7 @@ const browser: AudioFactory = {
     return Ctx ? (new Ctx() as unknown as AudioContextLike) : null;
   },
   audio: (src) => new Audio(src),
+  blank: () => new Audio(),
 };
 
 /**
@@ -59,6 +75,8 @@ export class LiveAudio {
   private readonly effects = new Set<HTMLAudioElement>();
   private readonly voices = new Map<string, HTMLAudioElement>();
   private speaking: HTMLAudioElement | null = null;
+  /** 대사를 모두 이 재생기로 튼다(누를 때 열어 둔다). 없으면 대사마다 새로 만든다. */
+  private voicePlayer: HTMLAudioElement | null = null;
   private volume = 1;
   private muted = false;
 
@@ -79,6 +97,33 @@ export class LiveAudio {
       this.master = this.ctx.createGain();
       this.master.gain.value = this.level();
       this.master.connect(this.ctx.destination);
+    }
+    this.openVoicePlayer();
+  }
+
+  /** 누른 순간에 대사 재생기를 만들어 무음을 한 번 틀어 둔다. 그 뒤로는 주소만 바꿔 튼다. */
+  private openVoicePlayer(): void {
+    if (this.voicePlayer || !this.factory.blank) {
+      return;
+    }
+    try {
+      const el = this.factory.blank();
+      if (this.ctx && this.master) {
+        this.ctx.createMediaElementSource(el).connect(this.master);
+      }
+      el.src = SILENCE;
+      void el
+        .play()
+        ?.then(() => {
+          // 그사이 대사를 틀기 시작했으면 끊지 않는다
+          if (el.src === SILENCE) {
+            el.pause();
+          }
+        })
+        .catch(() => undefined);
+      this.voicePlayer = el;
+    } catch {
+      this.voicePlayer = null;
     }
   }
 
@@ -144,10 +189,19 @@ export class LiveAudio {
    */
   voice(url: string): void {
     this.stopVoice();
-    const el = this.voices.get(url) ?? this.factory.audio(url);
+    const shared = this.voicePlayer;
+    // 미리 받은 재생기는 브라우저 캐시를 채우는 데만 쓰고, 열어 둔 재생기가 있으면 그것으로 튼다
+    const el = shared ?? this.voices.get(url) ?? this.factory.audio(url);
     this.voices.delete(url);
+    if (shared) {
+      shared.src = url;
+    }
     el.loop = false;
-    if (this.ctx && this.master) {
+    if (shared) {
+      if (!this.master) {
+        el.volume = this.level();
+      }
+    } else if (this.ctx && this.master) {
       this.ctx.createMediaElementSource(el).connect(this.master);
     } else {
       el.volume = this.level();
@@ -189,7 +243,8 @@ export class LiveAudio {
     if (!track || track.sound.duckVolume === undefined) {
       return;
     }
-    const to = on ? track.sound.duckVolume : track.sound.volume;
+    const to =
+      (on ? track.sound.duckVolume : track.sound.volume) * BACKGROUND_LEVEL;
     if (this.ctx && track.gain) {
       const now = this.ctx.currentTime;
       track.gain.gain.cancelScheduledValues(now);
@@ -222,6 +277,8 @@ export class LiveAudio {
     this.effects.clear();
     this.speaking?.pause();
     this.speaking = null;
+    this.voicePlayer?.pause();
+    this.voicePlayer = null;
     this.voices.clear();
     void this.ctx?.close?.();
     this.ctx = null;
@@ -240,7 +297,7 @@ export class LiveAudio {
         this.speaking && this.current.sound.duckVolume !== undefined
           ? this.current.sound.duckVolume
           : this.current.sound.volume;
-      this.current.el.volume = base * this.level();
+      this.current.el.volume = base * BACKGROUND_LEVEL * this.level();
     }
     if (!this.master && this.speaking) {
       this.speaking.volume = this.level();
@@ -268,13 +325,13 @@ export class LiveAudio {
       const now = this.ctx.currentTime;
       gain.gain.setValueAtTime(0, now);
       gain.gain.linearRampToValueAtTime(
-        sound.volume,
+        sound.volume * BACKGROUND_LEVEL,
         now + sound.fadeMs / 1000,
       );
       this.ctx.createMediaElementSource(el).connect(gain);
       gain.connect(this.master);
     } else {
-      el.volume = sound.volume * this.level();
+      el.volume = sound.volume * BACKGROUND_LEVEL * this.level();
     }
     try {
       void el.play()?.catch(() => undefined);

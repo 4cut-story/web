@@ -130,9 +130,10 @@ describe("라이브 모드 배경음", () => {
     const audio = new LiveAudio(f);
     audio.start();
     audio.play(sound("a"));
-    expect(audios[0].volume).toBeCloseTo(0.8);
-    audio.setVolume(0.5);
+    // 바탕 배경음은 대사를 가리지 않게 배율(0.5)을 곱한다
     expect(audios[0].volume).toBeCloseTo(0.4);
+    audio.setVolume(0.5);
+    expect(audios[0].volume).toBeCloseTo(0.2);
     audio.play(null);
     expect(audios[0].pause).toHaveBeenCalled();
   });
@@ -206,10 +207,10 @@ describe("라이브 모드 배경음", () => {
     expect(audios).toHaveLength(2);
     expect(audios[1].play).toHaveBeenCalled();
     expect(audio.isSpeaking()).toBe(true);
-    expect(bg.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0.2, 0.25);
+    expect(bg.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0.1, 0.25);
     (audios[1] as unknown as { onended: () => void }).onended();
     expect(audio.isSpeaking()).toBe(false);
-    expect(bg.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0.8, 0.25);
+    expect(bg.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0.4, 0.25);
     // 다음 대사가 앞 대사를 끊고, 멈추면 되돌린다
     audio.voice("/v/2");
     audio.voice("/v/3");
@@ -223,21 +224,72 @@ describe("라이브 모드 배경음", () => {
     expect(audio.isSpeaking()).toBe(false);
   });
 
+  it("FR-050: 재생을 누를 때 대사 재생기를 하나 열어 두고 모든 대사를 그 재생기로 튼다(휴대폰 브라우저)", async () => {
+    const { f, audios, gains } = factory(true);
+    const blanks: FakeAudio[] = [];
+    f.blank = () => {
+      const a = f.audio("") as unknown as FakeAudio;
+      blanks.push(a);
+      return a as unknown as HTMLAudioElement;
+    };
+    const audio = new LiveAudio(f);
+    audio.start();
+    expect(blanks).toHaveLength(1);
+    const player = blanks[0];
+    expect(player.src).toMatch(/^data:audio\/wav/);
+    expect(player.play).toHaveBeenCalledTimes(1);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(player.pause).toHaveBeenCalledTimes(1);
+    audio.start();
+    expect(blanks).toHaveLength(1);
+    audio.play({ ...sound("a"), duckVolume: 0.2 });
+    const bg = gains[1];
+    audio.preloadVoice("/v/1");
+    const made = audios.length;
+    audio.voice("/v/1");
+    audio.voice("/v/2");
+    expect(audios).toHaveLength(made);
+    expect(player.src).toBe("/v/2");
+    expect(player.play).toHaveBeenCalledTimes(3);
+    expect(audio.isSpeaking()).toBe(true);
+    expect(bg.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0.1, 0.25);
+    (player as unknown as { onended: () => void }).onended();
+    expect(audio.isSpeaking()).toBe(false);
+    audio.stop();
+    expect(player.pause).toHaveBeenCalled();
+  });
+
+  it("FR-050: 열어 둔 대사 재생기는 Web Audio가 없으면 소리 크기를 직접 맞춘다", () => {
+    const { f } = factory(false);
+    const blanks: FakeAudio[] = [];
+    f.blank = () => {
+      const a = f.audio("") as unknown as FakeAudio;
+      blanks.push(a);
+      return a as unknown as HTMLAudioElement;
+    };
+    const audio = new LiveAudio(f);
+    audio.start();
+    audio.setVolume(0.5);
+    audio.voice("/v/1");
+    expect(blanks[0].volume).toBeCloseTo(0.5);
+  });
+
   it("FR-050: Web Audio가 없으면 대사 동안 배경음 크기를 바로 줄이고, duckVolume이 없으면 그대로 둔다", () => {
     const { f, audios } = factory(false);
     const audio = new LiveAudio(f);
     audio.start();
     audio.play({ ...sound("a"), duckVolume: 0.2 });
     audio.voice("/v/1");
-    expect(audios[0].volume).toBeCloseTo(0.2);
-    audio.setVolume(0.5);
     expect(audios[0].volume).toBeCloseTo(0.1);
+    audio.setVolume(0.5);
+    expect(audios[0].volume).toBeCloseTo(0.05);
     expect(audios[1].volume).toBeCloseTo(0.5);
     audio.stopVoice();
-    expect(audios[0].volume).toBeCloseTo(0.4);
+    expect(audios[0].volume).toBeCloseTo(0.2);
     audio.play(sound("b"));
     audio.voice("/v/2");
-    expect(audios[2].volume).toBeCloseTo(0.4);
+    expect(audios[2].volume).toBeCloseTo(0.2);
   });
 
   it("FR-050: 대사 음성 재생을 막으면 배경음을 되돌린다", async () => {
@@ -251,6 +303,6 @@ describe("라이브 모드 배경음", () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(audio.isSpeaking()).toBe(false);
-    expect(audios[0].volume).toBeCloseTo(0.8);
+    expect(audios[0].volume).toBeCloseTo(0.4);
   });
 });
