@@ -109,6 +109,8 @@ describe("그림 모델 비교 (/lab)", () => {
     expect(within(ref).getByText("채택")).toHaveClass("bg-success");
     expect(within(table).getByText("기준")).not.toHaveClass("bg-success");
     expect(within(table).getByText(/실패 1/)).toBeInTheDocument();
+    // 회차 요약에 지금 쓰는 방식을 따로 보인다
+    expect(screen.getByText("지금 쓰는 방식")).toBeInTheDocument();
     expect(screen.getByText(/느려서 멈춤/)).toBeInTheDocument();
 
     // 처음에는 채택한 방식만 골라 그 컷만 받는다
