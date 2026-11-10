@@ -18,6 +18,7 @@
  * - 라이브 움직임 세 장(docs specs/003-live-mode FR-044), 모든 컷 네 장·인물 고정(FR-049): common #22, model-runtime #51, conversation-service #141, content-service #20
  * - 기사로 만들기: conversation-service #136(article 모듈), web 기사로 만들기 화면
  * - RSS 구독: conversation-service #148(rss 모듈), content-service #21(바로 공개), api-gateway #13, web RSS 구독 화면
+ * - 내 프로필 만드는 현황: web(components/production-status.tsx), conversation-service 대화 목록 API
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
  * 기능이 바뀌면 이 파일도 함께 고친다(web CLAUDE.md "소개 페이지").
@@ -1280,7 +1281,7 @@ export const CHANNELS: Channel[] = [
     icon: Repeat,
     title: "진행 상황 확인",
     detail:
-      "만드는 동안 화면이 5초마다 진행 상황을 물어봐요. 단계마다 결과를 저장해 두어 중간에 실패해도 그 단계부터 이어서 해요.",
+      "만드는 동안 화면이 5초마다 진행 상황을 물어봐요. 내 프로필의 '만드는 현황'에서는 내가 등록한 녹음·기사·RSS 기사가 진행 중·완료·못 만듦 중 어디에 있는지 단계와 진행률로 한눈에 보여요. 단계마다 결과를 저장해 두어 중간에 실패해도 그 단계부터 이어서 해요.",
   },
   {
     icon: Network,
