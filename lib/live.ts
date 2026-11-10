@@ -111,16 +111,13 @@ export function voiceUrl(
   return m ? `/api/images/${kind}/${id}?panel=${m[1]}&voice=${m[2]}` : null;
 }
 
-/** 컷에서 틀 대사 음성: 자막 시작 시각과 주소. 넓은 그림 컷만 쓴다. */
+/** 컷에서 틀 대사 음성: 자막 시작 시각과 주소. 1:1 컷(말풍선 그림)도 글자는 숨기고 음성만 튼다. */
 export function voicesOf(
   kind: "posts" | "comics",
   id: string,
   panel: LivePanel | undefined,
 ): { atMs: number; url: string }[] {
-  if (panel?.aspect !== "16:9") {
-    return [];
-  }
-  return (panel.captions ?? []).flatMap((c) => {
+  return (panel?.captions ?? []).flatMap((c) => {
     const url = voiceUrl(kind, id, c.voice);
     return url ? [{ atMs: c.startMs, url }] : [];
   });
