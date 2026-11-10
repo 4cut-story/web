@@ -205,8 +205,25 @@ describe("화면 효과 층", () => {
       expect(p.width).toBeGreaterThan(p.height * 20);
     }
     expect(AMBIENTS).toEqual(
-      expect.arrayContaining(["meteor", "fireworks", "lightning", "glow"]),
+      expect.arrayContaining([
+        "meteor",
+        "fireworks",
+        "lightning",
+        "glow",
+        "sunbeam",
+        "screen",
+        "bokeh",
+        "clouds",
+        "bubbles",
+      ]),
     );
+    // 도시 불빛은 여러 색이 섞이고, 방울은 거리 층으로 나뉜다
+    expect(
+      new Set(ambientParticles("bokeh", "c:1").map((p) => p.tint)).size,
+    ).toBeGreaterThan(1);
+    expect(
+      new Set(ambientParticles("bubbles", "c:1").map((p) => p.layer)).size,
+    ).toBeGreaterThan(1);
     expect(ambientParticles("rain").length).toBeGreaterThan(
       ambientParticles("fireflies").length,
     );
@@ -260,6 +277,12 @@ describe("화면 효과 층", () => {
     expect(ambientBehind("flicker")).toBe(false);
     expect(ambientBehind("glow")).toBe(false);
     expect(ambientBehind("steam")).toBe(false);
+    // 멀리 있는 도시 불빛·구름·방울은 인물 뒤로, 창빛·화면 빛은 그림 전체에 얹는다
+    expect(ambientBehind("bokeh")).toBe(true);
+    expect(ambientBehind("clouds")).toBe(true);
+    expect(ambientBehind("bubbles")).toBe(true);
+    expect(ambientBehind("sunbeam")).toBe(false);
+    expect(ambientBehind("screen")).toBe(false);
   });
 
   it("FR-043: 깊이 지도에서 가장 가까운 곳은 가리고 먼 곳은 그대로 보인다", () => {

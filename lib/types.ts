@@ -233,6 +233,11 @@ export type Ambient =
   | "meteor"
   | "fireworks"
   | "lightning"
+  | "sunbeam"
+  | "screen"
+  | "bokeh"
+  | "clouds"
+  | "bubbles"
   | "glow";
 
 export type Caption = {
