@@ -21,8 +21,8 @@ async function logout() {
 }
 
 /**
- * 사용자 프로필 (/@아이디/profile). 누구나 열 수 있다. 주인이면 닉네임 바꾸기와 계정 관리(RSS, 개인 토큰,
- * 로그아웃, 탈퇴)를 함께 둔다. 4컷은 스토리(/@아이디)에서 본다.
+ * 사용자 프로필 (/@아이디/profile). 누구나 열 수 있다. 주인이면 소개 카드에 RSS 구독·개인 토큰 바로 가기를,
+ * 아래에 닉네임 바꾸기와 계정(로그아웃, 탈퇴)을 둔다. 4컷은 스토리(/@아이디)에서 본다.
  */
 export function UserProfileScreen({ nickname }: { nickname: string }) {
   // 닉네임을 바꾸면 이 화면의 이름도 바로 바뀌도록 바꾼 값을 따로 둔다
@@ -32,7 +32,12 @@ export function UserProfileScreen({ nickname }: { nickname: string }) {
       {(found, self, signedIn) => {
         const user = renamed?.id === found.id ? renamed : found;
         return (
-          <ProfileView user={user} canFollow={signedIn && !self} self={self}>
+          <ProfileView
+            user={user}
+            canFollow={signedIn && !self}
+            self={self}
+            links={self && <MyLinks />}
+          >
             {self && (
               <>
                 <NameForm user={user} onSaved={setRenamed} />
@@ -111,7 +116,27 @@ function NameForm({
   );
 }
 
-/** 계정 관리: RSS 구독, 개인 토큰, 탈퇴. */
+/** 내 바로 가기: RSS 구독, 개인 토큰. 소개 카드에 두어 PC에서는 늘 보이고 휴대폰에서는 맨 위에 보인다. */
+function MyLinks() {
+  return (
+    <>
+      <Button asChild variant="outline">
+        <Link href="/rss">
+          <Rss aria-hidden />
+          RSS 구독
+        </Link>
+      </Button>
+      <Button asChild variant="outline">
+        <Link href="/me/tokens">
+          <KeyRound aria-hidden />
+          개인 토큰
+        </Link>
+      </Button>
+    </>
+  );
+}
+
+/** 계정: 로그아웃, 탈퇴. */
 function AccountSection() {
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string>();
@@ -134,19 +159,7 @@ function AccountSection() {
       <h2 id="account-heading" className="text-base font-semibold">
         계정
       </h2>
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <Button asChild variant="outline">
-          <Link href="/rss">
-            <Rss aria-hidden />
-            RSS 구독
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/me/tokens">
-            <KeyRound aria-hidden />
-            개인 토큰
-          </Link>
-        </Button>
+      <div className="grid grid-cols-2 gap-2 sm:max-w-md">
         <Button variant="outline" onClick={logout}>
           <LogOut aria-hidden />
           로그아웃
