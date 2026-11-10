@@ -32,6 +32,10 @@
   --ambient-glow: #ffd27a;
   --ambient-petal: #f8b4c8;
   --ambient-leaf: #d9822b;
+  --ambient-leaf-red: #b9472c;
+  --ambient-leaf-gold: #e2b23d;
+  --ambient-leaf-brown: #8f5a2e;
+  --ambient-petal-pale: #fbe1ea;
 }
 
 @theme inline {
@@ -111,9 +115,10 @@
   }
 }
 
+/* 비: 컷마다 바람 기울기(--tilt)가 다르고, 빗줄기마다 길이·진하기가 다르다 */
 .ambient-rain {
   background: linear-gradient(transparent, var(--ambient-rain));
-  opacity: 0.7;
+  opacity: calc(var(--alpha, 0.8) * 0.85);
   animation-name: ambient-rain;
   animation-timing-function: linear;
 }
@@ -121,18 +126,18 @@
 @keyframes ambient-rain {
   from {
     top: -10%;
-    transform: translateX(0) rotate(12deg);
+    transform: translateX(0) rotate(var(--tilt, 12deg));
   }
   to {
     top: 110%;
-    transform: translateX(-40px) rotate(12deg);
+    transform: translateX(var(--drift, -40px)) rotate(var(--tilt, 12deg));
   }
 }
 
 .ambient-snow {
   border-radius: 9999px;
   background: var(--ambient-light);
-  opacity: 0.85;
+  opacity: var(--alpha, 0.85);
   animation-name: ambient-snow;
   animation-timing-function: linear;
 }
@@ -143,11 +148,11 @@
     transform: translateX(0);
   }
   50% {
-    transform: translateX(18px);
+    transform: translateX(var(--sway, 18px));
   }
   100% {
     top: 105%;
-    transform: translateX(-6px);
+    transform: translateX(calc(var(--sway, 18px) * -0.3));
   }
 }
 
@@ -166,44 +171,56 @@
     transform: translate(0, 0);
   }
   30% {
-    opacity: 1;
-    transform: translate(14px, -10px);
+    opacity: var(--alpha, 1);
+    transform: translate(var(--dx, 14px), var(--dy, -10px));
   }
   60% {
-    opacity: 0.5;
-    transform: translate(-8px, -22px);
+    opacity: calc(var(--alpha, 1) * 0.5);
+    transform: translate(
+      calc(var(--dx, 14px) * -0.6),
+      calc(var(--dy, -10px) * 2)
+    );
   }
 }
 
+/* 꽃잎·낙엽: 알갱이마다 색(--tint)·흔들림(--sway)·회전 방향(--spin)이 다르고, 뒤집히며(scaleX) 팔랑팔랑 떨어진다 */
 .ambient-petals,
 .ambient-leaves {
   border-radius: 80% 0 80% 0;
+  opacity: var(--alpha, 0.9);
+  animation-name: ambient-fall;
   animation-timing-function: linear;
 }
 
 .ambient-petals {
-  background: var(--ambient-petal);
-  opacity: 0.9;
-  animation-name: ambient-fall;
+  background: var(--tint, var(--ambient-petal));
 }
 
 .ambient-leaves {
-  background: var(--ambient-leaf);
-  opacity: 0.9;
-  animation-name: ambient-fall;
+  background: var(--tint, var(--ambient-leaf));
 }
 
 @keyframes ambient-fall {
   0% {
     top: -8%;
-    transform: translateX(0) rotate(0deg);
+    transform: translateX(0) rotate(0deg) scaleX(1);
+  }
+  25% {
+    transform: translateX(var(--sway, 36px))
+      rotate(calc(var(--spin, 400deg) * 0.25)) scaleX(-0.5);
   }
   50% {
-    transform: translateX(36px) rotate(200deg);
+    transform: translateX(calc(var(--sway, 36px) * -0.3))
+      rotate(calc(var(--spin, 400deg) * 0.5)) scaleX(1);
+  }
+  75% {
+    transform: translateX(calc(var(--sway, 36px) * 0.7))
+      rotate(calc(var(--spin, 400deg) * 0.75)) scaleX(-0.5);
   }
   100% {
     top: 108%;
-    transform: translateX(-10px) rotate(400deg);
+    transform: translateX(calc(var(--sway, 36px) * 0.2))
+      rotate(var(--spin, 400deg)) scaleX(1);
   }
 }
 
@@ -243,8 +260,8 @@
     transform: translate(0, 0);
   }
   50% {
-    opacity: 0.7;
-    transform: translate(20px, 12px);
+    opacity: calc(var(--alpha, 1) * 0.7);
+    transform: translate(var(--dx, 20px), var(--dy, 12px));
   }
 }
 

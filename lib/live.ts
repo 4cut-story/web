@@ -254,7 +254,10 @@ export function ambientOn(
     .slice(0, 2);
 }
 
-/** 화면 효과 알갱이 하나. 위치는 그림 기준 %, 크기는 px, 시간은 ms. */
+/**
+ * 화면 효과 알갱이 하나. 위치는 그림 기준 %, 크기는 px, 시간은 ms. layer는 거리 층(0 먼 층, 1 중간 층, 2 가까운 층)이고,
+ * sway·spin·dx·dy는 알갱이마다 다른 흔들림·회전·떠다님(px, deg), tint는 색 토큰 이름이다.
+ */
 export type Particle = {
   x: number;
   y: number;
@@ -262,6 +265,14 @@ export type Particle = {
   height: number;
   delayMs: number;
   durationMs: number;
+  layer: 0 | 1 | 2;
+  opacity: number;
+  blur: number;
+  sway: number;
+  spin: number;
+  dx: number;
+  dy: number;
+  tint: string | null;
 };
 
 type Recipe = {
@@ -275,7 +286,7 @@ type Recipe = {
   durationMs: [number, number];
 };
 
-/** 종류별 알갱이 수·크기·속도. 화면 효과는 그림을 가리지 않게 작고 옅게 둔다. */
+/** 종류별 알갱이 수·크기·속도. 화면 효과는 그림을 가리지 않게 작고 옅게 둔다. 크기·시간은 중간 층 기준이다. */
 const RECIPES: Record<Ambient, Recipe> = {
   twinkle: {
     count: 28,
@@ -378,7 +389,50 @@ const RECIPES: Record<Ambient, Recipe> = {
   },
 };
 
-/** 같은 종류는 늘 같은 자리에 둔다(화면이 다시 그려져도 알갱이가 튀지 않는다). */
+/** 거리 층을 나누는 종류. 먼 것은 작고 느리고 옅게, 가까운 것은 크고 빠르고 흐리게 그려 평평한 무늬처럼 보이지 않게 한다. */
+const LAYERED: readonly Ambient[] = [
+  "rain",
+  "snow",
+  "petals",
+  "leaves",
+  "dust",
+  "fireflies",
+];
+
+/**
+ * 깊이 지도로 가리는 종류. 그림 속 공기나 하늘에 있는 것이라 앞쪽 인물 뒤로 지나가야 자연스럽다. 가까운 층(layer 2)은
+ * 가리지 않아 몇 개는 인물 앞을 스친다. 그림 전체에 얹는 빛(불빛·번개·은은한 빛)과 김은 가리지 않는다.
+ */
+const BEHIND: readonly Ambient[] = [
+  ...LAYERED,
+  "twinkle",
+  "meteor",
+  "fireworks",
+];
+
+export function ambientBehind(type: Ambient): boolean {
+  return BEHIND.includes(type);
+}
+
+/** 층별 크기·시간·진하기·흐림 배율. */
+const LAYERS = [
+  { size: 0.6, time: 1.35, opacity: 0.5, blur: 0 },
+  { size: 1, time: 1, opacity: 0.8, blur: 0 },
+  { size: 1.7, time: 0.75, opacity: 0.95, blur: 1.5 },
+] as const;
+
+/** 섞어 쓰는 색 토큰(app/globals.css). 낙엽·꽃잎이 한 가지 색이면 스티커처럼 보인다. */
+const TINTS: Partial<Record<Ambient, readonly string[]>> = {
+  leaves: [
+    "--ambient-leaf",
+    "--ambient-leaf-red",
+    "--ambient-leaf-gold",
+    "--ambient-leaf-brown",
+  ],
+  petals: ["--ambient-petal", "--ambient-petal-pale", "--ambient-light"],
+};
+
+/** 같은 컷은 늘 같은 자리에 둔다(화면이 다시 그려져도 알갱이가 튀지 않는다). */
 function random(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
@@ -390,24 +444,87 @@ function random(seed: number): () => number {
   };
 }
 
+function hash(text: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  }
+  return h >>> 0;
+}
+
 function between(r: () => number, [lo, hi]: [number, number]): number {
   return Math.round((lo + (hi - lo) * r()) * 10) / 10;
 }
 
-/** 종류별 알갱이 목록. 시작 지연은 음수라 재생하자마자 화면 곳곳에 알갱이가 있다. */
-export function ambientParticles(type: Ambient): Particle[] {
+function round(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+/** 먼 층이 가장 많고 가까운 층은 드물다(5:3.5:1.5). */
+function pickLayer(r: () => number): 0 | 1 | 2 {
+  const v = r();
+  return v < 0.5 ? 0 : v < 0.85 ? 1 : 2;
+}
+
+/**
+ * 종류별 알갱이 목록. seed(만화와 컷)마다 자리·바람 방향·흔들림이 달라 어느 컷이든 같은 무늬가 되풀이되지 않고, 같은
+ * seed면 늘 같다. 시작 지연은 음수라 재생하자마자 화면 곳곳에 알갱이가 있다.
+ */
+export function ambientParticles(type: Ambient, seed = ""): Particle[] {
   const recipe = RECIPES[type];
-  const r = random(AMBIENTS.indexOf(type) * 7919 + 17);
+  const r = random(
+    hash(`${seed}|${type}`) ^ (AMBIENTS.indexOf(type) * 7919 + 17),
+  );
+  const layered = LAYERED.includes(type);
+  // 컷 하나에는 바람이 한 방향으로 분다: 비는 기울기, 떨어지는 것은 흘러가는 쪽이 같다
+  const wind = r() * 2 - 1;
+  const tints = TINTS[type];
   return Array.from({ length: recipe.count }, () => {
-    const durationMs = Math.round(between(r, recipe.durationMs));
-    const width = between(r, recipe.width);
+    const layer = layered ? pickLayer(r) : 1;
+    const f = LAYERS[layer];
+    const durationMs = Math.round(between(r, recipe.durationMs) * f.time);
+    const width = round(between(r, recipe.width) * f.size);
+    const height = recipe.height
+      ? round(between(r, recipe.height) * f.size)
+      : width;
+    const jitter = r() * 2 - 1;
+    const sway =
+      type === "rain"
+        ? round(wind * 14 + jitter * 2)
+        : round((wind * 0.6 + jitter * 0.8) * 40 * f.size);
     return {
       x: between(r, recipe.x),
       y: between(r, recipe.y),
       width,
-      height: recipe.height ? between(r, recipe.height) : width,
+      height,
       durationMs,
       delayMs: -Math.round(durationMs * r()),
+      layer,
+      opacity: round(f.opacity * (0.75 + r() * 0.25)),
+      blur: f.blur,
+      sway,
+      spin: Math.round((r() < 0.5 ? -1 : 1) * (180 + r() * 360)),
+      dx: Math.round((r() * 2 - 1) * 26),
+      dy: Math.round((r() * 2 - 1) * 22),
+      tint: tints ? tints[Math.floor(r() * tints.length)] : null,
     };
   });
+}
+
+/**
+ * 깊이 지도(밝을수록 가깝다)의 밝기로 가림 마스크의 투명도를 만든다. 그림마다 깊이 값의 폭이 달라 밝기 순위로 자른다:
+ * 가장 가까운 25%(앞쪽 인물·물건)는 가리고, 그 앞 20% 구간은 부드럽게 옅어진다. 나머지는 그대로 보인다.
+ */
+export function depthMaskAlpha(luma: ArrayLike<number>): Uint8ClampedArray {
+  const sorted = Array.from(luma).sort((a, b) => a - b);
+  const at = (q: number) =>
+    sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * q))] ?? 0;
+  const lo = at(0.55);
+  const hi = Math.max(at(0.75), lo + 1);
+  const out = new Uint8ClampedArray(luma.length);
+  for (let i = 0; i < luma.length; i++) {
+    const t = Math.min(1, Math.max(0, (luma[i] - lo) / (hi - lo)));
+    out[i] = Math.round(255 * (1 - t * t * (3 - 2 * t)));
+  }
+  return out;
 }

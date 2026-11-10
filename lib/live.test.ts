@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ambientBehind,
   ambientOn,
   ambientParticles,
+  depthMaskAlpha,
   AMBIENTS,
   cameraTransform,
   captionAt,
@@ -187,7 +189,7 @@ describe("화면 효과 층", () => {
     expect(ambientOn(panel(undefined), false)).toEqual([]);
   });
 
-  it("FR-043: 종류마다 알갱이가 늘 같은 자리에 있고, 재생하자마자 화면 곳곳에 있다", () => {
+  it("FR-043: 같은 컷이면 알갱이가 늘 같은 자리에 있고, 재생하자마자 화면 곳곳에 있다", () => {
     for (const type of AMBIENTS) {
       const first = ambientParticles(type);
       expect(first.length).toBeGreaterThan(0);
@@ -208,6 +210,70 @@ describe("화면 효과 층", () => {
     expect(ambientParticles("rain").length).toBeGreaterThan(
       ambientParticles("fireflies").length,
     );
+  });
+
+  it("FR-043: 만화·컷마다 알갱이 자리와 바람이 달라 같은 무늬가 되풀이되지 않는다", () => {
+    const a = ambientParticles("rain", "comic-1:1");
+    expect(ambientParticles("rain", "comic-1:1")).toEqual(a);
+    const b = ambientParticles("rain", "comic-1:2");
+    expect(b.map((p) => p.x)).not.toEqual(a.map((p) => p.x));
+    // 한 컷의 비는 한쪽으로 기울고, 컷이 바뀌면 기울기도 달라질 수 있다
+    const tilts = new Set(
+      ["a", "b", "c", "d", "e", "f"].map((s) =>
+        Math.sign(ambientParticles("rain", s).reduce((n, p) => n + p.sway, 0)),
+      ),
+    );
+    expect(tilts.size).toBeGreaterThan(1);
+  });
+
+  it("FR-043: 떨어지는 것은 먼 층·중간 층·가까운 층으로 나뉘어 크기·속도·진하기가 다르다", () => {
+    const leaves = ambientParticles("leaves", "x:3");
+    const far = leaves.filter((p) => p.layer === 0);
+    const near = leaves.filter((p) => p.layer === 2);
+    expect(far.length).toBeGreaterThan(0);
+    expect(near.length).toBeGreaterThan(0);
+    expect(far.length).toBeGreaterThan(near.length);
+    const avg = (ps: typeof leaves, f: (p: (typeof leaves)[0]) => number) =>
+      ps.reduce((n, p) => n + f(p), 0) / ps.length;
+    expect(avg(near, (p) => p.width)).toBeGreaterThan(avg(far, (p) => p.width));
+    expect(avg(near, (p) => p.durationMs)).toBeLessThan(
+      avg(far, (p) => p.durationMs),
+    );
+    expect(avg(near, (p) => p.opacity)).toBeGreaterThan(
+      avg(far, (p) => p.opacity),
+    );
+    expect(near.every((p) => p.blur > 0)).toBe(true);
+    // 낙엽은 여러 색, 회전 방향도 섞인다
+    expect(new Set(leaves.map((p) => p.tint)).size).toBeGreaterThan(1);
+    expect(new Set(leaves.map((p) => Math.sign(p.spin))).size).toBe(2);
+    // 별빛처럼 층을 나누지 않는 것은 모두 중간 층이다
+    expect(ambientParticles("twinkle", "x").every((p) => p.layer === 1)).toBe(
+      true,
+    );
+  });
+
+  it("FR-043: 그림 속 공기·하늘에 있는 것만 인물 뒤로 보낸다", () => {
+    expect(ambientBehind("rain")).toBe(true);
+    expect(ambientBehind("leaves")).toBe(true);
+    expect(ambientBehind("twinkle")).toBe(true);
+    expect(ambientBehind("lightning")).toBe(false);
+    expect(ambientBehind("flicker")).toBe(false);
+    expect(ambientBehind("glow")).toBe(false);
+    expect(ambientBehind("steam")).toBe(false);
+  });
+
+  it("FR-043: 깊이 지도에서 가장 가까운 곳은 가리고 먼 곳은 그대로 보인다", () => {
+    const luma = Array.from({ length: 100 }, (_, i) => i * 2);
+    const alpha = depthMaskAlpha(luma);
+    expect(alpha[0]).toBe(255);
+    expect(alpha[40]).toBe(255);
+    expect(alpha[99]).toBe(0);
+    expect(alpha[80]).toBe(0);
+    // 그 사이는 부드럽게 옅어진다
+    expect(alpha[65]).toBeGreaterThan(0);
+    expect(alpha[65]).toBeLessThan(255);
+    // 깊이 값이 모두 같아도 0으로 나누지 않는다
+    expect(Array.from(depthMaskAlpha([7, 7, 7]))).toHaveLength(3);
   });
 });
 

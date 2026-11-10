@@ -362,7 +362,15 @@ export function LivePlayer({
                 />
               )}
               {i === index && (
-                <AmbientLayer types={ambientOn(p, reduced)} playing={playing} />
+                <AmbientLayer
+                  types={ambientOn(p, reduced)}
+                  playing={playing}
+                  seed={`${id}:${p.index}`}
+                  depth={
+                    pWide && p.depth ? depthImageUrl(kind, id, p.index) : null
+                  }
+                  fit={pWide && !full ? "cover" : "contain"}
+                />
               )}
             </div>
           );
