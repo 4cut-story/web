@@ -21,7 +21,10 @@ describe("피드 (FR-020)", () => {
         items: [post({ postId: "p2", title: "두 번째" })],
         nextCursor: null,
       }),
-      "GET /api/v1/feed": json({ items: [post()], nextCursor: "next" }),
+      "GET /api/v1/feed": json({
+        items: [post({ viewCount: 1500 })],
+        nextCursor: "next",
+      }),
       "GET /api/v1/users": json({ items: [OTHER] }),
     });
     render(<FeedScreen />);
@@ -32,6 +35,8 @@ describe("피드 (FR-020)", () => {
     const link = (await screen.findByText("지수")).closest("a");
     expect(link).toHaveAttribute("href", "/posts/p1");
     expect(link).not.toHaveAttribute("target");
+    // 목록에도 조회수를 짧게 보여 준다
+    expect(screen.getByLabelText("조회 1500회")).toHaveTextContent("1.5천");
     // 로그인했어도 위에 서비스 소개가 있고, 시작 버튼은 녹음으로 간다
     expect(
       screen.getByRole("region", { name: "서비스 소개" }),

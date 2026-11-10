@@ -20,6 +20,16 @@ export function timeAgo(iso: string, now: Date = new Date()): string {
   return "방금 전";
 }
 
+const compact = new Intl.NumberFormat("ko", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+/** 조회수처럼 큰 수를 짧게: 999, 1.2천, 3.4만. */
+export function count(n: number): string {
+  return compact.format(n);
+}
+
 /** 경과 시간 "03:25". 한 시간을 넘으면 "1:02:03". */
 export function clock(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));

@@ -265,8 +265,13 @@ export type Post = ComicExtras & {
   publishedAt: string;
   likeCount: number;
   commentCount: number;
+  /** 조회수. 같은 방문자(방문자 쿠키)가 10분 안에 다시 본 것은 세지 않는다. 예전 서버는 주지 않는다. */
+  viewCount?: number;
   likedByMe: boolean;
 };
+
+/** 조회 한 번 남긴 결과. counted가 false면 10분 안에 다시 본 것이라 세지 않았다. */
+export type ViewCount = { viewCount: number; counted: boolean };
 
 export type Comment = {
   id: string;

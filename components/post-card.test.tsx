@@ -42,6 +42,16 @@ describe("게시물 카드 (FR-021)", () => {
     expect(screen.getByText("알 수 없음")).toBeInTheDocument();
   });
 
+  it("조회수를 짧게 보여 주고, 예전 서버(조회수 없음)면 감춘다", () => {
+    const { unmount } = render(
+      <PostCard post={post({ viewCount: 12345 })} author={OTHER} />,
+    );
+    expect(screen.getByLabelText("조회 12345회")).toHaveTextContent("1.2만");
+    unmount();
+    render(<PostCard post={post()} author={OTHER} />);
+    expect(screen.queryByLabelText(/조회/)).not.toBeInTheDocument();
+  });
+
   it("캡션이 제목과 다르면 보여 준다", () => {
     render(<PostCard post={post()} author={OTHER} />);
     expect(screen.getByText("오늘 있었던 일")).toBeInTheDocument();
