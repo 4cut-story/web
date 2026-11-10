@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { FollowList } from "./follow-list";
 import { FeedScreen } from "./screens/feed-screen";
 import { PostScreen } from "./screens/post-screen";
+import { UserProfileScreen } from "./screens/user-profile-screen";
 import { navigation } from "@/lib/api";
 import { ME, OTHER, post, router } from "@/test/screen";
 import { json, mockFetch, noContent } from "@/test/fetch-mock";
@@ -225,5 +226,67 @@ describe("피드 전체/팔로잉 탭 (002 FR-019)", () => {
     expect(
       screen.queryByRole("group", { name: "피드 범위" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("프로필에서 팔로워·팔로잉 목록 열기 (002 FR-018)", () => {
+  it("팔로워 칸을 누르면 목록이 열리고, 닫으면 숫자를 다시 받는다", async () => {
+    const calls = mockFetch({
+      "GET /api/v1/me": json(ME),
+      "GET /api/v1/users/lookup": json(OTHER),
+      "GET /api/v1/follows/u2/stats": json(STATS),
+      "GET /api/v1/follows/u2/followers": json({
+        items: [
+          {
+            userId: "u3",
+            followedAt: "2026-11-09T00:00:00Z",
+            followedByMe: false,
+          },
+        ],
+        nextCursor: null,
+      }),
+      "GET /api/v1/users": json({
+        items: [
+          {
+            id: "u3",
+            nickname: "민호",
+            displayName: "민호짱",
+            avatarUrl: null,
+          },
+        ],
+      }),
+    });
+    render(<UserProfileScreen nickname="지수" />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "팔로워 3명 보기" }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: "팔로워" });
+    expect(await within(dialog).findByText("민호짱")).toBeInTheDocument();
+    const before = calls.filter((c) => c.url.endsWith("/stats")).length;
+    await userEvent.click(within(dialog).getByRole("button", { name: "닫기" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(calls.filter((c) => c.url.endsWith("/stats")).length).toBe(
+      before + 1,
+    );
+    expect(
+      screen.getByRole("button", { name: "팔로잉 1명 보기" }),
+    ).toBeInTheDocument();
+  });
+
+  it("팔로우가 실패하면 그 문구를 보여 준다", async () => {
+    mockFetch({
+      "GET /api/v1/me": json(ME),
+      "GET /api/v1/users/lookup": json(OTHER),
+      "GET /api/v1/follows/u2/stats": json(STATS),
+      "PUT /api/v1/follows/u2": json(
+        { error: { code: "X", message: "팔로우 실패" } },
+        500,
+      ),
+    });
+    render(<UserProfileScreen nickname="지수" />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "팔로우" }),
+    );
+    expect(await screen.findByText("팔로우 실패")).toBeInTheDocument();
   });
 });

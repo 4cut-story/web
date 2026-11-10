@@ -2,36 +2,36 @@
 
 import { useState } from "react";
 
-import { api, errorMessage } from "./api";
+import { api } from "./api";
 import type { FollowStats } from "./types";
 import { useLoad } from "./use-load";
 
-/** 한 사용자의 팔로우 숫자와 팔로우·취소. 스토리 머리와 프로필이 함께 쓴다. */
+/** 한 사용자의 팔로우 숫자. 팔로우·취소는 FollowButton이 하고, 바뀐 결과를 set·fail로 알려 준다. */
 export function useFollow(userId: string) {
   const stats = useLoad(`stats:${userId}`, () =>
     api.get<FollowStats>(`/follows/${userId}/stats`),
   );
   const [error, setError] = useState<string>();
 
-  async function toggle() {
+  /** 팔로우 버튼(FollowButton)이 바꾼 뒤 숫자를 맞춘다. */
+  function set(following: boolean) {
+    setError(undefined);
     const s = stats.data;
-    if (!s) {
+    if (!s || s.followedByMe === following) {
       return;
     }
-    try {
-      await (s.followedByMe
-        ? api.del(`/follows/${userId}`)
-        : api.put(`/follows/${userId}`));
-      stats.setData({
-        ...s,
-        followedByMe: !s.followedByMe,
-        followers: s.followers + (s.followedByMe ? -1 : 1),
-      });
-      setError(undefined);
-    } catch (e) {
-      setError(errorMessage(e));
-    }
+    stats.setData({
+      ...s,
+      followedByMe: following,
+      followers: s.followers + (following ? 1 : -1),
+    });
   }
 
-  return { stats: stats.data, toggle, error };
+  return {
+    stats: stats.data,
+    set,
+    reload: stats.reload,
+    fail: setError,
+    error,
+  };
 }
