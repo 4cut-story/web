@@ -1,10 +1,33 @@
 import type { Metadata, Viewport } from "next";
 import { pretendard } from "./fonts";
 import "./globals.css";
+import {
+  openGraph,
+  SEARCH_VERIFICATION,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  twitterCard,
+} from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "4cut story",
-  description: "대화를 녹음하면 4컷 스토리가 됩니다.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "4컷 만화",
+    "네컷 만화",
+    "AI 만화",
+    "대화 만화",
+    "녹음 만화",
+    "만화 만들기",
+    "4cut story",
+  ],
+  openGraph: openGraph({}),
+  twitter: twitterCard({}),
+  formatDetection: { telephone: false },
+  verification: SEARCH_VERIFICATION,
 };
 
 export const viewport: Viewport = {
