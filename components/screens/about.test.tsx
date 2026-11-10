@@ -163,7 +163,7 @@ describe("서비스 소개 페이지", () => {
 
   it("GitHub과 첫 화면으로 가는 길을 둔다", () => {
     render(<AboutPage />);
-    expect(metadata.title).toBe("서비스 소개 · 4cut story");
+    expect(metadata.title).toBe("서비스 소개");
     expect(
       screen.getByRole("link", { name: "4컷 만들러 가기" }),
     ).toHaveAttribute("href", "/");

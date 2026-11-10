@@ -18,6 +18,7 @@
  * - 라이브 움직임 세 장(docs specs/003-live-mode FR-044), 모든 컷 네 장·인물 고정(FR-049): common #22, model-runtime #51, conversation-service #141, content-service #20
  * - 기사로 만들기: conversation-service #136(article 모듈), web 기사로 만들기 화면
  * - RSS 구독: conversation-service #148(rss 모듈), content-service #21(바로 공개), api-gateway #13, web RSS 구독 화면
+ * - 내 프로필 만드는 현황: web(components/production-status.tsx), conversation-service 대화 목록 API
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
  * 기능이 바뀌면 이 파일도 함께 고친다(web CLAUDE.md "소개 페이지").
@@ -402,6 +403,11 @@ export type Term = { term: string; meaning: string };
 
 export const GLOSSARY: Term[] = [
   {
+    term: "사이트맵 · 구조화 데이터",
+    meaning:
+      "사이트맵은 검색 엔진에 알려 주는 이 사이트의 공개 주소 목록이에요. 구조화 데이터(JSON-LD)는 페이지에 '이건 누가 언제 올린 게시물'처럼 기계가 읽는 설명을 덧붙이는 형식이에요.",
+  },
+  {
     term: "SSRF 차단",
     meaning:
       "사용자가 넣은 주소를 서버가 대신 열 때, 그 주소가 서버 안쪽(내부망, 클라우드 설정 정보 주소 등)을 가리키게 해서 바깥에서 못 보는 곳을 엿보는 공격을 막는 일이에요. 기사로 만들기는 주소를 IP로 풀어 공개 인터넷 주소일 때만 열어요.",
@@ -639,6 +645,17 @@ export const TUNINGS: Tuning[] = [
     fix: "글 다듬기는 4묶음씩, 장면 찾기는 모든 구간을 동시에 불러요. 단계마다 걸린 시간과 전체 시간을 로그로 남겨 다음 개선의 근거로 써요.",
     before: "한 묶음씩 차례로",
     after: "4묶음 동시 · 구간 전체 동시",
+  },
+  {
+    icon: LayoutGrid,
+    kind: "속도",
+    title: "목록 썸네일 가볍게",
+    problem: "피드와 사용자 페이지, 만화함 목록이 열리는 데 오래 걸렸어요.",
+    cause:
+      "목록은 첫 컷만 보여 주는데, 썸네일은 4컷 전체를 폭 400px로 줄인 PNG라 한 장에 0.6~2.3MB였어요. 피드 한 쪽(20편)에 수십 MB를 받았어요.",
+    fix: "첫 컷만 잘라 폭 480px JPEG로 만들어 저장소에 두고 목록에서는 그 그림만 받아요. 예전 만화는 처음 열거나 2분마다 도는 작업이 채우고, 한 번 만든 썸네일은 브라우저가 1시간 캐시해요. 그림 모델 비교 화면(/lab)도 방식 62개를 처음부터 모두 고르던 것을, 지금 서비스에서 쓰는 방식만 고르게 바꿨어요.",
+    before: "썸네일 한 장 평균 1.9MB",
+    after: "평균 58KB, 약 33배 가볍게 (피드 20편 합계 약 1MB)",
   },
   {
     icon: HardDrive,
@@ -1011,6 +1028,18 @@ export const TUNINGS: Tuning[] = [
     after: "6개",
   },
   {
+    icon: Search,
+    kind: "품질",
+    title: "검색에 안 잡히던 공개 4컷",
+    problem:
+      "누구나 볼 수 있게 올린 4컷도 구글 검색에 거의 나오지 않았고, 링크를 공유하면 어느 게시물이든 제목이 '4cut story' 하나로만 보였어요.",
+    cause:
+      "화면이 브라우저에서 데이터를 불러 그려서, 검색 로봇이 받은 HTML에는 페이지마다 다른 제목·설명·대표 그림이 없었어요. 사이트맵과 robots.txt도 없었어요.",
+    fix: "게시물·사용자·캐릭터·배경음 페이지는 서버가 로그인 없이 내용을 읽어 제목·설명·대표 주소(canonical)·공유 그림(첫 컷)을 HTML 머리말에 넣어요. 전체 공개 게시물·캐릭터·배경음을 모은 사이트맵을 요청 때 만들어 한 시간 두고, 로그인해야 보이는 화면과 팔로워 공개 게시물은 검색에서 빼요. 게시물·사용자 페이지에는 구조화 데이터(JSON-LD)를 붙였어요.",
+    before: "페이지 제목 1가지, 사이트맵 없음",
+    after: "페이지마다 제목·공유 그림, 사이트맵 주소 4,807개",
+  },
+  {
     icon: Images,
     kind: "품질",
     title: "16GB GPU에 맞는 그림 모델 고르기",
@@ -1252,7 +1281,7 @@ export const CHANNELS: Channel[] = [
     icon: Repeat,
     title: "진행 상황 확인",
     detail:
-      "만드는 동안 화면이 5초마다 진행 상황을 물어봐요. 단계마다 결과를 저장해 두어 중간에 실패해도 그 단계부터 이어서 해요.",
+      "만드는 동안 화면이 5초마다 진행 상황을 물어봐요. 내 프로필의 '만드는 현황'에서는 내가 등록한 녹음·기사·RSS 기사가 진행 중·완료·못 만듦 중 어디에 있는지 단계와 진행률로 한눈에 보여요. 단계마다 결과를 저장해 두어 중간에 실패해도 그 단계부터 이어서 해요.",
   },
   {
     icon: Network,
