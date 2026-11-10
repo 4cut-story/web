@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { LabScreen } from "./lab-screen";
 import { json, mockFetch } from "@/test/fetch-mock";
 import {
+  defaultShown,
   orderVariants,
   parseTree,
   isReference,
@@ -101,6 +102,19 @@ describe("그림 모델 비교 (/lab)", () => {
     expect(within(table).getByText(/실패 1/)).toBeInTheDocument();
     expect(screen.getByText(/느려서 멈춤/)).toBeInTheDocument();
 
+    // 처음에는 채택한 방식만 골라 그 컷만 받는다
+    expect(screen.getByAltText("schnell NF4 참조 1컷")).toBeInTheDocument();
+    expect(screen.queryByAltText("schnell NF4 1컷")).not.toBeInTheDocument();
+    expect(screen.queryByAltText("dev NF4 1컷")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "schnell NF4 참조" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "dev NF4" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "모두 고르기" }));
     const first = screen.getByAltText("schnell NF4 1컷");
     expect(first).toHaveAttribute(
       "src",
@@ -128,6 +142,27 @@ describe("그림 모델 비교 (/lab)", () => {
       "src",
       rawUrl(`${R}/schnell-nf4/solo-01-panel-1.png`),
     );
+
+    await userEvent.click(screen.getByRole("button", { name: "채택만" }));
+    expect(screen.queryByAltText("schnell NF4 1컷")).not.toBeInTheDocument();
+  });
+
+  it("채택한 방식이 없으면 점수가 가장 높은 방식 하나만 처음에 고른다", () => {
+    const v = (id: string, extra: object = {}) => ({
+      id,
+      comics: {},
+      ...extra,
+    });
+    expect([
+      ...defaultShown([
+        v("a", { scores: { average: 80 } }),
+        v("b", { scores: { average: 90 } }),
+      ]),
+    ]).toEqual(["b"]);
+    expect([
+      ...defaultShown([v("a"), v("b", { scores: { status: "채택" } })]),
+    ]).toEqual(["b"]);
+    expect(defaultShown([]).size).toBe(0);
   });
 
   it("한 컷도 못 그려 점수가 null인 방식이 있어도 화면이 깨지지 않는다", async () => {

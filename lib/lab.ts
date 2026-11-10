@@ -158,6 +158,17 @@ export function splitByReference(variants: Variant[]): {
   };
 }
 
+/**
+ * 처음 열 때 비교할 방식: 채택한 방식(최종 모델 + 프롬프트)만. 채택이 없으면 점수가 가장 높은 방식 하나.
+ * 방식이 수십 개라 모두 고르면 컷 그림 수천 장을 한꺼번에 받게 되므로, 나머지는 눌러서 더한다.
+ */
+export function defaultShown(variants: Variant[]): Set<string> {
+  const adopted = variants.filter((v) => v.scores?.status === "채택");
+  if (adopted.length > 0) return new Set(adopted.map((v) => v.id));
+  const [best] = orderVariants(variants);
+  return new Set(best ? [best.id] : []);
+}
+
 export async function loadRound(skeleton: Skeleton): Promise<Round> {
   const base = `${ROOT}${skeleton.id}/`;
   const [info, panels, variants] = await Promise.all([

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { ErrorText } from "@/components/empty-state";
 import {
+  defaultShown,
   loadLab,
   loadRound,
   rawUrl,
@@ -258,12 +259,18 @@ function Compare({
 
 function RoundView({ round }: { round: Round }) {
   const drawn = round.variants.filter((v) => Object.keys(v.comics).length > 0);
-  const [comic, setComic] = useState(round.comics[0]);
-  const [hidden, setHidden] = useState<Set<string>>(new Set());
-  const shown = drawn.filter((v) => !hidden.has(v.id) && v.comics[comic]);
+  // 처음에는 채택한 방식만 고른다(모두 고르면 컷 그림을 수천 장 한꺼번에 받는다).
+  const [picked, setPicked] = useState<Set<string>>(() => defaultShown(drawn));
+  const [comic, setComic] = useState(
+    () =>
+      round.comics.find((c) =>
+        drawn.some((v) => picked.has(v.id) && v.comics[c]),
+      ) ?? round.comics[0],
+  );
+  const shown = drawn.filter((v) => picked.has(v.id) && v.comics[comic]);
   const { plain, reference } = splitByReference(round.variants);
   const toggle = (id: string) =>
-    setHidden((prev) => {
+    setPicked((prev) => {
       const next = new Set(prev);
       if (!next.delete(id)) next.add(id);
       return next;
@@ -289,14 +296,32 @@ function RoundView({ round }: { round: Round }) {
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold">비교할 방식</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-semibold">비교할 방식</h2>
+          <div className="flex gap-2 text-sm">
+            <button
+              type="button"
+              onClick={() => setPicked(defaultShown(drawn))}
+              className="text-muted-foreground underline-offset-4 hover:underline"
+            >
+              채택만
+            </button>
+            <button
+              type="button"
+              onClick={() => setPicked(new Set(drawn.map((v) => v.id)))}
+              className="text-muted-foreground underline-offset-4 hover:underline"
+            >
+              모두 고르기
+            </button>
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          처음에는 채택한 방식(지금 쓰는 모델과 프롬프트)만 보여요. 눌러서
+          비교할 방식을 더하세요.
+        </p>
         <div className="flex flex-wrap gap-2">
           {drawn.map((v) => (
-            <Chip
-              key={v.id}
-              on={!hidden.has(v.id)}
-              onClick={() => toggle(v.id)}
-            >
+            <Chip key={v.id} on={picked.has(v.id)} onClick={() => toggle(v.id)}>
               {variantLabel(v)}
             </Chip>
           ))}

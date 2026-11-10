@@ -20,7 +20,7 @@ const SOURCES: Record<string, (id: string, query: string) => string> = {
 const MAX_AGE: Record<string, number> = { looks: 3600, sounds: 3600 };
 const CAST_MAX_AGE = 3600;
 
-/** 게시물·만화 이미지 쿼리: 얼굴 그림(cast), 라이브 컷 그림(panel, frame), 아니면 크기. 틀린 값은 버린다. */
+/** 게시물·만화 이미지 쿼리: 얼굴 그림(cast), 라이브 컷 그림(panel, frame), 아니면 크기. 틀린 값은 버린다. fixed면 오래 캐시한다. */
 export function imageQuery(params: URLSearchParams): {
   query: string;
   fixed: boolean;
@@ -36,10 +36,9 @@ export function imageQuery(params: URLSearchParams): {
       f === "b" || f === "c" || f === "d" || f === "depth" ? `&frame=${f}` : "";
     return { query: `panel=${panel}${frame}`, fixed: true };
   }
-  return {
-    query: `size=${params.get("size") === "thumb" ? "thumb" : "full"}`,
-    fixed: false,
-  };
+  // 목록 썸네일(첫 컷)은 한 번 만들면 바뀌지 않아 얼굴 그림처럼 오래 둔다.
+  const thumb = params.get("size") === "thumb";
+  return { query: `size=${thumb ? "thumb" : "full"}`, fixed: thumb };
 }
 
 /**
