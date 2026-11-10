@@ -25,12 +25,7 @@
       "그림책 꼬마 주인공",
       "귀여운 아기 동물"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "WATERCOLOR",
-      "ANIMALS"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "WATERCOLOR", "ANIMALS"],
     "designPrompt": "A 7-year-old Korean girl with a very high-pitched, clear and cute child voice. Bright, curious and cheerful, speaks a little fast like a small kid. Standard Seoul Korean.",
     "f0Hz": 413.1,
     "rate": 5.18,
@@ -83,11 +78,7 @@
       "명랑한 진행자",
       "친한 언니"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "ANIMALS"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "ANIMALS"],
     "designPrompt": "A Korean woman in her mid 20s with a bright, clear, fairly high-pitched voice. Crisp articulate pronunciation, energetic and lively, medium-fast pace. Standard Seoul Korean.",
     "f0Hz": 339.4,
     "rate": 5.29,
@@ -141,11 +132,7 @@
       "사려 깊은 여주인공",
       "간호사"
     ],
-    "concepts": [
-      "DAILY",
-      "WATERCOLOR",
-      "PICTURE_BOOK"
-    ],
+    "concepts": ["DAILY", "WATERCOLOR", "PICTURE_BOOK"],
     "designPrompt": "A Korean woman in her late 20s with a calm, soft and breathy low-mid voice. Speaks slowly and gently, soothing and quiet, like a late-night radio host. Standard Seoul Korean.",
     "f0Hz": 192.7,
     "rate": 5.67,
@@ -198,11 +185,7 @@
       "귀여운 마스코트",
       "작은 동물 캐릭터"
     ],
-    "concepts": [
-      "DAILY",
-      "ANIMALS",
-      "PICTURE_BOOK"
-    ],
+    "concepts": ["DAILY", "ANIMALS", "PICTURE_BOOK"],
     "designPrompt": "A Korean woman in her early 20s with a playful, bubbly, slightly nasal and cute voice. Teasing and giggly, quick bouncy rhythm with lots of pitch movement. Standard Seoul Korean.",
     "f0Hz": 307.7,
     "rate": 5.64,
@@ -255,11 +238,7 @@
       "담임 선생님",
       "반찬 가게 사장님"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "WATERCOLOR"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "WATERCOLOR"],
     "designPrompt": "A Korean woman in her mid 40s with a warm, round and mature mother's voice. Gentle and affectionate, mid-low pitch, relaxed pace. Standard Seoul Korean.",
     "f0Hz": 263.2,
     "rate": 5.55,
@@ -312,10 +291,7 @@
       "까다로운 여자 상사",
       "따지는 아주머니"
     ],
-    "concepts": [
-      "DAILY",
-      "NEWSPAPER"
-    ],
+    "concepts": ["DAILY", "NEWSPAPER"],
     "designPrompt": "A Korean woman in her early 50s with a stern, firm and slightly sharp voice. Strict and no-nonsense like a strict school principal, clipped precise speech, lower pitch. Standard Seoul Korean.",
     "f0Hz": 335.5,
     "rate": 6.29,
@@ -368,12 +344,7 @@
       "인자한 노부인",
       "손주 돌보는 할머니"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "WATERCOLOR",
-      "JOSEON"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "WATERCOLOR", "JOSEON"],
     "designPrompt": "A Korean grandmother in her 70s with a soft, gentle, warm and slightly husky elderly voice. Speaks slowly and kindly with a smile. Standard Korean.",
     "f0Hz": 156.5,
     "rate": 4.58,
@@ -426,11 +397,7 @@
       "심술궂은 노파",
       "마귀할멈"
     ],
-    "concepts": [
-      "DAILY",
-      "NEWSPAPER",
-      "ANIMALS"
-    ],
+    "concepts": ["DAILY", "NEWSPAPER", "ANIMALS"],
     "designPrompt": "A Korean grandmother in her 80s with a rough, raspy, loud and crackly elderly voice. Grumpy and fussy, speaks bluntly with a strong forceful tone. Standard Korean.",
     "f0Hz": 379.9,
     "rate": 5.37,
@@ -483,10 +450,7 @@
       "식당 사장님",
       "코믹 조연"
     ],
-    "concepts": [
-      "DAILY",
-      "NEWSPAPER"
-    ],
+    "concepts": ["DAILY", "NEWSPAPER"],
     "designPrompt": "A Korean woman in her 50s from Busan with a loud, brisk and hearty voice. Speaks fast and straightforwardly with a strong Gyeongsang-do (southeastern Korean) dialect and its strong pitch accent.",
     "f0Hz": 458.3,
     "rate": 4.0,
@@ -539,11 +503,7 @@
       "국밥집 할머니",
       "마을 어르신"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "WATERCOLOR"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "WATERCOLOR"],
     "designPrompt": "A Korean grandmother in her 70s with a warm, slightly husky voice. Speaks affectionately with a strong Jeolla-do (southwestern Korean) dialect and its rising, sing-song intonation.",
     "f0Hz": 242.8,
     "rate": 5.41,
@@ -595,11 +555,7 @@
       "씩씩한 꼬마",
       "까불이 새끼 동물"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "ANIMALS"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "ANIMALS"],
     "designPrompt": "An 8-year-old Korean boy with a high, bright and energetic child voice. Cheerful and loud, speaks fast like a lively young boy. Standard Seoul Korean.",
     "f0Hz": 305.9,
     "rate": 7.08,
@@ -652,11 +608,7 @@
       "운동부 선배",
       "젊은 기자"
     ],
-    "concepts": [
-      "DAILY",
-      "NEWSPAPER",
-      "PICTURE_BOOK"
-    ],
+    "concepts": ["DAILY", "NEWSPAPER", "PICTURE_BOOK"],
     "designPrompt": "A Korean man in his mid 20s with a bright, clear and youthful tenor voice. Crisp pronunciation, upbeat and confident, medium pace. Standard Seoul Korean.",
     "f0Hz": 147.3,
     "rate": 6.07,
@@ -708,11 +660,7 @@
       "의사",
       "다정한 남자 주인공"
     ],
-    "concepts": [
-      "DAILY",
-      "WATERCOLOR",
-      "NEWSPAPER"
-    ],
+    "concepts": ["DAILY", "WATERCOLOR", "NEWSPAPER"],
     "designPrompt": "A Korean man in his late 20s with a low, soft, smooth and calm baritone voice. Speaks slowly and gently, quiet and reassuring. Standard Seoul Korean.",
     "f0Hz": 111.3,
     "rate": 6.1,
@@ -766,11 +714,7 @@
       "코믹 조연",
       "약삭빠른 동물"
     ],
-    "concepts": [
-      "DAILY",
-      "NEWSPAPER",
-      "ANIMALS"
-    ],
+    "concepts": ["DAILY", "NEWSPAPER", "ANIMALS"],
     "designPrompt": "A Korean man in his early 20s with a light, slightly high and playful voice. Cheeky and teasing, fast bouncy rhythm, often sounds like he is grinning. Standard Seoul Korean.",
     "f0Hz": 169.2,
     "rate": 6.21,
@@ -804,14 +748,7 @@
     "ageGroup": "MIDDLE",
     "dialect": null,
     "tone": "다정한 아빠",
-    "traits": [
-      "따뜻함",
-      "푸근함",
-      "중저음",
-      "친근함",
-      "빠름",
-      "40대 남성"
-    ],
+    "traits": ["따뜻함", "푸근함", "중저음", "친근함", "빠름", "40대 남성"],
     "description": "40대 남성으로, 따뜻하고 푸근한 중저음 아빠 목소리지만 말은 꽤 빠른 편이다.",
     "searchText": "40대 남성의 따뜻하고 푸근한 중저음 목소리로, 친근하고 다정하게 들린다. 느긋하기보다는 말이 꽤 빠른 편이라 활기 있는 동네 아저씨 느낌도 난다. 아주 낮고 엄한 광수보다 높고 부드러우며, 경상도 칠성과 달리 표준어로 상냥하게 말한다. 다정한 아빠, 동네 가게 아저씨, 친절한 이웃, 회사 과장님, 사람 좋은 담임 선생님에 잘 맞는다. 일상 만화, 그림책, 신문 만화의 평범한 가장 역할에 어울리며 아이, 노인, 엄하게 호통치는 역할, 무협의 거친 고수에는 맞지 않는다.",
     "searchTextEn": "A middle-aged man in his forties with a warm, mellow mid-low fatherly voice, friendly and kind, though he speaks fairly fast rather than in a relaxed drawl. Higher and softer than the very deep, stern Gwangsu, and unlike Chilseong he speaks gentle standard Korean. Fits a loving father, a neighborhood shop owner, a kind neighbor, a middle manager at the office, or a good-natured teacher. Good for everyday comics, picture books and an ordinary family man in newspaper-style comics. Not suitable for children, old men, scolding roles or rough martial-arts masters.",
@@ -822,11 +759,7 @@
       "회사 과장님",
       "사람 좋은 선생님"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "NEWSPAPER"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "NEWSPAPER"],
     "designPrompt": "A Korean man in his mid 40s with a warm, mellow and friendly fatherly voice. Mid-low pitch, kind and easygoing, relaxed pace. Standard Seoul Korean.",
     "f0Hz": 119.3,
     "rate": 6.63,
@@ -860,14 +793,7 @@
     "ageGroup": "MIDDLE",
     "dialect": null,
     "tone": "엄한 부장님",
-    "traits": [
-      "매우 낮음",
-      "묵직함",
-      "위압적",
-      "엄함",
-      "빠름",
-      "50대 남성"
-    ],
+    "traits": ["매우 낮음", "묵직함", "위압적", "엄함", "빠름", "50대 남성"],
     "description": "50대 남성으로, 아주 낮고 묵직한 엄한 목소리지만 말은 느리지 않고 빠른 편이다.",
     "searchText": "50대 남성의 아주 낮고 묵직한 목소리로, 위압적이고 엄하게 들린다. 천천히 끊어 말하기보다 빠른 편으로 몰아붙이듯 말해 다그치는 느낌이 있다. 푸근한 상철보다 훨씬 낮고 차가우며, 경상도 칠성과 달리 표준어를 쓴다. 엄한 부장님, 무서운 아버지, 회사 사장님, 깐깐한 교장 선생님, 조직의 보스, 무협의 냉정한 문주에 잘 맞는다. 일상 만화, 신문 풍자의 권위적인 인물, 사극의 엄한 대감, 무협에 어울리며 아이, 다정한 아빠, 그림책이나 수채화풍의 잔잔한 이야기에는 맞지 않는다.",
     "searchTextEn": "A middle-aged man in his fifties with a very low, deep, heavy voice that sounds authoritative and stern, speaking briskly as if pressing someone rather than slowly. Much deeper and colder than the warm Sangcheol, and he uses standard Korean unlike Chilseong. Fits a strict boss, a stern father, a company president, a strict principal, a gang boss, or a cold sect leader in martial-arts stories. Good for everyday comics, authority figures in newspaper satire, a stern nobleman in Joseon-era stories and wuxia. Not suitable for children, a gentle father, picture books or soft watercolor stories.",
@@ -880,12 +806,7 @@
       "무협 문주",
       "사극 대감"
     ],
-    "concepts": [
-      "DAILY",
-      "NEWSPAPER",
-      "JOSEON",
-      "WUXIA"
-    ],
+    "concepts": ["DAILY", "NEWSPAPER", "JOSEON", "WUXIA"],
     "designPrompt": "A Korean man in his mid 50s with a very low, deep, heavy and stern voice. Authoritative and strict like a strict boss, slow deliberate clipped speech. Standard Seoul Korean.",
     "f0Hz": 92.0,
     "rate": 6.36,
@@ -938,12 +859,7 @@
       "선비 할아버지",
       "지혜로운 스승"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "WATERCOLOR",
-      "JOSEON"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "WATERCOLOR", "JOSEON"],
     "designPrompt": "A Korean grandfather in his 70s with a warm, gentle and slightly hoarse elderly voice. Speaks slowly and leisurely with a kind chuckle, wise and affectionate. Standard Korean.",
     "f0Hz": 78.7,
     "rate": 4.35,
@@ -996,12 +912,7 @@
       "사극 노장군",
       "괴팍한 노고수"
     ],
-    "concepts": [
-      "DAILY",
-      "JOSEON",
-      "WUXIA",
-      "NEWSPAPER"
-    ],
+    "concepts": ["DAILY", "JOSEON", "WUXIA", "NEWSPAPER"],
     "designPrompt": "A Korean grandfather in his 80s with a rough, gravelly, raspy and loud elderly voice. Gruff and grumpy, speaks forcefully like he is scolding. Standard Korean.",
     "f0Hz": 115.2,
     "rate": 5.74,
@@ -1054,11 +965,7 @@
       "공사장 반장",
       "과묵한 무사"
     ],
-    "concepts": [
-      "DAILY",
-      "NEWSPAPER",
-      "WUXIA"
-    ],
+    "concepts": ["DAILY", "NEWSPAPER", "WUXIA"],
     "designPrompt": "A Korean man in his 50s from Busan with a thick, gruff and blunt voice. Speaks with a strong Gyeongsang-do (southeastern Korean) dialect and its strong pitch accent.",
     "f0Hz": 99.2,
     "rate": 4.85,
@@ -1111,12 +1018,7 @@
       "입담 좋은 어르신",
       "우화 속 늙은 동물"
     ],
-    "concepts": [
-      "DAILY",
-      "PICTURE_BOOK",
-      "WATERCOLOR",
-      "NEWSPAPER"
-    ],
+    "concepts": ["DAILY", "PICTURE_BOOK", "WATERCOLOR", "NEWSPAPER"],
     "designPrompt": "A Korean grandfather in his 70s with a hearty, earthy and slightly hoarse voice. Speaks slowly and humorously with a strong Jeolla-do (southwestern Korean) dialect and its rising, sing-song intonation.",
     "f0Hz": 164.9,
     "rate": 5.15,
