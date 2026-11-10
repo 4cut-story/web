@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
-import { AppShell, HOME } from "@/components/app-shell";
+import { AppShell } from "@/components/app-shell";
 import { ConceptPicker } from "@/components/concept-picker";
 import { DialectPicker } from "@/components/dialect-picker";
 import { ErrorText } from "@/components/empty-state";
@@ -54,56 +54,61 @@ export function ArticleScreen() {
   }
 
   return (
-    <AppShell title="기사로 만들기" back={sending ? undefined : HOME}>
+    <AppShell title="기사로 만들기" tab="create" width="wide">
+      {/* RSS 구독과 같은 넓은 틀: 휴대폰은 한 줄, 넓은 화면은 왼쪽 주소·만들기, 오른쪽 그림체·사투리 */}
       <form
         onSubmit={submit}
-        className="flex flex-1 flex-col items-center justify-center gap-8 text-center"
+        className="grid gap-8 pb-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-10 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]"
       >
-        <div className="flex flex-col items-center gap-3">
-          <span className="flex size-14 items-center justify-center rounded-2xl bg-foreground text-background">
-            <Newspaper aria-hidden className="size-7" />
-          </span>
-          <p className="max-w-sm text-base leading-relaxed text-muted-foreground">
-            기사 주소를 넣으면 AI가 본문을 읽고, 기사 속 사람들이 나누는 대화로
-            바꿔 4컷으로 그려요.
-          </p>
+        <div className="flex flex-col gap-6 md:sticky md:top-20 md:self-start">
+          <div className="flex flex-col items-center gap-3 text-center md:flex-row md:items-start md:text-left">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-foreground text-background">
+              <Newspaper aria-hidden className="size-7" />
+            </span>
+            <p className="max-w-sm text-base leading-relaxed text-muted-foreground">
+              기사 주소를 넣으면 AI가 기사에서 사실만 가져와, 우리만의 이야기와
+              대화로 각색해 4컷으로 그려요.
+            </p>
+          </div>
+          <label className="flex w-full flex-col gap-2 text-base font-medium">
+            기사 주소
+            <input
+              type="url"
+              inputMode="url"
+              name="url"
+              required
+              placeholder="https://news.example.com/article/123"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              disabled={sending}
+              className="h-12 w-full rounded-lg border border-border bg-background px-4 text-base font-normal"
+            />
+          </label>
+          <ul className="flex w-full flex-col gap-1 text-sm text-muted-foreground">
+            <li>
+              • 기사에서는 사실만 가져오고, 이야기·인물·대사는 새로 지어 그려요.
+            </li>
+            <li>
+              • 완성한 4컷 맨 아래에 “출처: 언론사명”으로 원문 링크를 남겨요.
+            </li>
+            <li>
+              • 칼럼·사설·인터뷰, 사진·영상 위주 기사, 유료·로그인 기사는 만들
+              수 없어요.
+            </li>
+          </ul>
+          <Button size="lg" className="w-full" type="submit" disabled={sending}>
+            <Newspaper aria-hidden />
+            {sending ? "기사를 읽는 중이에요…" : "4컷으로 만들기"}
+          </Button>
+          {error && <ErrorText message={error} />}
+          <Button variant="link" className="text-muted-foreground" asChild>
+            <Link href="/record">녹음해서 만들기</Link>
+          </Button>
         </div>
-        <label className="flex w-full flex-col gap-2 text-left text-base font-medium">
-          기사 주소
-          <input
-            type="url"
-            inputMode="url"
-            name="url"
-            required
-            placeholder="https://news.example.com/article/123"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            disabled={sending}
-            className="h-12 w-full rounded-lg border border-border bg-background px-4 text-base font-normal"
-          />
-        </label>
-        <ConceptPicker value={concept} onChange={setConcept} />
-        <DialectPicker value={dialect} onChange={setDialect} />
-        <ul className="flex w-full flex-col gap-1 text-left text-sm text-muted-foreground">
-          <li>
-            • 기사에서는 사실만 가져오고, 이야기·인물·대사는 새로 지어 그려요.
-          </li>
-          <li>
-            • 완성한 4컷 맨 아래에 “출처: 언론사명”으로 원문 링크를 남겨요.
-          </li>
-          <li>
-            • 칼럼·사설·인터뷰, 사진·영상 위주 기사, 유료·로그인 기사는 만들 수
-            없어요.
-          </li>
-        </ul>
-        <Button size="lg" className="w-full" type="submit" disabled={sending}>
-          <Newspaper aria-hidden />
-          {sending ? "기사를 읽는 중이에요…" : "4컷으로 만들기"}
-        </Button>
-        {error && <ErrorText message={error} />}
-        <Button variant="link" className="text-muted-foreground" asChild>
-          <Link href="/record">녹음해서 만들기</Link>
-        </Button>
+        <div className="flex flex-col gap-6">
+          <ConceptPicker value={concept} onChange={setConcept} />
+          <DialectPicker value={dialect} onChange={setDialect} />
+        </div>
       </form>
     </AppShell>
   );

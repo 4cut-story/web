@@ -58,9 +58,13 @@ afterEach(() => {
   });
 });
 
-/** 화면을 열 때 묻는 GPU 상태 확인을 뺀 요청들. */
+/** 화면을 열 때 묻는 GPU 상태 확인과 위 메뉴의 내 정보 읽기를 뺀 요청들. */
 function sent(calls: { method: string; url: string; init?: RequestInit }[]) {
-  return calls.filter((c) => !c.url.includes("gpu-status"));
+  return calls.filter((c) => !c.url.includes("gpu-status") && !isMe(c));
+}
+
+function isMe(c: { method: string; url: string }) {
+  return c.method === "GET" && c.url.endsWith("/api/v1/me");
 }
 
 async function consent() {
@@ -74,15 +78,17 @@ describe("녹음 (FR-001, FR-002)", () => {
     stubMedia(() => Promise.resolve(stream));
     render(<RecordScreen />);
     expect(screen.getByRole("button", { name: "녹음 시작" })).toBeDisabled();
-    expect(screen.getByRole("link", { name: "첫 화면으로" })).toHaveAttribute(
+    // 준비 화면은 다른 화면과 같은 위 메뉴를 보인다
+    expect(screen.getAllByRole("link", { name: "프로필" })[0]).toHaveAttribute(
       "href",
-      "/",
+      "/me",
     );
     await consent();
     await userEvent.click(screen.getByRole("button", { name: "녹음 시작" }));
     expect(await screen.findByText("녹음 중")).toBeInTheDocument();
+    // 녹음하는 동안에는 실수로 나가지 않게 메뉴를 숨긴다
     expect(
-      screen.queryByRole("link", { name: "첫 화면으로" }),
+      screen.queryByRole("link", { name: "프로필" }),
     ).not.toBeInTheDocument();
     expect(FakeRecorder.last.start).toHaveBeenCalledWith(60_000);
     await act(async () => {
@@ -266,7 +272,9 @@ describe("GPU PC 상태 (FR-014)", () => {
       "GET /api/v1/conversations/gpu-status": json({ online: true }),
     });
     render(<RecordScreen />);
-    await vi.waitFor(() => expect(calls).toHaveLength(1));
+    await vi.waitFor(() =>
+      expect(calls.filter((c) => !isMe(c))).toHaveLength(1),
+    );
     expect(screen.queryByText(/쉬고 있어요/)).not.toBeInTheDocument();
   });
 });
