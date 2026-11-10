@@ -8,6 +8,7 @@ import { Avatar } from "@/components/avatar";
 import { ComicCover } from "@/components/comic-cover";
 import { ErrorText } from "@/components/empty-state";
 import { MoreButton } from "@/components/more-button";
+import { ProductionStatus } from "@/components/production-status";
 import { Button } from "@/components/ui/button";
 import { api, errorMessage, imageUrl } from "@/lib/api";
 import type { FollowStats, Post, User } from "@/lib/types";
@@ -169,6 +170,7 @@ export function ProfileView({
         )}
       </section>
       {error && <ErrorText message={error} />}
+      {self && <ProductionStatus />}
       <h2 className="-mb-2 text-base font-semibold">게시한 4컷</h2>
       {posts.items?.length === 0 &&
         (self ? (
