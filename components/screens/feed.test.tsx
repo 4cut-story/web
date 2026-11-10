@@ -3,9 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { FeedScreen } from "./feed-screen";
-import { InboxScreen } from "./inbox-screen";
 import { navigation } from "@/lib/api";
-import { comic, OTHER, post } from "@/test/screen";
+import { OTHER, post } from "@/test/screen";
 import { json, mockFetch } from "@/test/fetch-mock";
 
 afterEach(() => {
@@ -165,51 +164,5 @@ describe("첫 화면 포털", () => {
       await screen.findByRole("link", { name: "녹음하기" }),
     ).toHaveAttribute("href", "/login");
     expect(screen.queryByText("방금 올라온 4컷")).not.toBeInTheDocument();
-  });
-});
-
-describe("스토리 (옛 만화함, FR-012)", () => {
-  it("첫 컷과 제목을 2열로 보여 주고 게시한 것에는 배지를 단다", async () => {
-    mockFetch({
-      "GET /api/v1/comics": json({
-        items: [
-          comic(),
-          comic({ id: "c2", title: null, state: "POSTED", postId: "p1" }),
-        ],
-        nextCursor: null,
-      }),
-    });
-    render(<InboxScreen />);
-    expect(await screen.findByText("게시됨")).toBeInTheDocument();
-    expect(screen.getByText("제목 없음")).toBeInTheDocument();
-    expect(screen.getByAltText("편의점 대소동")).toHaveAttribute(
-      "src",
-      "/api/images/comics/c1?size=thumb",
-    );
-    expect(screen.getByText("편의점 대소동").closest("a")).toHaveAttribute(
-      "href",
-      "/comics/c1",
-    );
-  });
-
-  it("비었으면 안내, 실패하면 오류", async () => {
-    mockFetch({ "GET /api/v1/comics": json({ items: [], nextCursor: null }) });
-    render(<InboxScreen />);
-    expect(
-      await screen.findByText("첫 대화를 녹음해 보세요"),
-    ).toBeInTheDocument();
-  });
-
-  it("불러오지 못하면 오류 코드와 함께 알린다", async () => {
-    mockFetch({
-      "GET /api/v1/comics": json(
-        { error: { code: "INTERNAL", message: "불러오지 못했어요." } },
-        500,
-      ),
-    });
-    render(<InboxScreen />);
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "불러오지 못했어요.(INTERNAL)",
-    );
   });
 });

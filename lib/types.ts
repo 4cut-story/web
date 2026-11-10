@@ -3,7 +3,10 @@ export type Page<T> = { items: T[]; nextCursor: string | null };
 
 export type User = {
   id: string;
+  /** 로그인 아이디(GitHub/Google). 주소 /@아이디에 쓴다. */
   nickname: string;
+  /** 사용자가 정한 닉네임. 없으면 화면은 nickname을 쓴다. */
+  displayName?: string | null;
   avatarUrl: string | null;
   /** 가입 시각 (ISO-8601). */
   joinedAt?: string;

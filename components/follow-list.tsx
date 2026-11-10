@@ -9,7 +9,7 @@ import { ErrorText } from "@/components/empty-state";
 import { FollowButton } from "@/components/follow-button";
 import { MoreButton } from "@/components/more-button";
 import { Button } from "@/components/ui/button";
-import { userPath } from "@/lib/api";
+import { displayName, userPath } from "@/lib/api";
 import type { FollowEntry } from "@/lib/types";
 import { usePaged } from "@/lib/use-paged";
 import { useUsers } from "@/lib/use-users";
@@ -94,7 +94,7 @@ export function FollowList({
           <ul className="flex flex-col">
             {list.items?.map((entry) => {
               const user = users[entry.userId];
-              const name = user?.nickname ?? "알 수 없음";
+              const name = displayName(user) ?? "알 수 없음";
               return (
                 <li
                   key={entry.userId}

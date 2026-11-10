@@ -2,12 +2,14 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { InboxScreen } from "./inbox-screen";
 import { MeScreen } from "./me-screen";
 import { PostScreen } from "./post-screen";
 import { ProfileScreen } from "./profile-screen";
 import { UserPageScreen } from "./user-page-screen";
+import { UserProfileScreen } from "./user-profile-screen";
 import { navigation } from "@/lib/api";
-import { ME, OTHER, post, router } from "@/test/screen";
+import { comic, ME, OTHER, post, router } from "@/test/screen";
 import { json, mockFetch, noContent } from "@/test/fetch-mock";
 
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
@@ -358,15 +360,17 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
   });
 });
 
-describe("사용자 페이지 /@닉네임 (FR-023)", () => {
+describe("사용자 스토리 /@아이디 (FR-023)", () => {
   const STATS = { followers: 3, following: 1, followedByMe: false };
 
-  it("남의 페이지에서 팔로우하고 취소한다", async () => {
+  it("남의 스토리에서 공개 4컷을 보고 팔로우하고 취소한다", async () => {
     mockFetch({
       "GET /api/v1/me": json(ME),
-      "GET /api/v1/users/lookup?nickname=%EC%A7%80%EC%88%98": json(OTHER),
-      "GET /api/v1/users/u2": json(OTHER),
-      "GET /api/v1/follows/u2/stats": json(STATS),
+      "GET /api/v1/users/lookup?nickname=%EC%A7%80%EC%88%98": json({
+        ...OTHER,
+        displayName: "지수짱",
+      }),
+      "GET /api/v1/follows/u2/stats": json({ ...STATS, posts: 1 }),
       "GET /api/v1/posts?authorId=u2": json({
         items: [post()],
         nextCursor: null,
@@ -378,21 +382,29 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
       ),
     });
     render(<UserPageScreen nickname="지수" />);
+    expect(await screen.findByText("지수짱님의 스토리")).toBeInTheDocument();
     await userEvent.click(
       await screen.findByRole("button", { name: "팔로우" }),
     );
     expect(
       await screen.findByRole("button", { name: "팔로우 중" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(screen.getByText(/팔로워 4/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "팔로우 중" }));
     expect(await screen.findByText("취소 실패")).toBeInTheDocument();
     expect(screen.getByAltText("오늘 있었던 일")).toHaveAttribute(
       "src",
       "/api/images/posts/p1?size=thumb",
     );
+    expect(screen.getByRole("link", { name: "프로필 보기" })).toHaveAttribute(
+      "href",
+      "/@%EC%A7%80%EC%88%98/profile",
+    );
     expect(
-      screen.queryByRole("link", { name: "녹음해서 4컷 만들기" }),
+      screen.queryByRole("group", { name: "공개 범위" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "주소 복사" }),
     ).not.toBeInTheDocument();
   });
 
@@ -403,15 +415,14 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     mockFetch({
       "GET /api/v1/me": json({}, 401),
       "GET /api/v1/users/lookup": json(OTHER),
-      "GET /api/v1/users/u2": json(OTHER),
       "GET /api/v1/follows/u2/stats": json(STATS),
       "GET /api/v1/posts?authorId=u2": json({
-        items: [post()],
+        items: [post({ caption: "" })],
         nextCursor: null,
       }),
     });
     render(<UserPageScreen nickname="지수" />);
-    expect(await screen.findByAltText("오늘 있었던 일")).toBeInTheDocument();
+    expect(await screen.findByAltText("편의점 대소동")).toBeInTheDocument();
     expect(await screen.findByRole("link", { name: "로그인" })).toHaveAttribute(
       "href",
       "/login",
@@ -429,7 +440,31 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     expect(toLogin).not.toHaveBeenCalled();
   });
 
-  it("없는 닉네임이면 알린다", async () => {
+  it("4컷이 없으면 알리고, 목록을 못 불러오면 오류를 보인다", async () => {
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users/lookup": json(OTHER),
+      "GET /api/v1/follows/u2/stats": json(STATS),
+      "GET /api/v1/posts?authorId=u2": json({ items: [], nextCursor: null }),
+    });
+    const { unmount } = render(<UserPageScreen nickname="지수" />);
+    expect(
+      await screen.findByText("아직 올린 4컷이 없어요."),
+    ).toBeInTheDocument();
+    unmount();
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users/lookup": json(OTHER),
+      "GET /api/v1/posts": json(
+        { error: { code: "INTERNAL", message: "목록 실패" } },
+        500,
+      ),
+    });
+    render(<UserPageScreen nickname="지수2" />);
+    expect(await screen.findByText(/목록 실패/)).toBeInTheDocument();
+  });
+
+  it("없는 아이디면 알린다", async () => {
     mockFetch({
       "GET /api/v1/me": json({}, 401),
       "GET /api/v1/users/lookup": json(
@@ -455,10 +490,7 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("잠시 문제");
   });
 
-  it("내 페이지에서는 주소 복사, 개인 토큰 관리, 로그아웃, 탈퇴를 하고, 게시한 4컷이 없으면 스토리로 안내한다", async () => {
-    const toLogin = vi
-      .spyOn(navigation, "toLogin")
-      .mockImplementation(() => undefined);
+  it("내 스토리는 전체·공개·비공개 탭으로 나눠 보고 주소를 복사한다", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
       value: { writeText },
@@ -467,39 +499,54 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     const calls = mockFetch({
       "GET /api/v1/me": json(ME),
       "GET /api/v1/users/lookup": json(ME),
-      "GET /api/v1/users/me": json({
-        ...ME,
-        joinedAt: "2026-03-14T01:00:00Z",
+      "GET /api/v1/follows/me/stats": json({ ...STATS, posts: 1, comics: 2 }),
+      "GET /api/v1/comics?state=POSTED": json({
+        items: [comic({ id: "c2", title: "게시한 것", state: "POSTED" })],
+        nextCursor: null,
       }),
-      "GET /api/v1/follows/me/stats": json({
-        ...STATS,
-        posts: 0,
-        likes: 0,
-        comics: 3,
+      "GET /api/v1/comics?state=IN_INBOX": json({
+        items: [],
+        nextCursor: null,
       }),
-      "GET /api/v1/posts?authorId=me": json({ items: [], nextCursor: null }),
-      "POST /auth/logout": noContent(),
-      "DELETE /api/v1/me": noContent(),
+      "GET /api/v1/comics": json({
+        items: [
+          comic(),
+          comic({ id: "c2", title: null, state: "POSTED", postId: "p1" }),
+        ],
+        nextCursor: null,
+      }),
     });
     render(<UserPageScreen nickname="마르코" />);
-    expect(
-      await screen.findByText(/아직 게시한 4컷이 없어요/),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "스토리로 가기" })).toHaveAttribute(
-      "href",
-      "/comics",
+    expect(await screen.findByText("게시됨")).toBeInTheDocument();
+    expect(screen.getByText("제목 없음")).toBeInTheDocument();
+    expect(screen.getByAltText("편의점 대소동")).toHaveAttribute(
+      "src",
+      "/api/images/comics/c1?size=thumb",
     );
-    expect(
-      await screen.findByText(
-        (_, el) =>
-          el?.tagName === "P" &&
-          el.textContent === "2026년 3월 가입 · 만든 4컷 3개 · 게시 안 함 3개",
-      ),
-    ).toBeInTheDocument();
-    expect(screen.getByText("게시물")).toBeInTheDocument();
+    expect(screen.getByText("편의점 대소동").closest("a")).toHaveAttribute(
+      "href",
+      "/comics/c1",
+    );
     expect(
       screen.queryByRole("button", { name: "팔로우" }),
     ).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "공개" }));
+    expect(await screen.findByText("게시한 것")).toBeInTheDocument();
+    expect(screen.queryByText("게시됨")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "공개" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "비공개" }));
+    expect(
+      await screen.findByText("게시하지 않은 4컷이 없어요."),
+    ).toBeInTheDocument();
+    expect(calls.some((c) => c.url === "/api/v1/comics?state=IN_INBOX")).toBe(
+      true,
+    );
+
     await userEvent.click(screen.getByRole("button", { name: "주소 복사" }));
     expect(writeText).toHaveBeenCalledWith(
       `${window.location.origin}/@%EB%A7%88%EB%A5%B4%EC%BD%94`,
@@ -507,6 +554,165 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     expect(
       await screen.findByRole("button", { name: "복사했어요" }),
     ).toBeInTheDocument();
+  });
+
+  it("내 스토리가 비었으면 녹음을 권하고, 못 불러오거나 복사가 실패하면 알린다", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: vi.fn().mockRejectedValue(new Error("no")) },
+      configurable: true,
+    });
+    mockFetch({
+      "GET /api/v1/me": json(ME),
+      "GET /api/v1/users/lookup": json(ME),
+      "GET /api/v1/comics?state=POSTED": json(
+        { error: { code: "INTERNAL", message: "불러오지 못했어요." } },
+        500,
+      ),
+      "GET /api/v1/comics": json({ items: [], nextCursor: null }),
+    });
+    render(<UserPageScreen nickname="마르코" />);
+    expect(
+      await screen.findByText("첫 대화를 녹음해 보세요"),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "주소 복사" }));
+    expect(
+      await screen.findByText("주소를 복사하지 못했어요."),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "공개" }));
+    expect(await screen.findByText(/불러오지 못했어요/)).toBeInTheDocument();
+  });
+});
+
+describe("사용자 프로필 /@아이디/profile", () => {
+  const STATS = { followers: 3, following: 1, followedByMe: false };
+
+  it("남의 프로필은 소개와 숫자, 팔로우, 스토리 링크만 있고 4컷 격자와 계정 관리는 없다", async () => {
+    const calls = mockFetch({
+      "GET /api/v1/me": json(ME),
+      "GET /api/v1/users/lookup": json({
+        ...OTHER,
+        displayName: "지수짱",
+        joinedAt: "2026-03-14T01:00:00Z",
+      }),
+      "GET /api/v1/follows/u2/stats": json({ ...STATS, posts: 2, likes: 5 }),
+      "PUT /api/v1/follows/u2": noContent(),
+    });
+    render(<UserProfileScreen nickname="지수" />);
+    expect(await screen.findByText("지수짱")).toBeInTheDocument();
+    expect(screen.getByText("@지수")).toBeInTheDocument();
+    expect(screen.getByText("2026년 3월 가입")).toBeInTheDocument();
+    expect(await screen.findByText("좋아요")).toBeInTheDocument();
+    expect(screen.queryByText("만든 4컷")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "스토리 보기" })).toHaveAttribute(
+      "href",
+      "/@%EC%A7%80%EC%88%98",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "팔로우" }));
+    expect(
+      await screen.findByRole("button", { name: "팔로우 중" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /4컷/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", { name: "닉네임" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "탈퇴하기" }),
+    ).not.toBeInTheDocument();
+    expect(calls.some((c) => c.url.startsWith("/api/v1/posts"))).toBe(false);
+  });
+
+  it("로그인하지 않았으면 로그인 버튼이 있다", async () => {
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users/lookup": json(OTHER),
+      "GET /api/v1/follows/u2/stats": json(STATS),
+    });
+    render(<UserProfileScreen nickname="지수" />);
+    expect(await screen.findByRole("link", { name: "로그인" })).toHaveAttribute(
+      "href",
+      "/login",
+    );
+    expect(
+      screen.queryByRole("button", { name: "팔로우" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("없는 아이디나 다른 오류를 알린다", async () => {
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users/lookup": json(
+        { error: { code: "NOT_FOUND", message: "찾을 수 없어요." } },
+        404,
+      ),
+    });
+    const { unmount } = render(<UserProfileScreen nickname="없는사람" />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "없는 사용자예요",
+    );
+    unmount();
+    mockFetch({
+      "GET /api/v1/me": json({}, 401),
+      "GET /api/v1/users/lookup": json(
+        { error: { code: "INTERNAL", message: "잠시 문제" } },
+        500,
+      ),
+    });
+    render(<UserProfileScreen nickname="다른사람" />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("잠시 문제");
+  });
+
+  it("내 프로필에서 닉네임을 바꾸고 비우며, RSS·개인 토큰·로그아웃·탈퇴를 한다", async () => {
+    const toLogin = vi
+      .spyOn(navigation, "toLogin")
+      .mockImplementation(() => undefined);
+    const bodies: unknown[] = [];
+    const calls = mockFetch({
+      "GET /api/v1/me": json(ME),
+      "GET /api/v1/users/lookup": json({
+        ...ME,
+        joinedAt: "2026-03-14T01:00:00Z",
+      }),
+      "GET /api/v1/follows/me/stats": json({
+        ...STATS,
+        posts: 1,
+        likes: 0,
+        comics: 3,
+      }),
+      "PATCH /api/v1/me": (init) => {
+        const body = JSON.parse(String(init?.body)) as {
+          displayName: string | null;
+        };
+        bodies.push(body);
+        return json({ ...ME, displayName: body.displayName ?? undefined });
+      },
+      "POST /auth/logout": noContent(),
+      "DELETE /api/v1/me": noContent(),
+    });
+    render(<UserProfileScreen nickname="마르코" />);
+    expect(await screen.findByText("만든 4컷")).toBeInTheDocument();
+    expect(screen.getByText("게시 안 함")).toBeInTheDocument();
+    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "내 스토리" })).toHaveAttribute(
+      "href",
+      "/@%EB%A7%88%EB%A5%B4%EC%BD%94",
+    );
+    expect(
+      screen.queryByRole("button", { name: "팔로우" }),
+    ).not.toBeInTheDocument();
+
+    const input = screen.getByRole("textbox", { name: "닉네임" });
+    expect(screen.getByRole("button", { name: "저장" })).toBeDisabled();
+    await userEvent.type(input, "  마르코짱 ");
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    expect(
+      await screen.findByRole("button", { name: "저장했어요" }),
+    ).toBeInTheDocument();
+    expect(bodies[0]).toEqual({ displayName: "마르코짱" });
+    expect(screen.getAllByText("마르코짱").length).toBeGreaterThan(0);
+    await userEvent.clear(input);
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    await vi.waitFor(() => expect(bodies[1]).toEqual({ displayName: null }));
+
     expect(screen.getByRole("link", { name: "개인 토큰" })).toHaveAttribute(
       "href",
       "/me/tokens",
@@ -528,36 +734,43 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
     ).toBe(true);
   });
 
-  it("탈퇴나 주소 복사가 실패하면 알린다", async () => {
-    Object.defineProperty(navigator, "clipboard", {
-      value: { writeText: vi.fn().mockRejectedValue(new Error("no")) },
-      configurable: true,
-    });
+  it("닉네임 저장이나 탈퇴가 실패하면 알린다", async () => {
     mockFetch({
       "GET /api/v1/me": json(ME),
       "GET /api/v1/users/lookup": json(ME),
+      "PATCH /api/v1/me": json(
+        { error: { code: "VALIDATION_FAILED", message: "너무 길어요" } },
+        400,
+      ),
       "DELETE /api/v1/me": json(
         { error: { code: "X", message: "탈퇴 실패" } },
         500,
       ),
     });
-    render(<UserPageScreen nickname="마르코" />);
-    await userEvent.click(
-      await screen.findByRole("button", { name: "주소 복사" }),
+    render(<UserProfileScreen nickname="마르코" />);
+    await userEvent.type(
+      await screen.findByRole("textbox", { name: "닉네임" }),
+      "새이름",
     );
-    expect(
-      await screen.findByText("주소를 복사하지 못했어요."),
-    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    expect(await screen.findByText(/너무 길어요/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
     await userEvent.click(screen.getByRole("button", { name: "탈퇴" }));
     expect(await screen.findByText("탈퇴 실패")).toBeInTheDocument();
   });
 });
 
-describe("내 프로필 탭과 예전 프로필 주소", () => {
-  it("/me는 내 페이지 주소로 보낸다", async () => {
+describe("내 프로필·스토리 탭과 예전 프로필 주소", () => {
+  it("/me는 내 프로필 주소로, /comics는 내 스토리 주소로 보낸다", async () => {
     mockFetch({ "GET /api/v1/me": json(ME) });
-    render(<MeScreen />);
+    const { unmount } = render(<MeScreen />);
+    await vi.waitFor(() =>
+      expect(router.replace).toHaveBeenCalledWith(
+        "/@%EB%A7%88%EB%A5%B4%EC%BD%94/profile",
+      ),
+    );
+    unmount();
+    render(<InboxScreen />);
     await vi.waitFor(() =>
       expect(router.replace).toHaveBeenCalledWith(
         "/@%EB%A7%88%EB%A5%B4%EC%BD%94",

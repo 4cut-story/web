@@ -8,6 +8,8 @@ import {
   navigation,
   request,
   userPath,
+  profilePath,
+  displayName,
 } from "./api";
 import { decodeSegment, needsLogin, userPageRewrite } from "./auth-gate";
 import { clock, timeAgo } from "./format";
@@ -126,6 +128,8 @@ describe("로그인 확인 (FR 로그인)", () => {
     expect(needsLogin("/sounds/s1", false)).toBe(false);
     expect(needsLogin("/sounds/s1/edit", false)).toBe(true);
     expect(needsLogin("/@%EB%A7%88%EB%A5%B4%EC%BD%94", false)).toBe(false);
+    expect(needsLogin("/@marco/profile", false)).toBe(false);
+    expect(needsLogin("/@marco/other", false)).toBe(true);
     expect(needsLogin("/u/marco", false)).toBe(false);
     expect(needsLogin("/users/u1", false)).toBe(false);
     expect(needsLogin("/posts/1", false)).toBe(false);
@@ -144,6 +148,15 @@ describe("사용자 페이지 주소", () => {
     expect(userPageRewrite("/@marco/")).toBe("/u/marco");
     expect(userPageRewrite("/@")).toBeNull();
     expect(userPageRewrite("/@a/b")).toBeNull();
+    expect(userPageRewrite("/@marco/profile")).toBe("/u/marco/profile");
+    expect(userPageRewrite("/@marco/profile/")).toBe("/u/marco/profile");
+    expect(profilePath("마르코")).toBe("/@%EB%A7%88%EB%A5%B4%EC%BD%94/profile");
+    expect(displayName({ nickname: "marco" })).toBe("marco");
+    expect(displayName({ nickname: "marco", displayName: " 마르코 " })).toBe(
+      "마르코",
+    );
+    expect(displayName({ nickname: "marco", displayName: "  " })).toBe("marco");
+    expect(displayName(undefined)).toBeUndefined();
     expect(userPageRewrite("/marco")).toBeNull();
     expect(userPath("마르코")).toBe("/@%EB%A7%88%EB%A5%B4%EC%BD%94");
     expect(decodeSegment("%EB%A7%88%EB%A5%B4%EC%BD%94")).toBe("마르코");
