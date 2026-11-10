@@ -281,6 +281,13 @@ export type Comment = {
   createdAt: string;
 };
 
+/** 팔로워·팔로잉 목록의 한 줄 (002 FR-018). */
+export type FollowEntry = {
+  userId: string;
+  followedAt: string;
+  followedByMe: boolean;
+};
+
 export type FollowStats = {
   followers: number;
   following: number;
