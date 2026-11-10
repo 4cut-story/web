@@ -1,9 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * 4컷 이미지에서 첫 컷만 잘라 보여 준다(목록용 썸네일).
- * 이미지는 가로 800 기준으로 제목 띠(0~112) 아래 첫 컷이 112~869에 있다(conversation-service 합성 규격).
- * 세로 margin %는 부모 너비 기준이라, 위로 112/800만큼 올리고 틀을 컷 비율(800:757)로 자른다.
+ * 목록용 썸네일: 4컷의 첫 컷. content-service가 첫 컷만 잘라 폭 480px JPEG(수십 KB)로 만들어 둔 그림을 받아
+ * 컷 비율(800:757) 틀에 채운다. 아직 만들지 못한 예전 썸네일(4컷 전체)이 와도 위쪽(제목·첫 컷)이 보이게 위에 맞춘다.
  */
 export function ComicCover({
   src,
@@ -27,7 +26,10 @@ export function ComicCover({
         src={src}
         alt={alt}
         loading="lazy"
-        className="-mt-[14%] block w-full transition-transform duration-300 group-hover:scale-[1.03]"
+        decoding="async"
+        width={480}
+        height={454}
+        className="block size-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03]"
       />
     </span>
   );

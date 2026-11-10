@@ -203,6 +203,8 @@ describe("이미지 중계", () => {
     );
     expect(response.status).toBe(200);
     expect(calls[0].url).toContain("size=thumb");
+    // 목록 썸네일은 바뀌지 않아 오래 캐시한다
+    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
     expect(response.headers.get("set-cookie")).toContain("fourcut_session=");
   });
 
