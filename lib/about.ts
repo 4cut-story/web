@@ -402,6 +402,11 @@ export type Term = { term: string; meaning: string };
 
 export const GLOSSARY: Term[] = [
   {
+    term: "사이트맵 · 구조화 데이터",
+    meaning:
+      "사이트맵은 검색 엔진에 알려 주는 이 사이트의 공개 주소 목록이에요. 구조화 데이터(JSON-LD)는 페이지에 '이건 누가 언제 올린 게시물'처럼 기계가 읽는 설명을 덧붙이는 형식이에요.",
+  },
+  {
     term: "SSRF 차단",
     meaning:
       "사용자가 넣은 주소를 서버가 대신 열 때, 그 주소가 서버 안쪽(내부망, 클라우드 설정 정보 주소 등)을 가리키게 해서 바깥에서 못 보는 곳을 엿보는 공격을 막는 일이에요. 기사로 만들기는 주소를 IP로 풀어 공개 인터넷 주소일 때만 열어요.",
@@ -1020,6 +1025,18 @@ export const TUNINGS: Tuning[] = [
     fix: "모든 응답에 HSTS, X-Frame-Options·frame-ancestors, nosniff, Referrer-Policy, Permissions-Policy(마이크는 이 사이트만)를 붙이고 x-powered-by를 껐어요.",
     before: "보안 헤더 0개",
     after: "6개",
+  },
+  {
+    icon: Search,
+    kind: "품질",
+    title: "검색에 안 잡히던 공개 4컷",
+    problem:
+      "누구나 볼 수 있게 올린 4컷도 구글 검색에 거의 나오지 않았고, 링크를 공유하면 어느 게시물이든 제목이 '4cut story' 하나로만 보였어요.",
+    cause:
+      "화면이 브라우저에서 데이터를 불러 그려서, 검색 로봇이 받은 HTML에는 페이지마다 다른 제목·설명·대표 그림이 없었어요. 사이트맵과 robots.txt도 없었어요.",
+    fix: "게시물·사용자·캐릭터·배경음 페이지는 서버가 로그인 없이 내용을 읽어 제목·설명·대표 주소(canonical)·공유 그림(첫 컷)을 HTML 머리말에 넣어요. 전체 공개 게시물·캐릭터·배경음을 모은 사이트맵을 요청 때 만들어 한 시간 두고, 로그인해야 보이는 화면과 팔로워 공개 게시물은 검색에서 빼요. 게시물·사용자 페이지에는 구조화 데이터(JSON-LD)를 붙였어요.",
+    before: "페이지 제목 1가지, 사이트맵 없음",
+    after: "페이지마다 제목·공유 그림, 사이트맵 주소 4,807개",
   },
   {
     icon: Images,

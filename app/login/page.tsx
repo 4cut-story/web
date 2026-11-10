@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
+
 import { Awaited } from "@/components/awaited";
 import { LoginScreen } from "@/components/screens/login-screen";
+import { PRIVATE_PAGE } from "@/lib/seo";
+
+export const metadata: Metadata = { title: "로그인", ...PRIVATE_PAGE };
 
 export default function Page({
   searchParams,

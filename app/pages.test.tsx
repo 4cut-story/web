@@ -34,8 +34,12 @@ type AwaitedProps = {
   render: (v: unknown) => ReactNode;
 };
 
-/** 페이지가 돌려준 Awaited 요소의 값을 풀어 화면을 그린다. */
-async function renderAwaited(element: ReactElement) {
+/** 페이지가 돌려준 Awaited 요소의 값을 풀어 화면을 그린다. 구조화 데이터가 함께 있으면(Fragment) 첫 요소가 화면이다. */
+async function renderAwaited(page: ReactElement) {
+  const children = (page.props as { children?: ReactNode }).children;
+  const element = (
+    Array.isArray(children) ? children[0] : page
+  ) as ReactElement;
   const props = element.props as AwaitedProps;
   expect(isValidElement(Awaited(props as never))).toBe(true);
   const resolved = await Resolve(props);

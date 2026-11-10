@@ -1,5 +1,16 @@
+import type { Metadata } from "next";
+
 import { Awaited } from "@/components/awaited";
 import { SoundScreen } from "@/components/screens/sound-screen";
+import { soundMetadata } from "@/lib/server/seo";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  return soundMetadata((await params).id);
+}
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
   return (
