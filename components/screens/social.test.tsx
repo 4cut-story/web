@@ -496,6 +496,11 @@ describe("사용자 페이지 /@닉네임 (FR-023)", () => {
       "href",
       "/me/tokens",
     );
+    // 004 FR-067: 내 프로필에서 RSS 구독으로 간다
+    expect(screen.getByRole("link", { name: "RSS 구독" })).toHaveAttribute(
+      "href",
+      "/rss",
+    );
     await userEvent.click(screen.getByRole("button", { name: "로그아웃" }));
     expect(toLogin).toHaveBeenCalledTimes(1);
     await userEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));

@@ -75,7 +75,8 @@ export const api = {
   get: <T>(path: string) => request<T>(`/api/v1${path}`),
   post: <T>(path: string, body?: unknown) =>
     request<T>(`/api/v1${path}`, { method: "POST", body: body ?? {} }),
-  put: <T>(path: string) => request<T>(`/api/v1${path}`, { method: "PUT" }),
+  put: <T>(path: string, body?: unknown) =>
+    request<T>(`/api/v1${path}`, { method: "PUT", body }),
   del: <T>(path: string) => request<T>(`/api/v1${path}`, { method: "DELETE" }),
   /** 로그인하지 않았으면(401) null. 로그인 화면으로 보내지 않는다. */
   getIfSignedIn: async <T>(path: string): Promise<T | null> => {

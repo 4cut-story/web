@@ -13,6 +13,7 @@ import MePage from "./me/page";
 import FeedPage from "./page";
 import PostPage from "./posts/[id]/page";
 import RecordPage from "./record/page";
+import RssPage from "./rss/page";
 import SamplesPage from "./record/samples/page";
 import SoundPage from "./sounds/[id]/page";
 import SoundsPage from "./sounds/page";
@@ -53,6 +54,7 @@ describe("페이지 연결", () => {
       [InboxPage, "스토리"],
       [RecordPage, "만들기"],
       [ArticlePage, "기사로 만들기"],
+      [RssPage, "RSS 구독"],
       [SamplesPage, "샘플로 만들어 보기"],
       [MePage, "프로필"],
     ];
