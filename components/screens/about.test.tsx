@@ -7,9 +7,10 @@ import { Landing } from "@/components/landing";
 import {
   CHARACTER_IMAGES,
   CHARACTER_SEARCH,
-  CHARACTER_SEARCH_NEXT,
   DECISIONS,
+  DETAILS_URL,
   MODELS,
+  PIPELINE,
   SERVICES,
   TUNINGS,
 } from "@/lib/about";
@@ -88,25 +89,38 @@ describe("서비스 소개 페이지", () => {
       expect(within(search).getByText(step.title)).toBeInTheDocument();
     }
     expect(within(search).getByText("0.30 (채택)")).toBeInTheDocument();
-    expect(within(search).getByText("향후 개선")).toBeInTheDocument();
-    for (const item of CHARACTER_SEARCH_NEXT) {
-      expect(within(search).getByText(item)).toBeInTheDocument();
-    }
   });
 
-  it("모델마다 크기·왜 골랐나·설정값을, 개선마다 원인과 전후 비교를 적는다", () => {
+  it("생성 흐름은 단계마다 짧은 요약만 싣고, 긴 설명은 자세히 보기로 넘긴다", () => {
+    render(<AboutScreen />);
+    const pipeline = screen.getByRole("region", { name: "생성 흐름" });
+    for (const step of PIPELINE) {
+      expect(within(pipeline).getByText(step.summary)).toBeInTheDocument();
+      expect(within(pipeline).queryByText(step.description)).toBeNull();
+      expect(step.summary.length).toBeLessThanOrEqual(100);
+    }
+    const more = within(pipeline).getByRole("link", {
+      name: /자세히 보기/,
+    });
+    expect(more).toHaveAttribute("href", DETAILS_URL);
+    expect(
+      screen.getAllByRole("link", { name: /자세히 보기/ }).length,
+    ).toBeGreaterThanOrEqual(5);
+  });
+
+  it("모델마다 맡은 일과 크기를, 개선마다 전후 비교를 적는다", () => {
     render(<AboutScreen />);
     const models = screen.getByRole("region", { name: "사용한 AI 모델" });
     for (const m of MODELS) {
       expect(within(models).getAllByText(m.name).length).toBeGreaterThan(0);
-      expect(within(models).getByText(m.why)).toBeInTheDocument();
+      expect(within(models).getAllByText(m.role).length).toBeGreaterThan(0);
     }
     expect(within(models).getByLabelText("LLM 대체 순서")).toBeInTheDocument();
     const tuning = screen.getByRole("region", {
       name: "성능 개선과 문제 해결",
     });
     for (const t of TUNINGS) {
-      expect(within(tuning).getByText(t.cause)).toBeInTheDocument();
+      expect(within(tuning).getByText(t.title)).toBeInTheDocument();
       expect(within(tuning).getByText(t.after)).toBeInTheDocument();
     }
     expect(CHARACTER_IMAGES).toBe(42546);
