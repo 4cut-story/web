@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ProductionStatus } from "./production-status";
 import {
   countGroups,
+  itemTitle,
   sourceLabel,
   statusGroup,
   statusHref,
@@ -62,6 +63,16 @@ describe("만드는 현황 규칙", () => {
     expect(statusGroup({ status: "GPU_WAITING" })).toBe("active");
     expect(sourceLabel({ source: "UPLOAD" })).toBe("녹음 파일");
     expect(sourceLabel({ source: "ARTICLE" })).toBe("기사");
+    expect(
+      itemTitle({ status: "DONE", sourceTitle: "기사 제목" }, "만화 제목"),
+    ).toEqual({ text: "만화 제목", placeholder: false });
+    expect(itemTitle({ status: "DRAWING", sourceTitle: " " }).text).toBe(
+      "제목은 완성되면 붙어요",
+    );
+    expect(itemTitle({ status: "DONE" }, "")).toEqual({
+      text: "제목 없는 4컷",
+      placeholder: true,
+    });
     expect(statusHref({ id: "v1", status: "DONE", comicId: "c1" })).toBe(
       "/comics/c1",
     );
@@ -73,7 +84,12 @@ describe("만드는 현황 규칙", () => {
 
 describe("내 프로필 만드는 현황", () => {
   it("진행 중인 것을 먼저 보여 주고 묶음별로 고른다", async () => {
-    mockFetch({
+    const calls = mockFetch({
+      "GET /api/v1/comics?size=50": json({
+        items: [{ id: "c2", title: "편의점 대소동" }],
+        nextCursor: "x",
+      }),
+      "GET /api/v1/comics/c4": json({ id: "c4", title: "오래된 이야기" }),
       "GET /api/v1/conversations?size=50&cursor=n": json({
         items: [conversation({ id: "v4", status: "DONE", comicId: "c4" })],
         nextCursor: null,
@@ -107,10 +123,12 @@ describe("내 프로필 만드는 현황", () => {
       "href",
       "/conversations/v1",
     );
-    expect(screen.queryByText("녹음 파일로 만든 4컷")).not.toBeInTheDocument();
+    expect(screen.getByText("기사")).toBeInTheDocument();
+    expect(screen.queryByText("만들지 못한 4컷")).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: /못 만듦/ }));
-    expect(screen.getByText("녹음 파일로 만든 4컷")).toBeInTheDocument();
+    expect(screen.getByText("만들지 못한 4컷")).toBeInTheDocument();
+    expect(screen.getByText("녹음 파일")).toBeInTheDocument();
     expect(screen.getByText("만들지 못함")).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: /완료/ }));
@@ -120,11 +138,18 @@ describe("내 프로필 만드는 현황", () => {
       "href",
       "/comics/c2",
     );
+    // 완성된 것은 만든 방법 대신 만화 제목이 보인다
+    expect(within(list).getByText("편의점 대소동")).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "더 보기" }));
     expect(await screen.findAllByRole("link")).toHaveLength(2);
     expect(screen.getByRole("button", { name: /전체/ })).toHaveTextContent("4");
     expect(screen.getByText("나에게만 보여요")).toBeInTheDocument();
+    // 목록에 없던 만화만 따로 물어 제목을 채운다
+    expect(await screen.findByText("오래된 이야기")).toBeInTheDocument();
+    expect(
+      calls.filter((c) => c.url.startsWith("/api/v1/comics/")),
+    ).toHaveLength(1);
   });
 
   it("진행 중인 것이 있으면 5초마다 다시 확인한다", async () => {

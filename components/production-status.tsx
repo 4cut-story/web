@@ -17,6 +17,7 @@ import { POLL_MS } from "@/components/screens/progress-screen";
 import { api, errorMessage } from "@/lib/api";
 import {
   countGroups,
+  itemTitle,
   sourceLabel,
   statusGroup,
   statusHref,
@@ -25,6 +26,7 @@ import {
 } from "@/lib/conversation-status";
 import { timeAgo } from "@/lib/format";
 import type { Conversation, Page } from "@/lib/types";
+import { useComicTitles } from "@/lib/use-comic-titles";
 import { useLoad } from "@/lib/use-load";
 import { cn } from "@/lib/utils";
 
@@ -62,24 +64,30 @@ function GroupIcon({ group }: { group: StatusGroup }) {
   );
 }
 
-function Row({ c }: { c: Conversation }) {
+function Row({ c, comicTitle }: { c: Conversation; comicTitle?: string }) {
   const group = statusGroup(c);
   const Icon = SOURCE_ICONS[c.source] ?? Mic;
-  const title = c.sourceTitle || `${sourceLabel(c)}로 만든 4컷`;
+  const { text: title, placeholder } = itemTitle(c, comicTitle);
   return (
     <li>
       <Link
         href={statusHref(c)}
         className="flex flex-col gap-2 rounded-lg border border-border p-3 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
-        <div className="flex min-w-0 items-center gap-2">
-          <Icon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
-          <span className="min-w-0 flex-1 truncate text-sm font-medium">
-            {title}
+        <span
+          className={cn(
+            "truncate text-sm font-medium",
+            placeholder && "font-normal text-muted-foreground",
+          )}
+        >
+          {title}
+        </span>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5">
+            <Icon aria-hidden className="size-3" />
+            {sourceLabel(c)}
           </span>
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {timeAgo(c.createdAt)}
-          </span>
+          <span className="shrink-0">{timeAgo(c.createdAt)}</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <GroupIcon group={group} />
@@ -133,6 +141,9 @@ export function ProductionStatus() {
   const seen = new Set(head.map((c) => c.id));
   const items = [...head, ...extra.filter((c) => !seen.has(c.id))];
   const counts = countGroups(items);
+  const titles = useComicTitles(
+    items.flatMap((c) => (c.status === "DONE" && c.comicId ? [c.comicId] : [])),
+  );
   const anyActive = head.some((c) => statusGroup(c) === "active");
   const next = cursor === undefined ? first.data?.nextCursor : cursor;
   const filter: Filter = picked ?? (counts.active > 0 ? "active" : "all");
@@ -227,7 +238,11 @@ export function ProductionStatus() {
           ) : (
             <ul className="grid gap-2 md:grid-cols-2">
               {shown.map((c) => (
-                <Row key={c.id} c={c} />
+                <Row
+                  key={c.id}
+                  c={c}
+                  comicTitle={c.comicId ? titles[c.comicId] : undefined}
+                />
               ))}
             </ul>
           )}
