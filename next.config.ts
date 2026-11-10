@@ -19,6 +19,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
+  images: {
+    // /lab 테스트 컷(원본 PNG 한 장에 1MB쯤)을 칸 크기 WebP로 줄여 보낸다. 같은 경로의 그림은 바뀌지 않아 하루 둔다.
+    remotePatterns: [
+      new URL("https://raw.githubusercontent.com/4cut-story/model-runtime/**"),
+    ],
+    minimumCacheTTL: 86400,
+  },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

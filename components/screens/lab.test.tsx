@@ -9,6 +9,7 @@ import {
   orderVariants,
   parseTree,
   isReference,
+  loadAllRounds,
   rawUrl,
   roundTitle,
   splitByReference,
@@ -127,8 +128,12 @@ describe("그림 모델 비교 (/lab)", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "모두 고르기" }));
     const first = screen.getByAltText("schnell NF4 1컷");
-    expect(first).toHaveAttribute(
-      "src",
+    // 원본 PNG 대신 칸 크기로 줄인 그림을 받고, 누르면 원본을 연다
+    expect(first.getAttribute("src")).toContain(
+      encodeURIComponent(rawUrl(`${R}/schnell-nf4/love-07-panel-1.png`)),
+    );
+    expect(first.closest("a")).toHaveAttribute(
+      "href",
       rawUrl(`${R}/schnell-nf4/love-07-panel-1.png`),
     );
     expect(screen.getByAltText("dev NF4 1컷")).toBeInTheDocument();
@@ -149,9 +154,10 @@ describe("그림 모델 비교 (/lab)", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "solo-01" }));
     await userEvent.click(screen.getByRole("button", { name: "schnell NF4" }));
-    expect(screen.getByAltText("schnell NF4 1컷")).toHaveAttribute(
-      "src",
-      rawUrl(`${R}/schnell-nf4/solo-01-panel-1.png`),
+    expect(
+      screen.getByAltText("schnell NF4 1컷").getAttribute("src"),
+    ).toContain(
+      encodeURIComponent(rawUrl(`${R}/schnell-nf4/solo-01-panel-1.png`)),
     );
 
     await userEvent.click(screen.getByRole("button", { name: "채택만" }));
@@ -216,6 +222,33 @@ describe("그림 모델 비교 (/lab)", () => {
     expect(
       await screen.findByRole("heading", { name: "회차 29 그림 모델 비교" }),
     ).toBeInTheDocument();
+  });
+
+  it("서버가 모아 둔 기록을 받으면 GitHub에 따로 묻지 않고 바로 그린다", async () => {
+    mockFetch(ROUTES);
+    const rounds = await loadAllRounds();
+    expect(rounds.map((r) => r.id)).toEqual(["round29"]);
+    const calls = mockFetch({});
+    render(
+      <LabScreen
+        rounds={[...rounds, { ...rounds[0], id: "round28", info: {} }]}
+      />,
+    );
+    expect(
+      screen.getByRole("heading", { name: "회차 29 그림 모델 비교" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "회차 28" }));
+    expect(
+      screen.getByRole("heading", { name: "회차 28" }),
+    ).toBeInTheDocument();
+    expect(calls.filter((c) => c.url.includes("github"))).toEqual([]);
+  });
+
+  it("서버가 기록을 모으는 동안에는 불러오는 화면만 보이고 직접 읽지 않는다", () => {
+    const calls = mockFetch(ROUTES);
+    render(<LabScreen pending />);
+    expect(screen.getByText("불러오는 중이에요…")).toBeInTheDocument();
+    expect(calls.filter((c) => c.url.includes("github"))).toEqual([]);
   });
 
   it("목록을 못 받으면 오류를 보인다", async () => {

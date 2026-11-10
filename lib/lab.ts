@@ -1,6 +1,7 @@
 /**
  * 그림 모델 비교 기록(/lab). 테스트로 그린 컷 그림은 model-runtime 저장소의 평가 브랜치에 올라간다.
- * 브라우저가 그 브랜치 파일 목록과 파일을 GitHub에서 바로 읽으므로, 새 방식의 그림이 올라오면 배포 없이 화면에 나온다.
+ * web 서버가 그 브랜치 파일 목록과 채점 파일을 GitHub에서 모아 몇 분씩 캐시해 두고 화면에 한 번에 넘긴다.
+ * 그래서 새 방식의 그림이 올라오면 배포 없이 몇 분 안에 화면에 나온다. 서버가 못 받으면 브라우저가 직접 읽는다.
  *
  * 폴더 규칙: eval-out/<회차>/<방식>/<편>-panel-<n>.png, 같은 폴더의 timing.json(측정)과 scores.json(채점).
  * 회차 폴더의 round.json(제목·설명·기준 방식)과 panels.json(컷 프롬프트)은 있으면 쓴다.
@@ -215,6 +216,11 @@ export async function loadLab(): Promise<Skeleton[]> {
   return parseTree(
     tree.tree.filter((t) => t.type === "blob").map((t) => t.path),
   );
+}
+
+/** 모든 회차를 채점 파일까지 한 번에 읽는다(서버에서 캐시해 쓴다). */
+export async function loadAllRounds(): Promise<Round[]> {
+  return Promise.all((await loadLab()).map(loadRound));
 }
 
 export type TimingSummary = {
