@@ -188,7 +188,7 @@ export async function profileMetadata(userId: string): Promise<Metadata> {
     return { title: "프로필", robots: NOINDEX };
   }
   return {
-    title: `${user.nickname}님의 4컷`,
+    title: `${displayName(user)}님의 4컷`,
     alternates: { canonical: userPath(user.nickname) },
   };
 }
