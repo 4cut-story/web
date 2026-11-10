@@ -69,7 +69,7 @@ function Row({ c, comicTitle }: { c: Conversation; comicTitle?: string }) {
   const Icon = SOURCE_ICONS[c.source] ?? Mic;
   const { text: title, placeholder } = itemTitle(c, comicTitle);
   return (
-    <li>
+    <li className="min-w-0">
       <Link
         href={statusHref(c)}
         className="flex flex-col gap-2 rounded-lg border border-border p-3 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
@@ -236,7 +236,7 @@ export function ProductionStatus() {
                 : "해당하는 4컷이 없어요."}
             </p>
           ) : (
-            <ul className="grid gap-2 md:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
               {shown.map((c) => (
                 <Row
                   key={c.id}
