@@ -134,7 +134,7 @@ function AccountSection() {
       <h2 id="account-heading" className="text-base font-semibold">
         계정
       </h2>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         <Button asChild variant="outline">
           <Link href="/rss">
             <Rss aria-hidden />
