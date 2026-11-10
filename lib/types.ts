@@ -173,6 +173,8 @@ export type PanelSound = {
   volume: number;
   fadeMs: number;
   loop: boolean;
+  /** 대사 음성(Caption.voice)이 나오는 동안 줄여 둘 크기. 없으면 줄이지 않는다. */
+  duckVolume?: number;
   credit?: {
     author?: string | null;
     license?: string | null;
@@ -235,7 +237,12 @@ export type Caption = {
   text: string;
   startMs: number;
   endMs: number;
+  /** 그 대사를 인물 목소리로 읽은 음성. 자막이 나올 때 틀고, 그동안 배경음을 줄인다. 예전 재생 정보에는 없다. */
+  voice?: CaptionVoice | null;
 };
+
+/** 대사 음성. path는 만화 폴더 기준(voice/{컷}-{대사 순번}.mp3). */
+export type CaptionVoice = { path: string; durationMs: number };
 
 export type Camera = "none" | "push_in" | "pull_out" | "pan_left" | "pan_right";
 

@@ -32,6 +32,7 @@ import {
   prevIndex,
   SLIDE_MS,
   swipe,
+  voicesOf,
 } from "@/lib/live";
 import { LiveAudio, type AudioFactory } from "@/lib/live-audio";
 import type { LivePlayback, PanelSound } from "@/lib/types";
@@ -140,6 +141,24 @@ export function LivePlayer({
     // panels는 불러온 뒤 바뀌지 않는다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, index, panel]);
+
+  // 대사 음성: 자막이 나오는 시각에 틀고, 컷을 넘기거나 멈추면 끊는다. 다음 컷 음성은 미리 받는다
+  useEffect(() => {
+    if (!playing || !panel) {
+      return;
+    }
+    const a = player();
+    voicesOf(kind, id, panels[index + 1]).forEach((v) => a.preloadVoice(v.url));
+    const timers = voicesOf(kind, id, panel).map((v) =>
+      setTimeout(() => a.voice(v.url), v.atMs),
+    );
+    return () => {
+      timers.forEach(clearTimeout);
+      a.stopVoice();
+    };
+    // panels는 불러온 뒤 바뀌지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing, index, panel, kind, id]);
 
   // 자동 넘기기. 마지막 컷이 끝나면 멈추고 소리를 줄인다.
   useEffect(() => {

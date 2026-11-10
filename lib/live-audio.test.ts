@@ -192,4 +192,65 @@ describe("라이브 모드 배경음", () => {
     });
     expect(() => audio.start()).not.toThrow();
   });
+
+  it("FR-050: 대사 음성이 나오는 동안 배경음을 줄이고, 끝나면 되돌린다", () => {
+    const { f, audios, gains } = factory(true);
+    const audio = new LiveAudio(f);
+    audio.start();
+    audio.play({ ...sound("a"), duckVolume: 0.2 });
+    const bg = gains[1];
+    audio.preloadVoice("/v/1");
+    audio.preloadVoice("/v/1");
+    expect(audios).toHaveLength(2);
+    audio.voice("/v/1");
+    expect(audios).toHaveLength(2);
+    expect(audios[1].play).toHaveBeenCalled();
+    expect(audio.isSpeaking()).toBe(true);
+    expect(bg.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0.2, 0.25);
+    (audios[1] as unknown as { onended: () => void }).onended();
+    expect(audio.isSpeaking()).toBe(false);
+    expect(bg.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(0.8, 0.25);
+    // 다음 대사가 앞 대사를 끊고, 멈추면 되돌린다
+    audio.voice("/v/2");
+    audio.voice("/v/3");
+    expect(audios[2].pause).toHaveBeenCalled();
+    audio.stopVoice();
+    expect(audios[3].pause).toHaveBeenCalled();
+    expect(audio.isSpeaking()).toBe(false);
+    audio.stopVoice();
+    audio.voice("/v/4");
+    audio.stop();
+    expect(audio.isSpeaking()).toBe(false);
+  });
+
+  it("FR-050: Web Audio가 없으면 대사 동안 배경음 크기를 바로 줄이고, duckVolume이 없으면 그대로 둔다", () => {
+    const { f, audios } = factory(false);
+    const audio = new LiveAudio(f);
+    audio.start();
+    audio.play({ ...sound("a"), duckVolume: 0.2 });
+    audio.voice("/v/1");
+    expect(audios[0].volume).toBeCloseTo(0.2);
+    audio.setVolume(0.5);
+    expect(audios[0].volume).toBeCloseTo(0.1);
+    expect(audios[1].volume).toBeCloseTo(0.5);
+    audio.stopVoice();
+    expect(audios[0].volume).toBeCloseTo(0.4);
+    audio.play(sound("b"));
+    audio.voice("/v/2");
+    expect(audios[2].volume).toBeCloseTo(0.4);
+  });
+
+  it("FR-050: 대사 음성 재생을 막으면 배경음을 되돌린다", async () => {
+    const { f, audios } = factory(false);
+    const audio = new LiveAudio(f);
+    audio.start();
+    audio.play({ ...sound("a"), duckVolume: 0.2 });
+    audio.preloadVoice("/v/1");
+    audios[1].play.mockImplementation(() => Promise.reject(new Error("x")));
+    audio.voice("/v/1");
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(audio.isSpeaking()).toBe(false);
+    expect(audios[0].volume).toBeCloseTo(0.8);
+  });
 });

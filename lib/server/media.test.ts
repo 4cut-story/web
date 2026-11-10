@@ -119,6 +119,26 @@ describe("이미지 중계", () => {
     expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2&frame=b`);
   });
 
+  it("FR-050: 자막 대사 음성은 panel·voice로 받고 그림처럼 오래 둔다", async () => {
+    const calls = mockFetch({
+      [`GET ${GW}/api/v1/posts/${ID}/image`]: json({
+        url: `${STORE}/voice/2-1.mp3?sig`,
+      }),
+      [`GET ${STORE}`]: png(),
+    });
+    const response = await image(
+      anonymous(`/api/images/posts/${ID}?panel=2&voice=1&frame=b`),
+      params({ kind: "posts", id: ID }),
+    );
+    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2&voice=1`);
+    await image(
+      anonymous(`/api/images/posts/${ID}?panel=2&voice=12`),
+      params({ kind: "posts", id: ID }),
+    );
+    expect(calls[2].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2`);
+  });
+
   it.each(["c", "d"])(
     "FR-044·049: 움직임 컷의 세·네 번째 그림은 frame=%s로 받는다",
     async (frame) => {
