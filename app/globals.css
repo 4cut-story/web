@@ -40,7 +40,7 @@
 
 @theme inline {
   --font-sans:
-    var(--font-pretendard), -apple-system, BlinkMacSystemFont, system-ui,
+    "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui,
     sans-serif;
 
   --color-background: var(--background);

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { pretendard } from "./fonts";
+// Pretendard Variable (OFL-1.1) 동적 서브셋. 자체 호스팅하고 외부 CDN을 부르지 않는다.
+// 한 파일(2MB)을 통째로 받지 않고, 화면에 나온 글자가 든 조각(조각당 수십 KB)만 받는다.
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 import {
   openGraph,
@@ -41,7 +43,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko" className={`${pretendard.variable} h-full`}>
+    <html lang="ko" className="h-full">
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

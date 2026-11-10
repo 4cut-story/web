@@ -18,8 +18,8 @@ export default defineConfig({
         "components/**/*.{ts,tsx}",
         "lib/**/*.{ts,tsx}",
       ],
-      // layout과 폰트 설정은 next/font 빌드 변환이 필요해 단위 테스트 대신 next build로 확인한다.
-      exclude: ["**/*.test.{ts,tsx}", "app/layout.tsx", "app/fonts.ts"],
+      // layout은 폰트·CSS 빌드 변환이 필요해 단위 테스트 대신 next build로 확인한다.
+      exclude: ["**/*.test.{ts,tsx}", "app/layout.tsx"],
       thresholds: {
         lines: 80,
         branches: 80,

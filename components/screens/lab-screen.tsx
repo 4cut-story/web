@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { AppShell, HOME } from "@/components/app-shell";
@@ -19,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type Skeletons = Awaited<ReturnType<typeof loadLab>>;
+type RoundRef = { id: string; info?: Round["info"] };
 
 // 채점 파일은 그리지 못한 방식의 값을 null로 적는다. null도 빈 값으로 본다.
 const sec = (n?: number | null) => (n == null ? "–" : `${n.toFixed(1)}초`);
@@ -347,12 +349,13 @@ function Compare({
                 <figure key={i} className="flex flex-col gap-1">
                   {path ? (
                     <a href={rawUrl(path)} target="_blank" rel="noreferrer">
-                      {/* 원본 PNG를 GitHub에서 바로 받는다(next/image 최적화를 거치지 않는다). */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      {/* 원본 PNG는 한 장에 1MB쯤이라, 칸 크기에 맞춰 줄인 WebP로 받는다. 누르면 원본을 연다. */}
+                      <Image
                         src={rawUrl(path)}
                         alt={`${variantLabel(v)} ${i + 1}컷`}
-                        loading="lazy"
+                        width={768}
+                        height={768}
+                        sizes="(min-width: 768px) 25vw, 50vw"
                         className="aspect-square w-full rounded-lg border border-border bg-muted object-cover transition-opacity hover:opacity-90"
                       />
                     </a>
@@ -495,14 +498,29 @@ function RoundView({ round }: { round: Round }) {
   );
 }
 
-/** 테스트 렌더 비교 화면: 같은 콘티를 여러 그림 모델로 그린 결과를 컷끼리 나란히 놓고 점수와 함께 본다. */
-export function LabScreen() {
+/**
+ * 테스트 렌더 비교 화면: 같은 콘티를 여러 그림 모델로 그린 결과를 컷끼리 나란히 놓고 점수와 함께 본다.
+ * 서버가 모아 둔 기록(rounds)을 받으면 그대로 그리고, 없으면 브라우저가 GitHub에서 직접 읽는다.
+ * pending은 서버가 기록을 모으는 동안 보이는 불러오는 화면이다.
+ */
+export function LabScreen({
+  rounds: given,
+  pending = false,
+}: {
+  rounds?: Round[];
+  pending?: boolean;
+}) {
+  const rounds = given?.length ? given : undefined;
   const [skeletons, setSkeletons] = useState<Skeletons>();
-  const [roundId, setRoundId] = useState<string>();
-  const [round, setRound] = useState<Round>();
+  const [roundId, setRoundId] = useState<string | undefined>(rounds?.[0]?.id);
+  const [loaded, setLoaded] = useState<Round>();
   const [error, setError] = useState<string>();
+  const direct = !rounds && !pending;
+  const choices: RoundRef[] | undefined = rounds ?? skeletons;
+  const round = rounds ? rounds.find((r) => r.id === roundId) : loaded;
 
   useEffect(() => {
+    if (!direct) return;
     loadLab()
       .then((s) => {
         setSkeletons(s);
@@ -511,14 +529,14 @@ export function LabScreen() {
       .catch(() =>
         setError("테스트 기록을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요."),
       );
-  }, []);
+  }, [direct]);
 
   useEffect(() => {
     const skeleton = skeletons?.find((s) => s.id === roundId);
     if (!skeleton) return;
     let live = true;
     loadRound(skeleton)
-      .then((r) => live && setRound(r))
+      .then((r) => live && setLoaded(r))
       .catch(() => live && setError("회차 기록을 불러오지 못했어요."));
     return () => {
       live = false;
@@ -535,9 +553,9 @@ export function LabScreen() {
             공개 피드에는 올라가지 않아요. 새 방식이 채점되면 이 화면에 바로
             더해져요.
           </p>
-          {skeletons && skeletons.length > 1 && (
+          {choices && choices.length > 1 && (
             <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
-              {skeletons.map((s) => (
+              {choices.map((s) => (
                 <Chip
                   key={s.id}
                   on={s.id === roundId}
