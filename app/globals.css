@@ -36,6 +36,7 @@
   --ambient-leaf-gold: #e2b23d;
   --ambient-leaf-brown: #8f5a2e;
   --ambient-petal-pale: #fbe1ea;
+  --ambient-screen: #9cc8ff;
 }
 
 @theme inline {
@@ -391,6 +392,134 @@
   }
   75% {
     opacity: 0;
+  }
+}
+
+/* 창빛: 비스듬한 빛줄기가 천천히 밝아졌다 옅어진다 */
+.ambient-sunbeam {
+  background: linear-gradient(to bottom, var(--ambient-light), transparent 85%);
+  filter: blur(14px);
+  mix-blend-mode: screen;
+  transform: rotate(18deg);
+  transform-origin: top center;
+  animation-name: ambient-sunbeam;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes ambient-sunbeam {
+  0%,
+  100% {
+    opacity: 0.06;
+  }
+  50% {
+    opacity: 0.26;
+  }
+}
+
+/* 화면 빛: 그림 전체에 푸른 화면 빛이 고르지 않게 깜빡인다 */
+.ambient-screen {
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    var(--ambient-screen),
+    transparent 70%
+  );
+  mix-blend-mode: soft-light;
+  animation-name: ambient-screen;
+  animation-timing-function: steps(1, end);
+}
+
+@keyframes ambient-screen {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  18% {
+    opacity: 0.42;
+  }
+  37% {
+    opacity: 0.26;
+  }
+  55% {
+    opacity: 0.45;
+  }
+  80% {
+    opacity: 0.34;
+  }
+}
+
+/* 도시 불빛 번짐: 흐릿한 빛 동그라미가 조금씩 떠다니며 밝아졌다 어두워진다 */
+.ambient-bokeh {
+  border-radius: 9999px;
+  background: var(--tint, var(--ambient-warm));
+  filter: blur(3px);
+  animation-name: ambient-bokeh;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes ambient-bokeh {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translate(0, 0) scale(0.9);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translate(
+        calc(var(--dx, 10px) * 0.4),
+        calc(var(--dy, 6px) * 0.4)
+      )
+      scale(1.1);
+  }
+}
+
+/* 구름: 흐릿한 구름이 왼쪽에서 오른쪽으로 아주 천천히 흐른다 */
+.ambient-clouds {
+  border-radius: 9999px;
+  background: var(--ambient-light);
+  filter: blur(14px);
+  opacity: 0.32;
+  animation-name: ambient-clouds;
+  animation-timing-function: linear;
+}
+
+@keyframes ambient-clouds {
+  from {
+    transform: translateX(-60vw);
+  }
+  to {
+    transform: translateX(60vw);
+  }
+}
+
+/* 비눗방울: 테두리만 빛나는 방울이 흔들리며 떠오른다 */
+.ambient-bubbles {
+  border-radius: 9999px;
+  border: 1px solid var(--ambient-screen);
+  box-shadow: 0 0 3px var(--ambient-light);
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--ambient-light),
+    transparent 45%
+  );
+  opacity: var(--alpha, 0.8);
+  animation-name: ambient-bubbles;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes ambient-bubbles {
+  0% {
+    top: 105%;
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(var(--sway, 16px));
+  }
+  100% {
+    top: -10%;
+    transform: translateX(calc(var(--sway, 16px) * -0.4));
   }
 }
 

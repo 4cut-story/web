@@ -238,6 +238,11 @@ export const AMBIENTS: readonly Ambient[] = [
   "meteor",
   "fireworks",
   "lightning",
+  "sunbeam",
+  "screen",
+  "bokeh",
+  "clouds",
+  "bubbles",
   "glow",
 ];
 
@@ -379,6 +384,48 @@ const RECIPES: Record<Ambient, Recipe> = {
     width: [0, 0],
     durationMs: [5200, 5200],
   },
+  // 창빛: 창으로 드는 비스듬한 빛줄기 몇 개가 천천히 밝아졌다 옅어진다
+  sunbeam: {
+    count: 3,
+    y: [-20, -20],
+    x: [8, 70],
+    width: [50, 110],
+    height: [900, 900],
+    durationMs: [7000, 11000],
+  },
+  // 화면 빛: 모니터·텔레비전의 푸른 빛이 그림 전체에 은은하게 깜빡인다
+  screen: {
+    count: 1,
+    y: [0, 0],
+    x: [0, 0],
+    width: [0, 0],
+    durationMs: [3800, 3800],
+  },
+  // 도시 불빛 번짐: 멀리 흐릿한 빛 동그라미가 떠 있다 숨 쉬듯 밝아진다
+  bokeh: {
+    count: 14,
+    y: [8, 70],
+    x: [0, 95],
+    width: [14, 40],
+    durationMs: [6000, 10000],
+  },
+  // 구름: 하늘 위쪽에서 흐릿한 구름이 아주 천천히 옆으로 흐른다
+  clouds: {
+    count: 4,
+    y: [0, 22],
+    x: [0, 100],
+    width: [140, 260],
+    height: [40, 70],
+    durationMs: [45000, 75000],
+  },
+  // 비눗방울: 아래에서 위로 흔들리며 떠오른다
+  bubbles: {
+    count: 16,
+    y: [0, 100],
+    x: [5, 95],
+    width: [8, 18],
+    durationMs: [6000, 10000],
+  },
   // 은은한 빛: 흐릿한 빛 방울이 천천히 떠다닌다(다른 효과가 없는 컷)
   glow: {
     count: 10,
@@ -397,6 +444,7 @@ const LAYERED: readonly Ambient[] = [
   "leaves",
   "dust",
   "fireflies",
+  "bubbles",
 ];
 
 /**
@@ -408,6 +456,8 @@ const BEHIND: readonly Ambient[] = [
   "twinkle",
   "meteor",
   "fireworks",
+  "bokeh",
+  "clouds",
 ];
 
 export function ambientBehind(type: Ambient): boolean {
@@ -430,6 +480,12 @@ const TINTS: Partial<Record<Ambient, readonly string[]>> = {
     "--ambient-leaf-brown",
   ],
   petals: ["--ambient-petal", "--ambient-petal-pale", "--ambient-light"],
+  bokeh: [
+    "--ambient-warm",
+    "--ambient-glow",
+    "--ambient-screen",
+    "--ambient-light",
+  ],
 };
 
 /** 같은 컷은 늘 같은 자리에 둔다(화면이 다시 그려져도 알갱이가 튀지 않는다). */
