@@ -21,6 +21,7 @@ export type ConversationStatus =
   | "SELECTING"
   | "SCRIPTING"
   | "DRAWING"
+  | "SPEAKING"
   | "COMPOSING"
   | "DONE"
   | "GPU_WAITING"
@@ -45,6 +46,8 @@ export type Conversation = {
   /** 기사로 만든 대화의 원문 주소와 제목. 녹음이면 없다. */
   sourceUrl?: string | null;
   sourceTitle?: string | null;
+  /** 대사 읽기(SPEAKING) 단계가 있는 대화인지. 예전 서버는 주지 않는다. */
+  voiced?: boolean;
 };
 
 /** 말풍선 대사 사투리. 없거나 NONE이면 사투리로 바꾸지 않는다. */

@@ -34,6 +34,8 @@ export function statusLabel(
       return "대사 쓰는 중";
     case "DRAWING":
       return "그리는 중";
+    case "SPEAKING":
+      return "목소리 입히는 중";
     case "COMPOSING":
       return "말풍선 넣는 중";
     case "GPU_WAITING":

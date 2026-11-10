@@ -43,6 +43,7 @@ describe("만드는 현황 규칙", () => {
       "SELECTING",
       "SCRIPTING",
       "DRAWING",
+      "SPEAKING",
       "COMPOSING",
       "GPU_WAITING",
       "DONE",
@@ -50,7 +51,7 @@ describe("만드는 현황 규칙", () => {
       "NO_SCENE",
     ];
     expect(countGroups(all.map((status) => ({ status })))).toEqual({
-      active: 8,
+      active: 9,
       done: 1,
       failed: 2,
     });

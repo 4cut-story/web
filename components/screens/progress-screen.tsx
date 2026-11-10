@@ -16,6 +16,7 @@ const STEPS: { status: ConversationStatus; label: string }[] = [
   { status: "SELECTING", label: "장면 고르는 중" },
   { status: "SCRIPTING", label: "대사 쓰는 중" },
   { status: "DRAWING", label: "그리는 중" },
+  { status: "SPEAKING", label: "목소리 입히는 중" },
   { status: "COMPOSING", label: "4컷 완성" },
 ];
 
@@ -29,6 +30,12 @@ const ORDER: ConversationStatus[] = [
 const FINAL: ConversationStatus[] = ["DONE", "FAILED", "NO_SCENE"];
 
 export const POLL_MS = 5000;
+
+/** 목소리 단계는 대사를 읽는 대화에만 보인다. */
+function stepsOf(c: Conversation) {
+  const voiced = c.voiced === true || c.stage === "SPEAKING";
+  return STEPS.filter((s) => voiced || s.status !== "SPEAKING");
+}
 
 type StepState = "done" | "running" | "failed" | "waiting";
 
@@ -104,7 +111,7 @@ export function ProgressScreen({ id }: { id: string }) {
             />
           </div>
           <ol className="flex flex-col gap-3">
-            {STEPS.map((step) => {
+            {stepsOf(c).map((step) => {
               const state = stepState(c, step.status);
               return (
                 <li
