@@ -6,6 +6,7 @@ import CharacterPage, {
   generateMetadata as characterMeta,
 } from "./characters/[id]/page";
 import PostPage, { generateMetadata as postMeta } from "./posts/[id]/page";
+import manifest from "./manifest";
 import robots from "./robots";
 import sitemap from "./sitemap";
 import SoundPage, { generateMetadata as soundMeta } from "./sounds/[id]/page";
@@ -63,6 +64,13 @@ describe("검색 노출 공통", () => {
       expect.arrayContaining(["/api/", "/me", "/comics", "/conversations"]),
     );
     expect(r.sitemap).toBe("https://4cut.java21.net/sitemap.xml");
+  });
+
+  it("웹 앱 매니페스트는 브랜드 아이콘과 색을 알린다", () => {
+    const m = manifest();
+    expect(m.name).toBe("4cut story");
+    expect(m.icons?.map((i) => i.src)).toContain("/icons/icon-512.png");
+    expect(m.icons?.some((i) => i.purpose === "maskable")).toBe(true);
   });
 
   it("sitemap.xml은 요청 때 만든다", async () => {
