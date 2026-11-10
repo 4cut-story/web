@@ -342,7 +342,7 @@ describe("대사 음성 (FR-050)", () => {
     expect(voiceUrl("comics", "c", null)).toBe(null);
   });
 
-  it("넓은 그림 컷 자막의 음성만 자막 시작 시각에 튼다", () => {
+  it("자막의 음성을 자막 시작 시각에 튼다. 1:1 컷도 음성은 튼다", () => {
     const panel = {
       index: 1,
       role: "기",
@@ -365,7 +365,10 @@ describe("대사 음성 (FR-050)", () => {
     expect(voicesOf("posts", "p1", panel)).toEqual([
       { atMs: 300, url: "/api/images/posts/p1?panel=1&voice=1" },
     ]);
-    expect(voicesOf("posts", "p1", { ...panel, aspect: "1:1" })).toEqual([]);
+    expect(voicesOf("posts", "p1", { ...panel, aspect: "1:1" })).toEqual([
+      { atMs: 300, url: "/api/images/posts/p1?panel=1&voice=1" },
+    ]);
+    expect(captionAt({ ...panel, aspect: "1:1" }, 400)).toBe(null);
     expect(voicesOf("posts", "p1", undefined)).toEqual([]);
   });
 });

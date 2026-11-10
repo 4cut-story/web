@@ -210,7 +210,7 @@ export type LivePanel = {
   effect?: PanelSound | null;
   /** 그림 비율. 16:9는 라이브 전용 넓은 그림(말풍선 없음)이라 captions를 자막으로 보여 준다. 없으면 1:1. */
   aspect?: "1:1" | "16:9";
-  /** 컷 안 대사 자막 (aspect 16:9일 때). */
+  /** 컷 안 대사 자막. 16:9는 글자를 보여 주고, 1:1(말풍선 그림)은 글자 없이 음성만 튼다. */
   captions?: Caption[];
   /** 컷을 보여 주는 동안 그림을 천천히 확대·이동하는 방향. */
   camera?: Camera;
