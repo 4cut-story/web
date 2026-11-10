@@ -97,7 +97,7 @@ export function BottomNav({ tab }: { tab: Tab }) {
  * 왼쪽에 로고와 메뉴, 오른쪽 끝에 주요 행동(만들기·로그인)과 GitHub. 순서는 하단 탭과 같게 두고
  * 주요 행동만 CSS order로 오른쪽 끝에 보낸다.
  */
-export function TopNav({ tab }: { tab: Tab }) {
+export function TopNav({ tab }: { tab?: Tab }) {
   const tabs = useTabs();
   return (
     <div className="sticky top-0 z-30 hidden border-b border-border bg-background/90 backdrop-blur md:block">

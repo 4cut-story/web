@@ -150,7 +150,8 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
       await screen.findByRole("link", { name: "로그인하고 댓글 달기" }),
     ).toHaveAttribute("href", "/login");
     expect(screen.queryByLabelText("댓글 입력")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "로그인" })).toBeInTheDocument();
+    // 휴대폰 머리의 로그인 버튼과 PC 위 메뉴의 로그인
+    expect(screen.getAllByRole("link", { name: "로그인" })).toHaveLength(2);
     expect(screen.getByRole("link", { name: "첫 화면으로" })).toHaveAttribute(
       "href",
       "/",
@@ -423,10 +424,9 @@ describe("사용자 스토리 /@아이디 (FR-023)", () => {
     });
     render(<UserPageScreen nickname="지수" />);
     expect(await screen.findByAltText("편의점 대소동")).toBeInTheDocument();
-    expect(await screen.findByRole("link", { name: "로그인" })).toHaveAttribute(
-      "href",
-      "/login",
-    );
+    for (const link of await screen.findAllByRole("link", { name: "로그인" })) {
+      expect(link).toHaveAttribute("href", "/login");
+    }
     expect(
       screen.queryByRole("button", { name: "팔로우" }),
     ).not.toBeInTheDocument();
@@ -628,10 +628,9 @@ describe("사용자 프로필 /@아이디/profile", () => {
       "GET /api/v1/follows/u2/stats": json(STATS),
     });
     render(<UserProfileScreen nickname="지수" />);
-    expect(await screen.findByRole("link", { name: "로그인" })).toHaveAttribute(
-      "href",
-      "/login",
-    );
+    for (const link of await screen.findAllByRole("link", { name: "로그인" })) {
+      expect(link).toHaveAttribute("href", "/login");
+    }
     expect(
       screen.queryByRole("button", { name: "팔로우" }),
     ).not.toBeInTheDocument();
