@@ -29,6 +29,9 @@ export type AudioFactory = {
   audio: (src: string) => HTMLAudioElement;
 };
 
+/** 배경음을 줄이고 되돌리는 시간(초). */
+const DUCK_S = 0.25;
+
 type Track = { sound: PanelSound; el: HTMLAudioElement; gain: Gain | null };
 
 const browser: AudioFactory = {
@@ -54,6 +57,8 @@ export class LiveAudio {
   private current: Track | null = null;
   private readonly cache = new Map<string, HTMLAudioElement>();
   private readonly effects = new Set<HTMLAudioElement>();
+  private readonly voices = new Map<string, HTMLAudioElement>();
+  private speaking: HTMLAudioElement | null = null;
   private volume = 1;
   private muted = false;
 
@@ -125,6 +130,76 @@ export class LiveAudio {
     }
   }
 
+  /** 다음에 틀 대사 음성을 미리 받아 둔다. */
+  preloadVoice(url: string): void {
+    if (!this.voices.has(url)) {
+      const el = this.factory.audio(url);
+      el.preload = "auto";
+      this.voices.set(url, el);
+    }
+  }
+
+  /**
+   * 대사 음성을 튼다. 앞 대사가 아직 나오면 끊는다. 나오는 동안 배경음을 duckVolume으로 줄이고 끝나면 되돌린다.
+   */
+  voice(url: string): void {
+    this.stopVoice();
+    const el = this.voices.get(url) ?? this.factory.audio(url);
+    this.voices.delete(url);
+    el.loop = false;
+    if (this.ctx && this.master) {
+      this.ctx.createMediaElementSource(el).connect(this.master);
+    } else {
+      el.volume = this.level();
+    }
+    this.speaking = el;
+    this.duck(true);
+    const done = () => {
+      if (this.speaking === el) {
+        this.speaking = null;
+        this.duck(false);
+      }
+    };
+    el.onended = done;
+    el.onerror = done;
+    try {
+      void el.play()?.catch(done);
+    } catch {
+      done();
+    }
+  }
+
+  /** 나오는 대사 음성을 끊고 배경음을 되돌린다(컷을 넘기거나 멈출 때). */
+  stopVoice(): void {
+    if (this.speaking) {
+      this.speaking.pause();
+      this.speaking = null;
+      this.duck(false);
+    }
+  }
+
+  /** 지금 대사 음성이 나오는지. */
+  isSpeaking(): boolean {
+    return this.speaking !== null;
+  }
+
+  /** 배경음을 대사 동안 줄이거나 되돌린다. duckVolume이 없는 소리는 그대로 둔다. */
+  private duck(on: boolean): void {
+    const track = this.current;
+    if (!track || track.sound.duckVolume === undefined) {
+      return;
+    }
+    const to = on ? track.sound.duckVolume : track.sound.volume;
+    if (this.ctx && track.gain) {
+      const now = this.ctx.currentTime;
+      track.gain.gain.cancelScheduledValues(now);
+      track.gain.gain.setValueAtTime(track.gain.gain.value, now);
+      track.gain.gain.linearRampToValueAtTime(to, now + DUCK_S);
+    } else {
+      track.el.volume = to * this.level();
+    }
+  }
+
   setVolume(volume: number): void {
     this.volume = Math.min(1, Math.max(0, volume));
     this.apply();
@@ -145,6 +220,9 @@ export class LiveAudio {
     this.cache.clear();
     this.effects.forEach((el) => el.pause());
     this.effects.clear();
+    this.speaking?.pause();
+    this.speaking = null;
+    this.voices.clear();
     void this.ctx?.close?.();
     this.ctx = null;
     this.master = null;
@@ -158,7 +236,14 @@ export class LiveAudio {
     if (this.master) {
       this.master.gain.value = this.level();
     } else if (this.current) {
-      this.current.el.volume = this.current.sound.volume * this.level();
+      const base =
+        this.speaking && this.current.sound.duckVolume !== undefined
+          ? this.current.sound.duckVolume
+          : this.current.sound.volume;
+      this.current.el.volume = base * this.level();
+    }
+    if (!this.master && this.speaking) {
+      this.speaking.volume = this.level();
     }
     if (!this.master && this.muted) {
       this.effects.forEach((el) => el.pause());

@@ -444,4 +444,62 @@ describe("보기 모드 버튼", () => {
     fireEvent.click(screen.getByRole("button", { name: "라이브" }));
     expect(onChange).toHaveBeenCalledWith("live");
   });
+
+  it("FR-050: 넓은 그림 컷은 자막이 나올 때 대사 음성을 틀고, 컷을 넘기면 끊는다", async () => {
+    media(false);
+    const first = {
+      ...PLAYBACK.panels[0],
+      aspect: "16:9",
+      durationMs: 5000,
+      motion: null,
+      sound: { ...sound("a"), duckVolume: 0.2 },
+      captions: [
+        {
+          speaker: "민지",
+          text: "안녕",
+          startMs: 300,
+          endMs: 1500,
+          voice: { path: "voice/1-1.mp3", durationMs: 1000 },
+        },
+        { speaker: null, text: "그날 밤", startMs: 1750, endMs: 3000 },
+      ],
+    };
+    const second = {
+      ...PLAYBACK.panels[2],
+      aspect: "16:9",
+      captions: [
+        {
+          text: "응",
+          startMs: 300,
+          endMs: 900,
+          voice: { path: "voice/2-1.mp3", durationMs: 500 },
+        },
+      ],
+    };
+    mockFetch({
+      "GET /api/v1/posts/p1/live": json({
+        version: 1,
+        panels: [first, second],
+      }),
+    });
+    const audio = fakeAudio();
+    render(
+      <LivePlayer
+        kind="posts"
+        id="p1"
+        title="밤하늘"
+        audioFactory={audio.factory}
+      />,
+    );
+    await screen.findByAltText("밤하늘 1컷");
+    vi.useFakeTimers();
+    fireEvent.click(screen.getAllByRole("button", { name: "재생" })[0]);
+    expect(audio.played).toEqual(["/api/images/sounds/a"]);
+    act(() => vi.advanceTimersByTime(300));
+    expect(audio.played).toContain("/api/images/posts/p1?panel=1&voice=1");
+    fireEvent.click(screen.getByRole("button", { name: "다음 컷" }));
+    expect(screen.getByText("2 / 2")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(300));
+    expect(audio.played).toContain("/api/images/posts/p1?panel=2&voice=1");
+  });
 });

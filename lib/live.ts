@@ -2,6 +2,7 @@ import type {
   Ambient,
   Camera,
   Caption,
+  CaptionVoice,
   LivePanel,
   LivePlayback,
   PanelSound,
@@ -98,6 +99,31 @@ export function parallaxAt(
     default:
       return { x: swayX * 2, y: swayY * 2, zoom: 0 };
   }
+}
+
+/** 자막 대사 음성 주소 (web 중계). 경로가 voice/{컷}-{순번}.mp3가 아니면 null. */
+export function voiceUrl(
+  kind: "posts" | "comics",
+  id: string,
+  voice: CaptionVoice | null | undefined,
+): string | null {
+  const m = voice?.path.match(/^voice\/([1-9]|10)-([1-9])\.mp3$/);
+  return m ? `/api/images/${kind}/${id}?panel=${m[1]}&voice=${m[2]}` : null;
+}
+
+/** 컷에서 틀 대사 음성: 자막 시작 시각과 주소. 넓은 그림 컷만 쓴다. */
+export function voicesOf(
+  kind: "posts" | "comics",
+  id: string,
+  panel: LivePanel | undefined,
+): { atMs: number; url: string }[] {
+  if (panel?.aspect !== "16:9") {
+    return [];
+  }
+  return (panel.captions ?? []).flatMap((c) => {
+    const url = voiceUrl(kind, id, c.voice);
+    return url ? [{ atMs: c.startMs, url }] : [];
+  });
 }
 
 /** 배경음 주소 (web 중계). */

@@ -21,6 +21,8 @@ import {
   soundChange,
   soundUrl,
   swipe,
+  voicesOf,
+  voiceUrl,
 } from "./live";
 import type { LivePanel, PanelSound } from "./types";
 
@@ -237,5 +239,44 @@ describe("깊이 패럴랙스 (FR-048)", () => {
     const b = parallaxAt("none", 0, 1500);
     expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(0);
     expect(Math.abs(b.x)).toBeLessThanOrEqual(PARALLAX_SHIFT);
+  });
+});
+
+describe("대사 음성 (FR-050)", () => {
+  it("자막 음성 경로를 컷·순번 주소로 바꾸고, 규칙에 맞지 않으면 버린다", () => {
+    expect(
+      voiceUrl("posts", "p1", { path: "voice/2-3.mp3", durationMs: 900 }),
+    ).toBe("/api/images/posts/p1?panel=2&voice=3");
+    expect(voiceUrl("comics", "c", { path: "../x.mp3", durationMs: 1 })).toBe(
+      null,
+    );
+    expect(voiceUrl("comics", "c", null)).toBe(null);
+  });
+
+  it("넓은 그림 컷 자막의 음성만 자막 시작 시각에 튼다", () => {
+    const panel = {
+      index: 1,
+      role: "기",
+      image: "panels/1.png",
+      durationMs: 6000,
+      sound: null,
+      motion: null,
+      aspect: "16:9",
+      captions: [
+        {
+          text: "a",
+          startMs: 300,
+          endMs: 1500,
+          voice: { path: "voice/1-1.mp3", durationMs: 1000 },
+        },
+        { text: "b", startMs: 1750, endMs: 3000, voice: null },
+        { text: "c", startMs: 3250, endMs: 4000 },
+      ],
+    } as LivePanel;
+    expect(voicesOf("posts", "p1", panel)).toEqual([
+      { atMs: 300, url: "/api/images/posts/p1?panel=1&voice=1" },
+    ]);
+    expect(voicesOf("posts", "p1", { ...panel, aspect: "1:1" })).toEqual([]);
+    expect(voicesOf("posts", "p1", undefined)).toEqual([]);
   });
 });
