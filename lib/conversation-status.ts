@@ -79,3 +79,27 @@ export function countGroups(
   }
   return counts;
 }
+
+/**
+ * 목록에 보일 제목. 완성된 만화 제목 → 기사 제목 → 상태에 맞는 안내 순서.
+ * 만든 방법(녹음·기사)은 제목이 아니라 작은 라벨로 따로 보인다.
+ */
+export function itemTitle(
+  c: Pick<Conversation, "status" | "sourceTitle">,
+  comicTitle?: string,
+): { text: string; placeholder: boolean } {
+  const title = comicTitle?.trim() || c.sourceTitle?.trim();
+  if (title) {
+    return { text: title, placeholder: false };
+  }
+  const group = statusGroup(c);
+  return {
+    text:
+      group === "active"
+        ? "제목은 완성되면 붙어요"
+        : group === "done"
+          ? "제목 없는 4컷"
+          : "만들지 못한 4컷",
+    placeholder: true,
+  };
+}
