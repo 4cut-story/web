@@ -32,6 +32,12 @@ export type AudioFactory = {
    * 때 새로 만든 재생기의 소리를 막아서, 대사마다 새 재생기를 만들면 첫 대사만 들렸다. 없으면 대사마다 새로 만든다.
    */
   blank?: () => HTMLAudioElement;
+  /**
+   * 대사 음성을 미리 다 받아 브라우저 안 주소(blob:)로 돌려준다. 휴대폰 브라우저는 preload를 무시해 대사마다 틀 때 받느라 1초쯤 늦게 시작했고,
+   * 늦은 만큼 컷이 넘어가며 끊겨 어느 컷 대사가 빠질지 매번 달랐다. 없으면 주소를 그대로 튼다.
+   */
+  fetchBlob?: (url: string) => Promise<string>;
+  revoke?: (blobUrl: string) => void;
 };
 
 /** 길이 0인 무음 WAV. 재생기를 누른 순간에 한 번 틀어 두는 데 쓴다. */
@@ -61,6 +67,14 @@ const browser: AudioFactory = {
   },
   audio: (src) => new Audio(src),
   blank: () => new Audio(),
+  fetchBlob: async (url) => {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`voice ${res.status}`);
+    }
+    return URL.createObjectURL(await res.blob());
+  },
+  revoke: (blobUrl) => URL.revokeObjectURL(blobUrl),
 };
 
 /**
@@ -75,6 +89,11 @@ export class LiveAudio {
   private readonly effects = new Set<HTMLAudioElement>();
   private readonly voices = new Map<string, HTMLAudioElement>();
   private speaking: HTMLAudioElement | null = null;
+  /** 받기 시작한 대사(주소 → 받은 blob 주소). 다 받은 것만 ready에 있다. */
+  private readonly fetching = new Set<string>();
+  private readonly ready = new Map<string, string>();
+  /** 앞 대사가 아직 나오는 동안 시각이 된 대사. 앞 대사가 끝나면 차례로 튼다. */
+  private queue: string[] = [];
   /** 대사를 모두 이 재생기로 튼다(누를 때 열어 둔다). 없으면 대사마다 새로 만든다. */
   private voicePlayer: HTMLAudioElement | null = null;
   private volume = 1;
@@ -175,8 +194,24 @@ export class LiveAudio {
     }
   }
 
-  /** 다음에 틀 대사 음성을 미리 받아 둔다. */
+  /** 틀 대사 음성을 미리 받아 둔다. */
   preloadVoice(url: string): void {
+    const fetchBlob = this.factory.fetchBlob;
+    if (fetchBlob) {
+      if (!this.fetching.has(url)) {
+        this.fetching.add(url);
+        fetchBlob(url)
+          .then((blobUrl) => {
+            if (this.fetching.has(url)) {
+              this.ready.set(url, blobUrl);
+            } else {
+              this.factory.revoke?.(blobUrl);
+            }
+          })
+          .catch(() => this.fetching.delete(url));
+      }
+      return;
+    }
     if (!this.voices.has(url)) {
       const el = this.factory.audio(url);
       el.preload = "auto";
@@ -185,16 +220,24 @@ export class LiveAudio {
   }
 
   /**
-   * 대사 음성을 튼다. 앞 대사가 아직 나오면 끊는다. 나오는 동안 배경음을 duckVolume으로 줄이고 끝나면 되돌린다.
+   * 대사 음성을 튼다. 앞 대사가 아직 나오면 끊지 않고 끝난 뒤에 이어 튼다. 나오는 동안 배경음을 duckVolume으로 줄이고 끝나면 되돌린다.
    */
   voice(url: string): void {
-    this.stopVoice();
+    if (this.speaking) {
+      this.queue.push(url);
+      return;
+    }
+    this.speak(url);
+  }
+
+  private speak(url: string): void {
     const shared = this.voicePlayer;
+    const src = this.ready.get(url) ?? url;
     // 미리 받은 재생기는 브라우저 캐시를 채우는 데만 쓰고, 열어 둔 재생기가 있으면 그것으로 튼다
-    const el = shared ?? this.voices.get(url) ?? this.factory.audio(url);
+    const el = shared ?? this.voices.get(url) ?? this.factory.audio(src);
     this.voices.delete(url);
     if (shared) {
-      shared.src = url;
+      shared.src = src;
     }
     el.loop = false;
     if (shared) {
@@ -211,7 +254,12 @@ export class LiveAudio {
     const done = () => {
       if (this.speaking === el) {
         this.speaking = null;
-        this.duck(false);
+        const next = this.queue.shift();
+        if (next) {
+          this.speak(next);
+        } else {
+          this.duck(false);
+        }
       }
     };
     el.onended = done;
@@ -225,6 +273,7 @@ export class LiveAudio {
 
   /** 나오는 대사 음성을 끊고 배경음을 되돌린다(컷을 넘기거나 멈출 때). */
   stopVoice(): void {
+    this.queue = [];
     if (this.speaking) {
       this.speaking.pause();
       this.speaking = null;
@@ -280,6 +329,10 @@ export class LiveAudio {
     this.voicePlayer?.pause();
     this.voicePlayer = null;
     this.voices.clear();
+    this.queue = [];
+    this.ready.forEach((blobUrl) => this.factory.revoke?.(blobUrl));
+    this.ready.clear();
+    this.fetching.clear();
     void this.ctx?.close?.();
     this.ctx = null;
     this.master = null;

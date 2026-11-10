@@ -48,6 +48,9 @@ const WIDE_HEIGHT = 576;
 /** 자막을 맞추는 시계 간격. */
 const TICK_MS = 100;
 
+/** 대사가 늦게 시작해 아직 나오면 컷을 넘기지 않고 기다리는 최대 시간. */
+const VOICE_WAIT_MS = 5000;
+
 /** 이 브라우저가 요소 전체 화면을 지원하는지 (아이폰 Safari 등은 아니다). */
 function fullscreenEnabled(): boolean {
   return typeof document !== "undefined" && Boolean(document.fullscreenEnabled);
@@ -148,7 +151,9 @@ export function LivePlayer({
       return;
     }
     const a = player();
-    voicesOf(kind, id, panels[index + 1]).forEach((v) => a.preloadVoice(v.url));
+    [panel, panels[index + 1], panels[index + 2]].forEach((p) =>
+      voicesOf(kind, id, p).forEach((v) => a.preloadVoice(v.url)),
+    );
     const timers = voicesOf(kind, id, panel).map((v) =>
       setTimeout(() => a.voice(v.url), v.atMs),
     );
@@ -165,14 +170,23 @@ export function LivePlayer({
     if (!playing || !panel) {
       return;
     }
-    const timer = setTimeout(() => {
+    // 대사가 늦게 시작해 아직 나오는 중이면 끝날 때까지(최대 VOICE_WAIT_MS) 컷을 넘기지 않는다
+    let waited = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const advance = () => {
+      if (audio.current?.isSpeaking() && waited < VOICE_WAIT_MS) {
+        waited += TICK_MS;
+        timer = setTimeout(advance, TICK_MS);
+        return;
+      }
       if (index >= count - 1) {
         setPlaying(false);
         audio.current?.play(null);
       } else {
         setIndex(nextIndex(index, count));
       }
-    }, panel.durationMs);
+    };
+    timer = setTimeout(advance, panel.durationMs);
     return () => clearTimeout(timer);
   }, [playing, index, panel, count]);
 
