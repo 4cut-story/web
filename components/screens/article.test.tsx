@@ -32,9 +32,9 @@ describe("기사로 만들기", () => {
     });
     render(<ArticleScreen />);
     expect(
-      screen.getByText(/기사 문장은 그대로 옮기지 않고/),
+      screen.getByText(/사실만 가져오고, 이야기·인물·대사는 새로/),
     ).toBeInTheDocument();
-    expect(screen.getByText(/원문 기사 링크를 남겨요/)).toBeInTheDocument();
+    expect(screen.getByText(/출처: 언론사명/)).toBeInTheDocument();
     await fill(URL_);
     await vi.waitFor(() =>
       expect(router.push).toHaveBeenCalledWith("/conversations/a1"),
@@ -167,13 +167,14 @@ describe("원문 기사 출처", () => {
     },
   };
 
-  it("기사로 만든 만화는 원문 링크를 새 창으로 연다", () => {
-    render(<ComicSource production={production} />);
-    const link = screen.getByRole("link", { name: /30년 떡집의 마지막 날/ });
+  it("기사로 만든 만화는 '출처: 언론사명' 한 줄로 원문 링크를 새 창으로 열고, 기사 제목은 보이지 않는다", () => {
+    const { container } = render(<ComicSource production={production} />);
+    expect(container).toHaveTextContent(/^출처: 예시신문$/);
+    const link = screen.getByRole("link", { name: "예시신문" });
     expect(link).toHaveAttribute("href", URL_);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer nofollow");
-    expect(link).toHaveTextContent("예시신문");
+    expect(container).not.toHaveTextContent("30년 떡집의 마지막 날");
   });
 
   it("제목·사이트가 없으면 주소의 호스트를 쓰고, 녹음 만화나 이상한 주소는 그리지 않는다", () => {

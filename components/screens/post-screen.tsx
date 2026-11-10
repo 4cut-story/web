@@ -110,7 +110,6 @@ export function PostScreen({ id }: { id: string }) {
               }
             />
             <ComicSummary summary={post.summary} />
-            <ComicSource production={post.production} />
             <ComicCast
               cast={post.cast}
               concept={post.concept}
@@ -118,6 +117,7 @@ export function PostScreen({ id }: { id: string }) {
               source={{ kind: "posts", id: post.postId }}
             />
             <ComicProduction production={post.production} />
+            <ComicSource production={post.production} />
           </div>
           <Comments
             postId={post.postId}

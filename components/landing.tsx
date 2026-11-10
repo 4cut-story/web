@@ -217,7 +217,7 @@ function Callouts() {
         icon={Newspaper}
         eyebrow="기사로 만들기"
         title="뉴스 기사도 4컷 만화가 돼요"
-        description="기사 주소만 넣으면 AI가 본문을 읽고 기사 속 사람들의 대화로 바꿔 4컷으로 그려요. 원문 링크도 함께 남겨요."
+        description="기사 주소만 넣으면 AI가 기사에서 사실만 가져와 우리만의 이야기와 대화로 각색해 4컷으로 그려요. 맨 아래에 출처도 남겨요."
         cta="기사로 만들기"
       />
       <Callout

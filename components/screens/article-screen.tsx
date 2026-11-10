@@ -26,7 +26,7 @@ export function looksLikeUrl(text: string): boolean {
 
 /**
  * 기사로 만들기: 기사 주소를 넣으면 서버가 본문을 읽어 기사 속 사람들의 대화로 바꾸고, 녹음과 같은 과정으로 4컷을 그린다.
- * 기사 문장은 그대로 옮기지 않고, 완성한 만화에는 원문 출처 링크를 남긴다.
+ * 기사에서는 사실만 가져와 새 이야기로 각색하고, 완성한 만화 맨 아래에 "출처: 언론사명" 링크를 남긴다 (004 기사 활용 지침).
  */
 export function ArticleScreen() {
   const router = useRouter();
@@ -85,9 +85,16 @@ export function ArticleScreen() {
         <ConceptPicker value={concept} onChange={setConcept} />
         <DialectPicker value={dialect} onChange={setDialect} />
         <ul className="flex w-full flex-col gap-1 text-left text-sm text-muted-foreground">
-          <li>• 기사 문장은 그대로 옮기지 않고 새로 쓴 대사로 그려요.</li>
-          <li>• 완성한 4컷 아래에 원문 기사 링크를 남겨요.</li>
-          <li>• 유료 기사나 로그인해야 보이는 기사는 만들 수 없어요.</li>
+          <li>
+            • 기사에서는 사실만 가져오고, 이야기·인물·대사는 새로 지어 그려요.
+          </li>
+          <li>
+            • 완성한 4컷 맨 아래에 “출처: 언론사명”으로 원문 링크를 남겨요.
+          </li>
+          <li>
+            • 칼럼·사설·인터뷰, 사진·영상 위주 기사, 유료·로그인 기사는 만들 수
+            없어요.
+          </li>
         </ul>
         <Button size="lg" className="w-full" type="submit" disabled={sending}>
           <Newspaper aria-hidden />
