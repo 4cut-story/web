@@ -87,11 +87,14 @@ export function ProfileView({
   user,
   canFollow,
   self = false,
+  links,
   children,
 }: {
   user: User;
   canFollow: boolean;
   self?: boolean;
+  /** 소개 카드의 스토리 버튼 아래에 둘 바로 가기(주인이면 RSS 구독, 개인 토큰). */
+  links?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   const follow = useFollow(user.id);
@@ -132,6 +135,7 @@ export function ProfileView({
               {self ? "내 스토리" : "스토리 보기"}
             </Link>
           </Button>
+          {links}
         </div>
         {follow.error && <ErrorText message={follow.error} />}
       </section>
