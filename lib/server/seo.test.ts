@@ -258,6 +258,7 @@ describe("사이트맵", () => {
       `${SITE}/about`,
       `${SITE}/characters`,
       `${SITE}/sounds`,
+      `${SITE}/voices`,
       `${SITE}/posts/${POST_ID}`,
       `${SITE}/posts/p2xxxxxxxxxxxxxxxxxxx`,
       `${SITE}/@%EB%A7%88%EB%A5%B4%EC%BD%94`,

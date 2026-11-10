@@ -140,13 +140,13 @@ describe("첫 화면 포털", () => {
     expect(link).toHaveAttribute("href", "/posts/p1");
     expect(link).not.toHaveAttribute("target");
     expect(screen.queryByText("오늘 있었던 일")).not.toBeInTheDocument();
-    // 로그인하지 않아도 메뉴에서 캐릭터와 배경음으로 들어갈 수 있다
+    // 로그인하지 않아도 메뉴에서 캐릭터, 배경음, 목소리로 들어갈 수 있다
     const menu = screen.getByRole("navigation", { name: "주요 메뉴" });
     expect(
       within(menu)
         .getAllByRole("link")
         .map((a) => a.textContent),
-    ).toEqual(["홈", "캐릭터", "배경음", "로그인"]);
+    ).toEqual(["홈", "캐릭터", "배경음", "목소리", "로그인"]);
     expect(within(menu).getByRole("link", { name: "배경음" })).toHaveAttribute(
       "href",
       "/sounds",

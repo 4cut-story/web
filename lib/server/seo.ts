@@ -240,6 +240,7 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/about`, changeFrequency: "weekly", priority: 0.8 },
   { url: `${SITE_URL}/characters`, changeFrequency: "daily", priority: 0.6 },
   { url: `${SITE_URL}/sounds`, changeFrequency: "weekly", priority: 0.5 },
+  { url: `${SITE_URL}/voices`, changeFrequency: "monthly", priority: 0.4 },
 ];
 
 /** 목록 하나에서 읽는 최대 쪽 수(50개씩). 사이트맵 한 파일은 5만 개까지라 넉넉하다. */

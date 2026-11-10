@@ -19,6 +19,7 @@
  * - 기사로 만들기: conversation-service #136(article 모듈), web 기사로 만들기 화면
  * - RSS 구독: conversation-service #148(rss 모듈), content-service #21(바로 공개), api-gateway #13, web RSS 구독 화면
  * - 내 프로필 만드는 현황: web(components/production-status.tsx), conversation-service 대화 목록 API
+ * - 가상 인물 목소리(/voices): GPU PC tts-bench 측정(Qwen3-TTS·CosyVoice3·GPT-SoVITS 비교), web voices 화면
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
  * 비밀 값, 내부 주소(IP, 내부 호스트 이름), 운영 기관 이름, 원작 캐릭터 이름은 싣지 않는다.
  * 기능이 바뀌면 이 파일도 함께 고친다(web CLAUDE.md "소개 페이지").
@@ -26,6 +27,7 @@
 
 import {
   AudioLines,
+  AudioWaveform,
   BookOpen,
   Boxes,
   Brain,
@@ -88,7 +90,7 @@ export const CHARACTER_IMAGES = CHARACTER_COUNT * 7 * 6;
 
 export const STATS: Stat[] = [
   { value: "5 + 1", label: "마이크로서비스 + GPU 워커" },
-  { value: "9개", label: "단계별로 골라 쓰는 AI 모델" },
+  { value: "11개", label: "단계별로 골라 쓰는 AI 모델" },
   {
     value: `${CHARACTER_IMAGES.toLocaleString("ko-KR")}장`,
     label: `캐릭터 ${CHARACTER_COUNT.toLocaleString("ko-KR")}명의 참조 그림`,
@@ -391,6 +393,37 @@ export const MODELS: Model[] = [
       "추가해도 4컷 그리는 시간은 5.45초 → 약 5.6초로 거의 같음",
     ],
   },
+  {
+    icon: Wand,
+    name: "Qwen3-TTS VoiceDesign 1.7B",
+    what: "목소리를 글로 설명하면 그 설명에 맞는 새 목소리로 말해 주는 음성 합성 모델",
+    role: "가상 인물 목소리를 처음 한 번 만들기 (남녀 각 30명 계획, 지금 20명)",
+    size: "17억 파라미터, 메모리 약 5GB",
+    where: "GPU PC",
+    io: '"70대 남성, 낮고 따뜻한 목소리" 같은 설명 + 대본 → 그 목소리로 읽은 음성',
+    why: "실제 사람 녹음 없이 목소리를 만들 수 있고, Apache 2.0 라이선스라 서비스에 쓸 수 있어요. 다만 대사 1줄에 약 6.5초가 걸려 말하는 속도보다 느리고, 같은 설명이라도 만들 때마다 목소리가 조금씩 달라서 대사 읽기에는 쓰지 않고 참조 목소리를 만들 때만 써요.",
+    settings: [
+      "인물마다 기본 목소리를 먼저 만들고, 같은 목소리로 기쁨·화남·슬픔·놀람 참조 음성을 더 만들어요",
+      "감정 음성은 기본 목소리와 화자 유사도 0.8 이상을 기준으로 후보를 여러 개 만들어 골라요(첫 20명은 100개 중 93개가 기준을 넘었어요)",
+      "만든 뒤 목소리 높이(Hz)와 말 빠르기를 재서, 설계 설명과 다르게 나온 14명은 설명을 실제 소리에 맞게 고쳤어요",
+      "새 인물이 기존 인물과 너무 닮으면(화자 유사도 0.85 초과) 설명을 바꿔 다시 만들어요",
+    ],
+  },
+  {
+    icon: AudioWaveform,
+    name: "GPT-SoVITS v4",
+    what: "몇 초짜리 참조 음성을 듣고 그 목소리와 말투를 흉내 내 새 문장을 읽는 음성 합성 모델",
+    role: "가상 인물 목소리로 대사 읽기",
+    size: "메모리 약 2.2GB",
+    where: "GPU PC",
+    io: "참조 음성과 그 대본 + 읽을 대사 → 그 목소리로 읽은 음성",
+    why: "한국어 TTS 세 가지를 같은 캐릭터 4명, 같은 대사로 비교했어요. Qwen3-TTS는 발음 오류율 2.7%로 가장 정확했지만 대사 1줄에 6.5초가 걸렸어요. CosyVoice3는 목소리 재현이 가장 좋았지만(화자 유사도 0.85) 모델 설명에 학술용 문구가 있었어요. GPT-SoVITS v4는 발음 오류율 3.5%, 화자 유사도 0.80, 대사 1줄 약 2.7초이고 MIT 라이선스라 이것을 골랐어요.",
+    settings: [
+      "감정 지시 기능이 없어서, 대사의 감정에 맞는 참조 음성(기본·기쁨·화남·슬픔·놀람)을 골라 넣어요",
+      "CUDA Graph를 꺼요(아래 성능 개선 참고)",
+      "첫 20명이 읽은 시험 대사 200줄의 발음 오류율은 평균 0.5%예요",
+    ],
+  },
 ];
 
 /** 콘티를 맡는 LLM의 대체 순서. */
@@ -403,6 +436,21 @@ export const LLM_FALLBACK: { name: string; detail: string }[] = [
 export type Term = { term: string; meaning: string };
 
 export const GLOSSARY: Term[] = [
+  {
+    term: "TTS (음성 합성)",
+    meaning:
+      "글을 사람 목소리로 읽어 주는 기술이에요(Text-to-Speech). 라이브 모드 대사를 가상 인물 목소리로 읽는 데 써요.",
+  },
+  {
+    term: "참조 음성 · 목소리 흉내",
+    meaning:
+      "몇 초짜리 음성을 모델에 들려주면 그 목소리와 말투로 새 문장을 읽어요. 여기서 참조 음성은 실제 사람 녹음이 아니라 글 설명으로 만든 가상 인물의 목소리예요.",
+  },
+  {
+    term: "화자 유사도",
+    meaning:
+      "두 음성이 같은 사람 목소리처럼 들리는 정도를 0~1로 나타낸 값이에요. 1에 가까울수록 같은 목소리예요.",
+  },
   {
     term: "사이트맵 · 구조화 데이터",
     meaning:
@@ -591,6 +639,12 @@ export const VRAM_BUNDLES: Bundle[] = [
     detail:
       "FLUX.2 klein 4B 4비트 + 캐릭터 참조 그림, 최대 약 3.7GB (실패하면 DreamShaper XL Lightning + IP-Adapter, 약 11GB)",
   },
+  {
+    name: "목소리 묶음",
+    gb: 2.2,
+    detail:
+      "GPT-SoVITS v4 (목소리를 처음 만들 때만 Qwen3-TTS VoiceDesign, 약 5GB)",
+  },
 ];
 
 export const VRAM_TOTAL_GB = 16;
@@ -608,6 +662,17 @@ export type Tuning = {
 
 /** 성능 개선과 문제 해결. 수치는 커밋에 남은 GPU PC·운영 측정값이다. */
 export const TUNINGS: Tuning[] = [
+  {
+    icon: AudioWaveform,
+    kind: "속도",
+    title: "대사 읽기가 멈칫하던 문제",
+    problem: "GPT-SoVITS가 대사 하나를 읽을 때마다 16~64초씩 멈춰 있었어요.",
+    cause:
+      "기본 설정인 CUDA Graph(GPU 작업 순서를 미리 녹화해 두고 다시 쓰는 기능)가 대사마다 길이가 달라 매번 새로 녹화하고 있었어요.",
+    fix: "CUDA Graph를 꺼서 대사마다 바로 계산하게 했어요.",
+    before: "대사 1줄 16~64초 지연",
+    after: "대사 1줄 약 2.7초",
+  },
   {
     icon: Zap,
     kind: "속도",
