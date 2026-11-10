@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { AppShell } from "@/components/app-shell";
+import { AppShell, HOME } from "@/components/app-shell";
 import { ErrorText } from "@/components/empty-state";
 import {
   defaultShown,
@@ -369,11 +369,7 @@ export function LabScreen() {
   }, [skeletons, roundId]);
 
   return (
-    <AppShell
-      title="그림 모델 비교"
-      width="wide"
-      back={{ href: "/about", label: "서비스 소개로" }}
-    >
+    <AppShell title="그림 모델 비교" width="wide" back={HOME}>
       <div className="flex flex-col gap-6 pb-8">
         <p className="text-sm text-muted-foreground">
           같은 콘티를 여러 그림 모델과 설정으로 그려 본 테스트 기록이에요. 공개

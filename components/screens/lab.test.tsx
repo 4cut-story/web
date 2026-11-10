@@ -81,6 +81,15 @@ const ROUTES = {
 };
 
 describe("그림 모델 비교 (/lab)", () => {
+  it("제목 앞 ‹ 링크는 첫 화면(/)으로 간다", () => {
+    mockFetch(ROUTES);
+    render(<LabScreen />);
+    expect(screen.getByRole("link", { name: "첫 화면으로" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+  });
+
   it("방식별 점수표와 고른 편의 컷을 나란히 보여 준다", async () => {
     mockFetch(ROUTES);
     render(<LabScreen />);
