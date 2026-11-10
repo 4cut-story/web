@@ -1,12 +1,12 @@
 "use client";
 
-import { Check, Heart, Lock, MessageCircle, Share2 } from "lucide-react";
+import { Check, Eye, Heart, Lock, MessageCircle, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { Avatar } from "@/components/avatar";
 import { api, COMIC_SIZE, imageUrl, userPath } from "@/lib/api";
-import { timeAgo } from "@/lib/format";
+import { count, timeAgo } from "@/lib/format";
 import type { Post, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -114,6 +114,16 @@ export function PostCard({
           <MessageCircle className="size-6" />
           <span className="tabular-nums">{post.commentCount}</span>
         </Link>
+        {post.viewCount !== undefined && (
+          <span
+            aria-label={`조회 ${post.viewCount}회`}
+            title={`조회 ${post.viewCount.toLocaleString("ko")}회`}
+            className="flex h-10 items-center gap-1.5 px-2 text-muted-foreground"
+          >
+            <Eye aria-hidden className="size-6" />
+            <span className="tabular-nums">{count(post.viewCount)}</span>
+          </span>
+        )}
         <button
           type="button"
           aria-label={shared ? "주소를 복사했어요" : "공유"}

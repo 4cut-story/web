@@ -2,7 +2,7 @@
 
 import { EyeOff, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AppShell, HOME, LoginButton } from "@/components/app-shell";
 import { ComicCast } from "@/components/comic-cast";
@@ -16,8 +16,8 @@ import { LivePlayer } from "@/components/live-player";
 import { PostCard } from "@/components/post-card";
 import { Button } from "@/components/ui/button";
 import { ViewModeToggle, type ViewMode } from "@/components/view-mode";
-import { api, errorMessage } from "@/lib/api";
-import type { Post } from "@/lib/types";
+import { api, errorMessage, request } from "@/lib/api";
+import type { Post, ViewCount } from "@/lib/types";
 import { useLoad } from "@/lib/use-load";
 import { useViewer } from "@/lib/use-me";
 import { useUsers } from "@/lib/use-users";
@@ -34,6 +34,27 @@ export function PostScreen({ id }: { id: string }) {
   const [error, setError] = useState<string>();
   const [mode, setMode] = useState<ViewMode>("comic");
   const mine = post !== undefined && post.authorId === me.data?.id;
+  const [views, setViews] = useState<number>();
+
+  // 상세를 열 때 조회 한 번을 남긴다 (만화별 조회수). 같은 방문자가 10분 안에 다시 보면 서버가 세지 않는다.
+  // 봇이면 web이 204로 넘긴다. 실패해도 화면은 그대로 둔다.
+  useEffect(() => {
+    let alive = true;
+    request<ViewCount | undefined>(`/api/v1/posts/${id}/views`, {
+      method: "POST",
+      quiet: true,
+    }).then(
+      (result) => {
+        if (alive && result) {
+          setViews(result.viewCount);
+        }
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [id]);
 
   async function remove(mode: "UNPUBLISH" | "DELETE") {
     setConfirm(undefined);
@@ -97,7 +118,7 @@ export function PostScreen({ id }: { id: string }) {
           <div className="flex flex-col gap-6">
             {post.live && <ViewModeToggle mode={mode} onChange={setMode} />}
             <PostCard
-              post={post}
+              post={views === undefined ? post : { ...post, viewCount: views }}
               author={users[post.authorId]}
               media={
                 post.live && mode === "live" ? (

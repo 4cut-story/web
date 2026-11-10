@@ -28,6 +28,21 @@ const COMMENT = {
 };
 
 describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
+  it("상세를 열면 조회를 한 번 남기고 늘어난 조회수를 보여 준다", async () => {
+    const calls = mockFetch({
+      "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
+      "POST /api/v1/posts/p1/views": json({ viewCount: 8, counted: true }),
+      "GET /api/v1/posts/p1": json(post({ viewCount: 7 })),
+      "GET /api/v1/me": json(null, 401),
+      "GET /api/v1/users": json({ items: [OTHER] }),
+    });
+    render(<PostScreen id="p1" />);
+    expect(await screen.findByLabelText("조회 8회")).toBeInTheDocument();
+    expect(
+      calls.filter((c) => c.method === "POST" && c.url.endsWith("/views")),
+    ).toHaveLength(1);
+  });
+
   it("댓글을 달고 내 댓글을 지운다", async () => {
     mockFetch({
       "GET /api/v1/posts/p1/comments": json({

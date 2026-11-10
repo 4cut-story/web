@@ -1,8 +1,10 @@
+import { Eye } from "lucide-react";
 import Link from "next/link";
 
 import { Avatar } from "@/components/avatar";
 import { ComicCover } from "@/components/comic-cover";
 import { imageUrl } from "@/lib/api";
+import { count } from "@/lib/format";
 import type { Post, User } from "@/lib/types";
 
 /**
@@ -39,6 +41,15 @@ export function PortalGrid({
               <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
                 <Avatar name={name} src={author?.avatarUrl} size={20} />
                 <span className="truncate">{name}</span>
+                {post.viewCount !== undefined && (
+                  <span
+                    aria-label={`조회 ${post.viewCount}회`}
+                    className="ml-auto flex shrink-0 items-center gap-0.5 tabular-nums"
+                  >
+                    <Eye aria-hidden className="size-3.5" />
+                    {count(post.viewCount)}
+                  </span>
+                )}
               </span>
             </Link>
           </li>
