@@ -76,7 +76,6 @@ export function ComicScreen({ id }: { id: string }) {
             />
           )}
           <ComicSummary summary={comic.summary} />
-          <ComicSource production={comic.production} />
           <ComicCast
             cast={comic.cast}
             concept={comic.concept}
@@ -84,6 +83,7 @@ export function ComicScreen({ id }: { id: string }) {
             source={{ kind: "comics", id: comic.id }}
           />
           <ComicProduction production={comic.production} />
+          <ComicSource production={comic.production} />
           {error && <ErrorText message={error} />}
           {/* 만화가 세로로 길어 버튼을 하단 탭 바로 위에 붙여 둔다 */}
           <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] grid grid-cols-2 gap-2 bg-background py-3 md:bottom-0">
