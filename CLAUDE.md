@@ -30,7 +30,7 @@ Node.js LTS, React + Next.js, TypeScript, Vitest + Testing Library, MSW, Playwri
 ## 소개 페이지 (/about)
 
 - `/about`은 짧게 줄인 기술 소개 페이지다. 내용은 `lib/about.ts`에 모여 있다. 화면에는 요약(`summary`, 제목, 전후 비교 등)만 싣고, 긴 설명(`description`, 모델 `why`·`settings`, 개선 문제·원인·해결, 설계 대안·이유)은 "자세히 보기"(`DETAILS_URL`)로 넘긴다.
-- 자세한 내용은 docs README "서비스 자세히 보기"와 org 소개(`.github` 레포 `profile/README.md`)에 둔다. `lib/about.ts`를 고치면 이 두 곳도 함께 고친다.
+- 자세한 내용은 docs 레포 `docs/service-details.md`와 org 소개(`.github` 레포 `profile/README.md`)에 둔다. `lib/about.ts`를 고치면 이 두 곳도 함께 고친다.
 - 서비스 구조, 생성 흐름, 모델·설정값, 성능 개선, 캐릭터 DB 규모가 바뀌는 변경(이 레포든 다른 레포든)을 하면 `lib/about.ts`도 함께 고친다. 다른 레포 변경이면 web에 이어지는 PR을 올린다.
 - 사실은 저장소 설정과 커밋에 남은 측정값만 쓴다. 내부 IP·내부 호스트 이름·비밀 값, 운영 기관 이름(학교 등), "추정" 같은 표현, 원작 캐릭터 이름은 쓰지 않는다(`components/screens/about.test.tsx`가 일부를 검사한다).
 - 처음 보는 사람도 읽을 수 있게 쉬운 말로 쓰고, 전문 용어는 용어 풀이(`GLOSSARY`)에 더한다.
