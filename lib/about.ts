@@ -85,7 +85,7 @@ export type Stat = { value: string; label: string };
 
 /**
  * 소개 페이지의 "자세히 보기" 링크. 단계별 규칙·모델 설정값·개선 기록 전체는
- * 이 파일의 내용을 옮긴 README "서비스 자세히 보기"에 있다.
+ * 이 파일의 내용을 옮긴 docs 레포 docs/service-details.md에 있다.
  */
 export const DETAILS_URL = "https://github.com/4cut-story";
 
@@ -105,7 +105,7 @@ export const STATS: Stat[] = [
 export type PipelineStep = {
   icon: LucideIcon;
   title: string;
-  /** 소개 페이지에 싣는 한두 문장. 자세한 내용은 description(docs README "서비스 자세히 보기"). */
+  /** 소개 페이지에 싣는 한두 문장. 자세한 내용은 description(docs 레포 docs/service-details.md). */
   summary: string;
   description: string;
   models: string[];
