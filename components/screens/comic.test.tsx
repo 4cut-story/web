@@ -304,7 +304,7 @@ describe("4컷 보기와 게시 (FR-013, FR-014)", () => {
     expect(router.push).toHaveBeenCalledWith("/comics");
   });
 
-  it("라이브 정보가 있는 4컷만 모드 버튼이 있고 라이브 모드로 바꾼다", async () => {
+  it("라이브 정보가 있는 4컷은 라이브 모드로 먼저 열리고 만화보기로 바꿀 수 있다", async () => {
     const live = {
       version: 1,
       panels: [
@@ -324,13 +324,18 @@ describe("4컷 보기와 게시 (FR-013, FR-014)", () => {
     });
     render(<ComicScreen id="c1" />);
     expect(
-      await screen.findByRole("button", { name: "만화보기" }),
+      await screen.findByRole("button", { name: "라이브" }),
     ).toHaveAttribute("aria-pressed", "true");
-    await userEvent.click(screen.getByRole("button", { name: "라이브" }));
     expect(await screen.findByAltText("편의점 대소동 1컷")).toHaveAttribute(
       "src",
       "/api/images/comics/c1?panel=1",
     );
+    await userEvent.click(screen.getByRole("button", { name: "만화보기" }));
+    expect(screen.getByRole("button", { name: "만화보기" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.queryByAltText("편의점 대소동 1컷")).toBeNull();
   });
 
   it("예전 4컷은 모드 버튼이 없다", async () => {

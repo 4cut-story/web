@@ -295,7 +295,7 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
     expect(screen.queryByRole("region", { name: "줄거리" })).toBeNull();
   });
 
-  it("라이브 정보가 있는 게시물은 라이브 모드로 볼 수 있다", async () => {
+  it("라이브 정보가 있는 게시물은 라이브 모드로 먼저 열린다", async () => {
     mockFetch({
       "GET /api/v1/posts/p1/comments": json({ items: [], nextCursor: null }),
       "GET /api/v1/posts/p1/live": json({
@@ -316,9 +316,9 @@ describe("게시물 상세와 댓글 (FR-021, FR-022)", () => {
       "GET /api/v1/users": json({ items: [OTHER, ME] }),
     });
     render(<PostScreen id="p1" />);
-    await userEvent.click(
+    expect(
       await screen.findByRole("button", { name: "라이브" }),
-    );
+    ).toHaveAttribute("aria-pressed", "true");
     expect(await screen.findByAltText("편의점 대소동 1컷")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "만화보기" }));
     expect(screen.getByAltText("오늘 있었던 일")).toBeInTheDocument();

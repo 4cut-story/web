@@ -33,7 +33,7 @@ export function PostScreen({ id }: { id: string }) {
   const users = useUsers(post ? [post.authorId] : []);
   const [confirm, setConfirm] = useState<"UNPUBLISH" | "DELETE">();
   const [error, setError] = useState<string>();
-  const [mode, setMode] = useState<ViewMode>("comic");
+  const [mode, setMode] = useState<ViewMode>("live");
   const mine = post !== undefined && post.authorId === me.data?.id;
   const [views, setViews] = useState<number>();
 
