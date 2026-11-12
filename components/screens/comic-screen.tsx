@@ -27,7 +27,7 @@ export function ComicScreen({ id }: { id: string }) {
   const [sheet, setSheet] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string>();
-  const [mode, setMode] = useState<ViewMode>("comic");
+  const [mode, setMode] = useState<ViewMode>("live");
   const comic = loaded.data;
 
   async function remove() {
