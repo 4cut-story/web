@@ -128,7 +128,8 @@ export function RssScreen() {
           <ul className="flex w-full flex-col gap-1 text-sm text-muted-foreground">
             <li>
               • 30분마다 새 기사를 확인해 최신 기사부터 한 번에 3편, 구독마다
-              하루 10편까지 만들어요.
+              하루 10편까지 만들어요. 하루 10편은 하루 동안 고르게 나눠
+              만들어요.
             </li>
             <li>• 처음 등록하면 가장 최근 기사 1편만 만들어요.</li>
             <li>• 최근 3일 안에 만든 기사와 주제가 비슷하면 건너뛰어요.</li>
