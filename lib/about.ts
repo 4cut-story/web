@@ -21,7 +21,7 @@
  * - 기사로 만들기: conversation-service #136(article 모듈), web 기사로 만들기 화면
  * - RSS 구독: conversation-service #148(rss 모듈), content-service #21(바로 공개), api-gateway #13, web RSS 구독 화면
  * - 내 프로필 만드는 현황: web(components/production-status.tsx), conversation-service 대화 목록 API
- * - 가상 인물 목소리(/voices): GPU PC tts-bench 측정(Qwen3-TTS·CosyVoice3·GPT-SoVITS 비교), web voices 화면
+ * - 가상 인물 목소리(/voices): GPU PC tts-bench 측정(Qwen3-TTS·CosyVoice3·GPT-SoVITS 비교, 2026-11-12 40명 13줄 재비교), web voices 화면
  * - 라이브 대사 음성(목소리 배정·감정·자막 시간·배경음 줄이기): common #25, content-service #26, conversation-service #153, model-runtime #55, 꺼 둠
  * - Freesound CC0 배경음 추가·자세한 설명 틀·음량 -23 LUFS: model-runtime #52(claude/freesound-cc0)
  * - 직접 만든 도구(Crowfoot, nginx-manager): 각 GitHub 조직의 소개 글, docs architecture.md "데이터"
@@ -417,19 +417,19 @@ export const MODELS: Model[] = [
   },
   {
     icon: AudioWaveform,
-    name: "GPT-SoVITS v4",
+    name: "CosyVoice3",
     what: "몇 초짜리 참조 음성을 듣고 그 목소리와 말투를 흉내 내 새 문장을 읽는 음성 합성 모델",
     role: "가상 인물 목소리로 대사 읽기",
-    size: "메모리 약 2.2GB",
+    size: "메모리 약 3.7GB",
     where: "GPU PC",
     io: "참조 음성과 그 대본 + 읽을 대사 → 그 목소리로 읽은 음성",
-    why: "한국어 TTS 세 가지를 같은 캐릭터 4명, 같은 대사로 비교했어요. Qwen3-TTS는 발음 오류율 2.7%로 가장 정확했지만 대사 1줄에 6.5초가 걸렸어요. CosyVoice3는 목소리 재현이 가장 좋았지만(화자 유사도 0.85) 모델 설명에 학술용 문구가 있었어요. GPT-SoVITS v4는 발음 오류율 3.5%, 화자 유사도 0.80, 대사 1줄 약 2.7초이고 MIT 라이선스라 이것을 골랐어요.",
+    why: "한국어 TTS 다섯 가지(Qwen3-TTS, CosyVoice3 두 방식, GPT-SoVITS v4·v2ProPlus)를 같은 대사로 비교했어요. 처음에는 가볍고 빠른 GPT-SoVITS v4를 썼는데, 40명 목소리로 같은 대사 13줄을 다시 비교해 보니 CosyVoice3가 발음 오류율 1.6%(v4 2.0%), 화자 유사도 0.82(v4 0.78)로 더 정확하고 더 닮았어요. 사투리 대사 10줄에서도 조금 나았어요(발음 오류율 8.3%, v4 8.9%). 대사 1줄에 약 3.1초로 v4(1.8초)보다 느리지만 대사는 그림보다 먼저 처리돼 기다림이 크지 않고, Apache 2.0 라이선스라 서비스에 쓸 수 있어 바꿨어요.",
     settings: [
-      "감정 지시 기능이 없어서, 대사의 감정에 맞는 참조 음성(기본·기쁨·화남·슬픔·놀람)을 골라 넣어요",
-      "CUDA Graph를 꺼요(아래 성능 개선 참고)",
-      "40명이 읽은 시험 대사의 발음 오류율은 평균 0.5%예요",
-      "대사의 숫자는 한글 읽기로 바꿔 넘겨요(260조 → 이백육십조, 3명 → 세 명). 모델이 아라비아 숫자를 제대로 읽지 못했어요",
-      "GPU PC 워커가 대사마다 같은 PC의 GPT-SoVITS 서버에 읽게 하고 MP3로 바꿔 올려요. 그림 모델은 내리지 않아요",
+      "감정 지시 문장을 넣으면 목소리가 덜 닮아서(화자 유사도 0.76), 대사의 감정에 맞는 참조 음성(기본·기쁨·화남·슬픔·놀람)을 골라 흉내 내게 해요",
+      "대사의 숫자와 영어 약자는 한글 읽기로 바꿔 넘겨요(260조 → 이백육십조, AI → 에이아이)",
+      "대사 음성의 크기를 -16 LUFS로 맞춰 목소리마다 크기가 들쭉날쭉하지 않게 해요",
+      "GPU PC 워커가 대사마다 같은 PC의 CosyVoice3 서버에 읽게 하고 MP3로 바꿔 올려요. 그림 모델은 내리지 않아요(같이 올려도 GPU 메모리 최대 약 11.7GB)",
+      "예전 GPT-SoVITS 서버와 같이 켜 두면 PC 메모리(RAM)가 모자라 그림 모델이 멈춰서, 읽기 서버는 하나만 켜요",
     ],
   },
 ];
@@ -649,9 +649,9 @@ export const VRAM_BUNDLES: Bundle[] = [
   },
   {
     name: "목소리 묶음",
-    gb: 2.2,
+    gb: 3.7,
     detail:
-      "GPT-SoVITS v4 (목소리를 처음 만들 때만 Qwen3-TTS VoiceDesign, 약 5GB)",
+      "CosyVoice3 (목소리를 처음 만들 때만 Qwen3-TTS VoiceDesign, 약 5GB)",
   },
 ];
 
@@ -674,7 +674,8 @@ export const TUNINGS: Tuning[] = [
     icon: AudioWaveform,
     kind: "속도",
     title: "대사 읽기가 멈칫하던 문제",
-    problem: "GPT-SoVITS가 대사 하나를 읽을 때마다 16~64초씩 멈춰 있었어요.",
+    problem:
+      "처음 쓰던 GPT-SoVITS가 대사 하나를 읽을 때마다 16~64초씩 멈춰 있었어요.",
     cause:
       "기본 설정인 CUDA Graph(GPU 작업 순서를 미리 녹화해 두고 다시 쓰는 기능)가 대사마다 길이가 달라 매번 새로 녹화하고 있었어요.",
     fix: "CUDA Graph를 꺼서 대사마다 바로 계산하게 했어요.",

@@ -2,7 +2,7 @@ import data from "./voices-data.json";
 
 /**
  * 가상 인물 목소리(/voices). 실제 사람 녹음 없이 Qwen3-TTS VoiceDesign이 글 설명만으로 만든 목소리를
- * 감정별 참조 음성으로 저장해 두고, 라이브 모드 대사는 GPT-SoVITS v4가 그 참조를 따라 읽는다.
+ * 감정별 참조 음성으로 저장해 두고, 라이브 모드 대사는 CosyVoice3가 그 참조를 따라 읽는다.
  * 음성 파일은 public/voices/{id}/{emotion}.mp3(v4로 읽힌 대사), 목록은 voices-data.json에 둔다.
  */
 export type VoiceGender = "male" | "female";
