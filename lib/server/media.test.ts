@@ -86,7 +86,10 @@ describe("이미지 중계", () => {
       params({ kind: "posts", id: ID }),
     );
     expect(response.status).toBe(200);
-    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    // 로그인하지 않고 받았으면 전체 공개라 public으로 일주일 둔다
+    expect(response.headers.get("cache-control")).toBe(
+      "public, max-age=604800",
+    );
     expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?cast=1`);
   });
 
@@ -115,7 +118,9 @@ describe("이미지 중계", () => {
       anonymous(`/api/images/posts/${ID}?panel=2&frame=b`),
       params({ kind: "posts", id: ID }),
     );
-    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    expect(response.headers.get("cache-control")).toBe(
+      "public, max-age=604800",
+    );
     expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2&frame=b`);
   });
 
@@ -130,7 +135,9 @@ describe("이미지 중계", () => {
       anonymous(`/api/images/posts/${ID}?panel=2&voice=1&frame=b`),
       params({ kind: "posts", id: ID }),
     );
-    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    expect(response.headers.get("cache-control")).toBe(
+      "public, max-age=604800",
+    );
     expect(calls[0].url).toBe(`${GW}/api/v1/posts/${ID}/image?panel=2&voice=1`);
     await image(
       anonymous(`/api/images/posts/${ID}?panel=2&voice=12`),
@@ -223,8 +230,10 @@ describe("이미지 중계", () => {
     );
     expect(response.status).toBe(200);
     expect(calls[0].url).toContain("size=thumb");
-    // 목록 썸네일은 바뀌지 않아 오래 캐시한다
-    expect(response.headers.get("cache-control")).toBe("private, max-age=3600");
+    // 목록 썸네일은 바뀌지 않아 오래 캐시한다. 로그인한 사람의 응답은 private
+    expect(response.headers.get("cache-control")).toBe(
+      "private, max-age=604800",
+    );
     expect(response.headers.get("set-cookie")).toContain("fourcut_session=");
   });
 

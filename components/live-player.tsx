@@ -21,6 +21,7 @@ import {
   ambientOn,
   cameraTransform,
   depthImageUrl,
+  framesNeeded,
   frameAt,
   captionAt,
   isWide,
@@ -28,6 +29,8 @@ import {
   needsCredit,
   nextIndex,
   panelImageUrl,
+  panelSizes,
+  panelSrcSet,
   parallaxOn,
   prevIndex,
   SLIDE_MS,
@@ -322,37 +325,42 @@ export function LivePlayer({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={panelImageUrl(kind, id, p.index)}
+                srcSet={panelSrcSet(panelImageUrl(kind, id, p.index))}
+                sizes={panelSizes(full)}
                 alt={`${title ?? "4컷"} ${p.index}컷`}
                 width={width}
                 height={height}
                 draggable={false}
                 className={`size-full ${pWide && !full ? "object-cover" : "object-contain"}`}
               />
-              {p.motion?.frames.slice(1).map((_, k) => {
-                const n = k + 1;
-                const shown =
-                  i === index &&
-                  moving &&
-                  frameAt(step, p.motion!.frames.length) === n;
-                return (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    key={n}
-                    src={panelImageUrl(kind, id, p.index, n)}
-                    alt=""
-                    aria-hidden
-                    width={width}
-                    height={height}
-                    draggable={false}
-                    data-testid={`frame-${n === 1 ? "b" : "c"}-${p.index}`}
-                    className={`absolute inset-0 size-full ${pWide && !full ? "object-cover" : "object-contain"} transition-opacity ease-in-out`}
-                    style={{
-                      opacity: shown ? 1 : 0,
-                      transitionDuration: `${Math.round(p.motion!.intervalMs * 0.6)}ms`,
-                    }}
-                  />
-                );
-              })}
+              {framesNeeded(i, index) &&
+                p.motion?.frames.slice(1).map((_, k) => {
+                  const n = k + 1;
+                  const shown =
+                    i === index &&
+                    moving &&
+                    frameAt(step, p.motion!.frames.length) === n;
+                  return (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      key={n}
+                      src={panelImageUrl(kind, id, p.index, n)}
+                      srcSet={panelSrcSet(panelImageUrl(kind, id, p.index, n))}
+                      sizes={panelSizes(full)}
+                      alt=""
+                      aria-hidden
+                      width={width}
+                      height={height}
+                      draggable={false}
+                      data-testid={`frame-${n === 1 ? "b" : "c"}-${p.index}`}
+                      className={`absolute inset-0 size-full ${pWide && !full ? "object-cover" : "object-contain"} transition-opacity ease-in-out`}
+                      style={{
+                        opacity: shown ? 1 : 0,
+                        transitionDuration: `${Math.round(p.motion!.intervalMs * 0.6)}ms`,
+                      }}
+                    />
+                  );
+                })}
               {i === index && parallaxOn(p, reduced) && (
                 <DepthParallax
                   images={[

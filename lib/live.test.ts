@@ -15,6 +15,9 @@ import {
   needsCredit,
   nextIndex,
   panelImageUrl,
+  framesNeeded,
+  panelSizes,
+  panelSrcSet,
   parallaxAt,
   parallaxOn,
   PARALLAX_SHIFT,
@@ -370,5 +373,22 @@ describe("대사 음성 (FR-050)", () => {
     ]);
     expect(captionAt({ ...panel, aspect: "1:1" }, 400)).toBe(null);
     expect(voicesOf("posts", "p1", undefined)).toEqual([]);
+  });
+});
+
+describe("컷 그림 크기와 미리 받기", () => {
+  it("srcSet은 정해 둔 폭마다 w를 붙이고, sizes는 전체 화면이면 화면 폭이다", () => {
+    expect(panelSrcSet("/api/images/posts/p1?panel=1")).toBe(
+      "/api/images/posts/p1?panel=1&w=384 384w, /api/images/posts/p1?panel=1&w=640 640w, /api/images/posts/p1?panel=1&w=1024 1024w",
+    );
+    expect(panelSizes(true)).toBe("100vw");
+    expect(panelSizes(false)).toContain("46rem");
+  });
+
+  it("움직임 그림은 지금 컷과 다음 컷만 붙인다", () => {
+    expect(framesNeeded(2, 2)).toBe(true);
+    expect(framesNeeded(3, 2)).toBe(true);
+    expect(framesNeeded(1, 2)).toBe(false);
+    expect(framesNeeded(4, 2)).toBe(false);
   });
 });

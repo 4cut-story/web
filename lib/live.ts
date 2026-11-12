@@ -25,6 +25,29 @@ export function panelImageUrl(
   return `/api/images/${kind}/${id}?panel=${index}${query}`;
 }
 
+/** 컷 그림을 받을 폭. web 중계가 이 폭으로 줄이고 WebP로 바꿔 보낸다(원본은 1024px PNG). */
+export const PANEL_WIDTHS = [384, 640, 1024];
+
+/** 컷 그림 srcSet. 브라우저가 화면 폭과 화소 밀도에 맞는 것을 고른다. */
+export function panelSrcSet(url: string): string {
+  return PANEL_WIDTHS.map((w) => `${url}&w=${w} ${w}w`).join(", ");
+}
+
+/** 재생기 그림 칸 폭: PC는 40rem·46rem 칸(post-screen), 전체 화면과 휴대폰은 화면 폭. */
+export function panelSizes(full: boolean): string {
+  return full
+    ? "100vw"
+    : "(min-width: 1024px) 46rem, (min-width: 768px) 40rem, 100vw";
+}
+
+/**
+ * 움직임 컷의 나머지 그림을 붙여 둘 컷인지. 지금 컷과 다음 컷만 붙여 미리 받고, 나머지는 그 컷에 가까워질 때 받는다. 컷마다 그림이
+ * 서너 장이라 한꺼번에 받으면 게시물 하나에 수십 장이 된다.
+ */
+export function framesNeeded(i: number, current: number): boolean {
+  return i === current || i === current + 1;
+}
+
 /**
  * 움직임 컷에서 step번째 바뀔 때 보여 줄 그림 번호(0부터). 두 장이면 0,1을, 세 장이면 0,1,2,1을 되풀이해 끊기지 않고
  * 오간다 (FR-044).
