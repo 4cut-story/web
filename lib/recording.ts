@@ -1,5 +1,5 @@
 import { api, request } from "./api";
-import type { Concept, Dialect } from "./types";
+import type { Concept, Dialect, FeedDialect } from "./types";
 
 /** 조각 하나의 최대 크기. Ingress 요청 크기 제한(1MB)보다 작게 자른다. */
 export const PART_BYTES = 900_000;
@@ -124,6 +124,12 @@ export const DIALECTS: { value: Dialect; label: string }[] = [
   { value: "CHUNGCHEONG", label: "충청도" },
   { value: "GANGWON", label: "강원도" },
   { value: "SEOUL", label: "서울" },
+];
+
+/** RSS 구독에서 고르는 대사 사투리. 첫 항목(자동)이 기본값이다. */
+export const FEED_DIALECTS: { value: FeedDialect; label: string }[] = [
+  { value: "AUTO", label: "자동" },
+  ...DIALECTS,
 ];
 
 /** 기사 주소로 만들기를 시작한다. 서버가 기사를 읽어 바로 만들기 시작하고, 읽지 못하면 이유를 알린다. */

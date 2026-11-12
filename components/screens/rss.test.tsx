@@ -74,7 +74,7 @@ describe("RSS 구독 (004)", () => {
       url: "https://news.example.com/rss",
       autoPublish: true,
       concept: "NEWSPAPER",
-      dialect: "NONE",
+      dialect: "AUTO",
     });
     expect(screen.getByLabelText("RSS 주소")).toHaveValue("");
   });
