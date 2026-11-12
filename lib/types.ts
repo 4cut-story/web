@@ -54,6 +54,9 @@ export type Conversation = {
 export type Dialect =
   "NONE" | "GYEONGSANG" | "JEOLLA" | "CHUNGCHEONG" | "GANGWON" | "SEOUL";
 
+/** RSS 구독 사투리. AUTO면 서버가 기사마다 골라 절반쯤 사투리를 섞는다. */
+export type FeedDialect = Dialect | "AUTO";
+
 /** 그림체(콘셉트). 없거나 AUTO면 서버가 대화에 맞춰 고른다. */
 export type Concept =
   | "AUTO"
@@ -399,7 +402,7 @@ export type RssFeed = {
   autoPublish: boolean;
   enabled: boolean;
   concept: Concept;
-  dialect: Dialect;
+  dialect: FeedDialect;
   lastCheckedAt: string | null;
   lastError: string | null;
   made: number;

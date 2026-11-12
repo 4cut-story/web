@@ -7,14 +7,14 @@ import { type FormEvent, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { ChoicePicker } from "@/components/choice-picker";
 import { ConceptPicker } from "@/components/concept-picker";
-import { DialectPicker } from "@/components/dialect-picker";
 import { ErrorText } from "@/components/empty-state";
 import { looksLikeUrl } from "@/components/screens/article-screen";
 import { Button } from "@/components/ui/button";
 import { api, errorMessage } from "@/lib/api";
+import { FEED_DIALECTS } from "@/lib/recording";
 import type {
   Concept,
-  Dialect,
+  FeedDialect,
   RssFeed,
   RssFeedItem,
   RssItemStatus,
@@ -54,7 +54,7 @@ export function RssScreen() {
   const [url, setUrl] = useState("");
   const [publish, setPublish] = useState<Publish>("REVIEW");
   const [concept, setConcept] = useState<Concept>("AUTO");
-  const [dialect, setDialect] = useState<Dialect>("NONE");
+  const [dialect, setDialect] = useState<FeedDialect>("AUTO");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string>();
   const items = feeds.data?.items ?? [];
@@ -124,7 +124,13 @@ export function RssScreen() {
             onChange={setPublish}
           />
           <ConceptPicker value={concept} onChange={setConcept} />
-          <DialectPicker value={dialect} onChange={setDialect} />
+          <ChoicePicker
+            label="대사 사투리"
+            options={FEED_DIALECTS}
+            value={dialect}
+            onChange={setDialect}
+            columns={3}
+          />
           <ul className="flex w-full flex-col gap-1 text-sm text-muted-foreground">
             <li>
               • 30분마다 새 기사를 확인해 최신 기사부터 한 번에 3편, 구독마다
@@ -132,6 +138,11 @@ export function RssScreen() {
               만들어요.
             </li>
             <li>• 처음 등록하면 가장 최근 기사 1편만 만들어요.</li>
+            <li>
+              • 사투리를 자동으로 두면 기사마다 절반쯤은
+              경상도·전라도·충청도·강원도·서울 사투리 중 하나를 골라 대사에
+              넣어요. 흑백 신문 그림체로 고르면 표준어로 만들어요.
+            </li>
             <li>• 최근 3일 안에 만든 기사와 주제가 비슷하면 건너뛰어요.</li>
             <li>
               • 칼럼·사설·인터뷰, 사진·영상 위주 기사, 유료 기사는 건너뛰어요.
