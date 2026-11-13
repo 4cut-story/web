@@ -4,6 +4,7 @@ import type {
   Caption,
   CaptionVoice,
   LivePanel,
+  LivePerson,
   LivePlayback,
   PanelSound,
 } from "./types";
@@ -601,6 +602,138 @@ export function depthMaskAlpha(luma: ArrayLike<number>): Uint8ClampedArray {
   for (let i = 0; i < luma.length; i++) {
     const t = Math.min(1, Math.max(0, (luma[i] - lo) / (hi - lo)));
     out[i] = Math.round(255 * (1 - t * t * (3 - 2 * t)));
+  }
+  return out;
+}
+
+/** 인물 움직임을 받는 인물 수(셰이더 자리 수). */
+export const MAX_PEOPLE = 4;
+
+/**
+ * 인물 움직임(숨쉬기·흔들림·말할 때 끄덕임)을 줄지. 넓은 그림 컷에 인물 자리나 깊이 지도가 있어야 하고, 움직임 줄이기 설정이면 끈다.
+ * 1:1 컷은 말풍선이 그림에 있어 글자가 함께 휘므로 주지 않는다.
+ */
+export function characterMotionOn(
+  panel: LivePanel | undefined,
+  reduced: boolean,
+): boolean {
+  if (reduced || panel?.aspect !== "16:9") {
+    return false;
+  }
+  return (
+    peopleOf(panel).length > 0 ||
+    (typeof panel.depth === "string" && panel.depth.length > 0)
+  );
+}
+
+/** 쓸 수 있는 인물 자리(그림 안, 얼굴 크기 3~60%)만 앞에서 MAX_PEOPLE명까지. */
+export function peopleOf(panel: LivePanel | undefined): LivePerson[] {
+  const inside = (v: unknown) =>
+    typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 1;
+  return (panel?.people ?? [])
+    .filter(
+      (p) =>
+        inside(p.x) &&
+        inside(p.y) &&
+        typeof p.size === "number" &&
+        p.size >= 0.03 &&
+        p.size <= 0.6,
+    )
+    .slice(0, MAX_PEOPLE);
+}
+
+/** 지금 말하는 인물 번호(peopleOf 기준). 화자가 없거나 그림에 없으면 -1. */
+export function speakerIndex(
+  people: LivePerson[],
+  speaker: string | null | undefined,
+): number {
+  if (!speaker) {
+    return -1;
+  }
+  return people.findIndex((p) => p.speaker === speaker);
+}
+
+/** 숨 한 번 길이. 인물마다 조금씩 다르게 해 함께 들썩이지 않는다. */
+export const BREATH_MS = 3800;
+
+/** 인물마다 다른 숨 위상(0~2π)과 빠르기 배율(0.85~1.15). 같은 만화·컷이면 늘 같다. */
+export function breathPhase(
+  seed: string,
+  k: number,
+): { phase: number; rate: number } {
+  let h = 2166136261;
+  for (const c of `${seed}#${k}`) {
+    h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  }
+  const u = (h >>> 0) / 4294967296;
+  const v = ((Math.imul(h, 2654435761) >>> 0) % 1000) / 1000;
+  return { phase: u * 2 * Math.PI, rate: 0.85 + v * 0.3 };
+}
+
+/**
+ * 대사 소리 크기(0~1)를 고개 움직임에 쓸 값으로 고른다. 소리가 커질 때는 빨리 따라가고(0.06초), 작아질 때는 천천히 내려와(0.18초)
+ * 음절마다 덜컥거리지 않는다.
+ */
+export function followLevel(prev: number, level: number, dtMs: number): number {
+  const target = Math.min(1, Math.max(0, level));
+  const tau = target > prev ? 60 : 180;
+  const k = 1 - Math.exp(-Math.max(0, dtMs) / tau);
+  return prev + (target - prev) * k;
+}
+
+/**
+ * 깊이 지도 밝기(작은 크기)에서 앞쪽 인물 자리 무게(0~255)를 만든다. 가장 가까운 30% 남짓을 1로 두고, 크게 흐려 경계가 부드럽게 한다.
+ * 경계가 날카로우면 인물 가장자리가 늘어나 보였다(깊이 패럴랙스를 끈 까닭).
+ */
+export function nearWeight(
+  luma: ArrayLike<number>,
+  width: number,
+  height: number,
+): Uint8ClampedArray {
+  const sorted = Array.from(luma).sort((a, b) => a - b);
+  const at = (q: number) =>
+    sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * q))] ?? 0;
+  const lo = at(0.6);
+  const hi = Math.max(at(0.8), lo + 1);
+  let w = new Float32Array(luma.length);
+  for (let i = 0; i < luma.length; i++) {
+    const t = Math.min(1, Math.max(0, (luma[i] - lo) / (hi - lo)));
+    w[i] = t * t * (3 - 2 * t);
+  }
+  const radius = Math.max(1, Math.round(width / 24));
+  for (let pass = 0; pass < 2; pass++) {
+    w = blur(w, width, height, radius, true);
+    w = blur(w, width, height, radius, false);
+  }
+  const out = new Uint8ClampedArray(luma.length);
+  for (let i = 0; i < w.length; i++) {
+    out[i] = Math.round(255 * w[i]);
+  }
+  return out;
+}
+
+function blur(
+  src: Float32Array<ArrayBuffer>,
+  width: number,
+  height: number,
+  radius: number,
+  horizontal: boolean,
+): Float32Array<ArrayBuffer> {
+  const out = new Float32Array(src.length);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let sum = 0;
+      let n = 0;
+      for (let d = -radius; d <= radius; d++) {
+        const xx = horizontal ? x + d : x;
+        const yy = horizontal ? y : y + d;
+        if (xx >= 0 && xx < width && yy >= 0 && yy < height) {
+          sum += src[yy * width + xx];
+          n++;
+        }
+      }
+      out[y * width + x] = sum / n;
+    }
   }
   return out;
 }

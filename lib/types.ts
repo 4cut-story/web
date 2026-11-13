@@ -221,6 +221,19 @@ export type LivePanel = {
   ambient?: Ambient[];
   /** 넓은 그림 컷의 깊이 지도(밝을수록 가깝다). 있으면 2.5D 패럴랙스로 움직인다. 예전 재생 정보에는 없다. */
   depth?: string | null;
+  /**
+   * 넓은 그림에 보이는 인물 얼굴 자리(그림 폭·높이에 대한 0~1). 화면이 인물마다 숨쉬기·몸 흔들림을, 말하는 인물에게 고개 끄덕임을 준다.
+   * 예전 재생 정보에는 없다(그때는 깊이 지도의 앞쪽만 함께 숨쉰다).
+   */
+  people?: LivePerson[];
+};
+
+/** 넓은 그림 속 인물. speaker는 자막 화자와 같은 호칭(누구인지 모르면 null). x·y는 얼굴 가운데, size는 얼굴 높이. */
+export type LivePerson = {
+  speaker?: string | null;
+  x: number;
+  y: number;
+  size: number;
 };
 
 export type Ambient =

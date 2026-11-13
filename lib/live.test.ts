@@ -4,6 +4,13 @@ import {
   ambientBehind,
   ambientOn,
   ambientParticles,
+  breathPhase,
+  characterMotionOn,
+  followLevel,
+  MAX_PEOPLE,
+  nearWeight,
+  peopleOf,
+  speakerIndex,
   depthMaskAlpha,
   AMBIENTS,
   cameraTransform,
@@ -390,5 +397,98 @@ describe("컷 그림 크기와 미리 받기", () => {
     expect(framesNeeded(3, 2)).toBe(true);
     expect(framesNeeded(1, 2)).toBe(false);
     expect(framesNeeded(4, 2)).toBe(false);
+  });
+});
+
+describe("라이브 모드 인물 움직임 (FR-052)", () => {
+  const wide = (o: Partial<LivePanel> = {}) => panel({ aspect: "16:9", ...o });
+
+  it("넓은 그림 컷에 인물 자리나 깊이 지도가 있을 때만 움직인다", () => {
+    const person = { speaker: "엄마", x: 0.4, y: 0.3, size: 0.2 };
+    expect(characterMotionOn(wide({ people: [person] }), false)).toBe(true);
+    expect(
+      characterMotionOn(wide({ depth: "panels/1-depth.png" }), false),
+    ).toBe(true);
+    expect(characterMotionOn(wide(), false)).toBe(false);
+    expect(characterMotionOn(wide({ people: [person] }), true)).toBe(false);
+    expect(
+      characterMotionOn(panel({ people: [person], aspect: "1:1" }), false),
+    ).toBe(false);
+    expect(characterMotionOn(undefined, false)).toBe(false);
+  });
+
+  it("그림 밖이거나 크기가 이상한 인물 자리는 빼고, 많아야 네 명까지 쓴다", () => {
+    const ok = (k: number) => ({
+      speaker: `p${k}`,
+      x: 0.1 * k,
+      y: 0.3,
+      size: 0.2,
+    });
+    const people = peopleOf(
+      wide({
+        people: [
+          { speaker: "밖", x: 1.2, y: 0.3, size: 0.2 },
+          { speaker: "작음", x: 0.5, y: 0.3, size: 0.01 },
+          { speaker: "큼", x: 0.5, y: 0.3, size: 0.9 },
+          ok(1),
+          ok(2),
+          ok(3),
+          ok(4),
+          ok(5),
+        ],
+      }),
+    );
+    expect(people.map((p) => p.speaker)).toEqual(["p1", "p2", "p3", "p4"]);
+    expect(people).toHaveLength(MAX_PEOPLE);
+    expect(peopleOf(undefined)).toEqual([]);
+  });
+
+  it("자막 화자와 같은 호칭의 인물이 말하는 인물이다", () => {
+    const people = [
+      { speaker: "엄마", x: 0.3, y: 0.3, size: 0.2 },
+      { speaker: "아들", x: 0.7, y: 0.3, size: 0.2 },
+    ];
+    expect(speakerIndex(people, "아들")).toBe(1);
+    expect(speakerIndex(people, "할머니")).toBe(-1);
+    expect(speakerIndex(people, null)).toBe(-1);
+  });
+
+  it("인물마다 숨 위상과 빠르기가 다르고, 같은 컷이면 늘 같다", () => {
+    const a = breathPhase("c1:1", 0);
+    const b = breathPhase("c1:1", 1);
+    expect(a).toEqual(breathPhase("c1:1", 0));
+    expect(a.phase).not.toBeCloseTo(b.phase);
+    for (const p of [a, b]) {
+      expect(p.phase).toBeGreaterThanOrEqual(0);
+      expect(p.phase).toBeLessThan(2 * Math.PI);
+      expect(p.rate).toBeGreaterThanOrEqual(0.85);
+      expect(p.rate).toBeLessThanOrEqual(1.15);
+    }
+  });
+
+  it("소리가 커질 때는 빨리, 작아질 때는 천천히 따라간다", () => {
+    const up = followLevel(0, 1, 60);
+    const down = 1 - followLevel(1, 0, 60);
+    expect(up).toBeGreaterThan(down);
+    expect(followLevel(0.5, 2, 10_000)).toBeCloseTo(1);
+    expect(followLevel(0.5, 0.5, 16)).toBeCloseTo(0.5);
+    expect(followLevel(0.3, 0.8, -5)).toBeCloseTo(0.3);
+  });
+
+  it("깊이 지도의 가까운 곳은 무게가 크고 먼 곳은 0이며, 경계는 부드럽다", () => {
+    const width = 24;
+    const height = 12;
+    const luma = new Uint8ClampedArray(width * height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        luma[y * width + x] = x >= 9 && x < 15 ? 230 : 40;
+      }
+    }
+    const w = nearWeight(luma, width, height);
+    const at = (x: number) => w[6 * width + x];
+    expect(at(12)).toBeGreaterThan(150);
+    expect(at(0)).toBe(0);
+    expect(at(8)).toBeGreaterThan(0);
+    expect(at(8)).toBeLessThan(at(12));
   });
 });
