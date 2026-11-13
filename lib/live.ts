@@ -737,3 +737,97 @@ function blur(
   }
   return out;
 }
+
+/**
+ * 그림을 읽는 LLM이 준 얼굴 자리를 깊이 지도로 다듬는다. LLM 자리는 그림 폭의 5~7%쯤 옆으로 비껴 고개 끄덕임이 얼굴 옆 벽을 휘게 했다.
+ * 받은 자리 둘레(얼굴 크기의 1.2배 옆, 1.5배 위아래)에서 가까운 쪽(창 안 밝기 아래 20%~위 5% 사이 60% 넘는 곳)이 처음 머리만큼 넓게
+ * 나오는 줄을 정수리로 보고, 그 아래 얼굴 높이만큼의 가까운 곳 가운데를 얼굴 가운데로 삼는다. 찾지 못하면 받은 자리 그대로다.
+ */
+export function refinePeople(
+  people: LivePerson[],
+  luma: ArrayLike<number>,
+  width: number,
+  height: number,
+): LivePerson[] {
+  return people.map((p) => {
+    const half = (1.2 * p.size * height) / width;
+    const x0 = Math.max(0, Math.floor((p.x - half) * width));
+    const x1 = Math.min(width - 1, Math.ceil((p.x + half) * width));
+    const y0 = Math.max(0, Math.floor((p.y - 1.5 * p.size) * height));
+    const y1 = Math.min(height - 1, Math.ceil((p.y + 1.5 * p.size) * height));
+    if (x1 <= x0 || y1 <= y0) {
+      return p;
+    }
+    const values: number[] = [];
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        values.push(luma[y * width + x]);
+      }
+    }
+    values.sort((a, b) => a - b);
+    const lo = values[Math.floor(values.length * 0.2)];
+    const hi =
+      values[Math.min(values.length - 1, Math.floor(values.length * 0.95))];
+    if (hi - lo < 20) {
+      return p;
+    }
+    const cut = lo + 0.6 * (hi - lo);
+    const need = Math.max(2, 0.3 * p.size * height);
+    let top = -1;
+    for (let y = y0; y <= y1 && top < 0; y++) {
+      let n = 0;
+      for (let x = x0; x <= x1; x++) {
+        n += luma[y * width + x] >= cut ? 1 : 0;
+      }
+      if (n >= need) {
+        top = y;
+      }
+    }
+    if (top < 0) {
+      return p;
+    }
+    // 정수리 줄에서 받은 자리에 가장 가까운 가까운 쪽 덩어리를 머리로 보고, 그 둘레 머리 폭 안만 센다(옆 칠판·가구를 세지 않게)
+    const near = (x: number, y: number) => luma[y * width + x] >= cut;
+    const guess = Math.round(p.x * width);
+    let best = -1;
+    for (let x = x0; x <= x1; x++) {
+      if (
+        near(x, top) &&
+        (best < 0 || Math.abs(x - guess) < Math.abs(best - guess))
+      ) {
+        best = x;
+      }
+    }
+    let a = best;
+    let b = best;
+    while (a > x0 && near(a - 1, top)) {
+      a--;
+    }
+    while (b < x1 && near(b + 1, top)) {
+      b++;
+    }
+    const headHalf = Math.max(1, Math.round(0.45 * p.size * height));
+    const center = Math.round((a + b) / 2);
+    const left = Math.max(x0, center - headHalf);
+    const right = Math.min(x1, center + headHalf);
+    const bottom = Math.min(y1, top + Math.round(p.size * height));
+    let sum = 0;
+    let n = 0;
+    for (let y = top; y <= bottom; y++) {
+      for (let x = left; x <= right; x++) {
+        if (luma[y * width + x] >= cut) {
+          sum += x;
+          n++;
+        }
+      }
+    }
+    if (n === 0) {
+      return p;
+    }
+    return {
+      ...p,
+      x: (sum / n + 0.5) / width,
+      y: Math.min(1, (top + 0.55 * p.size * height) / height),
+    };
+  });
+}

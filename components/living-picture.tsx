@@ -8,6 +8,7 @@ import {
   followLevel,
   MAX_PEOPLE,
   nearWeight,
+  refinePeople,
   speakerIndex,
 } from "@/lib/live";
 import type { LivePerson } from "@/lib/types";
@@ -22,6 +23,10 @@ import {
 /** 깊이 지도로 앞쪽 무게를 만들 때 줄이는 크기(16:9). */
 const MASK_WIDTH = 96;
 const MASK_HEIGHT = 54;
+
+/** 얼굴 자리를 다듬을 때 줄이는 크기(16:9, 그림 폭의 0.6% 단위). */
+const FACE_WIDTH = 160;
+const FACE_HEIGHT = 90;
 
 /**
  * 라이브 모드 인물 움직임 (docs specs/003-live-mode FR-052). 넓은 그림을 WebGL로 그리며 인물 자리만 아주 조금 휘게 해 인물이 숨을 쉬고 몸을
@@ -82,15 +87,24 @@ export function LivingPicture({
     const known = people.length > 0;
     Promise.all([
       Promise.all(images.map(loadImage)),
-      !known && depth ? loadImage(depth).then(mask) : Promise.resolve(null),
+      depth ? loadImage(depth).catch(() => null) : Promise.resolve(null),
     ])
-      .then(([loaded, near]) => {
+      .then(([loaded, depthImage]) => {
         if (cancelled) {
           return;
         }
+        const near = !known && depthImage ? mask(depthImage) : null;
         if (!known && !near) {
           return;
         }
+        // 얼굴 자리는 깊이 지도로 다듬는다(LLM 자리는 옆으로 조금씩 비낀다)
+        const refined =
+          known && depthImage
+            ? lumaOf(depthImage, FACE_WIDTH, FACE_HEIGHT)
+            : null;
+        const placed = refined
+          ? refinePeople(people, refined, FACE_WIDTH, FACE_HEIGHT)
+          : people;
         const textures = loaded.map((img, k) => imageTexture(gl, img, k));
         const nearTexture = near ? maskTexture(gl, near) : null;
         const weights = images.map((_, k) =>
@@ -115,12 +129,12 @@ export function LivingPicture({
             weights[k] += Math.max(-rate, Math.min(rate, goal - weights[k]));
           }
           voice = followLevel(voice, on ? live.current.level() : 0, dt);
-          const talking = speakerIndex(people, live.current.speaker);
+          const talking = speakerIndex(placed, live.current.speaker);
           render(gl, program, {
             textures,
             nearTexture,
             weights,
-            people,
+            people: placed,
             breaths: phases.map(
               (p) => (clock / BREATH_MS) * 2 * Math.PI * p.rate + p.phase,
             ),
@@ -160,20 +174,30 @@ export function LivingPicture({
 
 /** 깊이 지도를 작게 줄여 앞쪽 무게를 만든다. 읽지 못하면 null. */
 function mask(img: HTMLImageElement): Uint8ClampedArray | null {
+  const luma = lumaOf(img, MASK_WIDTH, MASK_HEIGHT);
+  return luma ? nearWeight(luma, MASK_WIDTH, MASK_HEIGHT) : null;
+}
+
+/** 흑백 깊이 지도를 줄인 밝기. 읽지 못하면 null. */
+function lumaOf(
+  img: HTMLImageElement,
+  width: number,
+  height: number,
+): Uint8ClampedArray | null {
   const c = document.createElement("canvas");
-  c.width = MASK_WIDTH;
-  c.height = MASK_HEIGHT;
+  c.width = width;
+  c.height = height;
   const ctx = c.getContext("2d");
   if (!ctx) {
     return null;
   }
-  ctx.drawImage(img, 0, 0, MASK_WIDTH, MASK_HEIGHT);
-  const data = ctx.getImageData(0, 0, MASK_WIDTH, MASK_HEIGHT).data;
-  const luma = new Uint8ClampedArray(MASK_WIDTH * MASK_HEIGHT);
+  ctx.drawImage(img, 0, 0, width, height);
+  const data = ctx.getImageData(0, 0, width, height).data;
+  const luma = new Uint8ClampedArray(width * height);
   for (let i = 0; i < luma.length; i++) {
     luma[i] = data[i * 4];
   }
-  return nearWeight(luma, MASK_WIDTH, MASK_HEIGHT);
+  return luma;
 }
 
 // 인물마다 몸 무게(얼굴 아래로 넓게 퍼진 부드러운 자리)와 머리 무게(얼굴 둘레)를 만든다.
