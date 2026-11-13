@@ -17,7 +17,7 @@ function labels(name: string) {
 }
 
 describe("주요 메뉴", () => {
-  it("로그인했으면 배경음을 캐릭터 바로 옆, 목소리를 배경음 바로 옆에 둔다", async () => {
+  it("로그인했으면 목소리를 캐릭터 바로 옆에 두고, 배경음은 메뉴에 없다", async () => {
     mockFetch({ "GET /api/v1/me": json(ME) });
     render(
       <AppShell title="배경음" tab="sounds">
@@ -30,20 +30,18 @@ describe("주요 메뉴", () => {
         "만들기",
         "스토리",
         "캐릭터",
-        "배경음",
         "목소리",
         "프로필",
       ]),
     );
     expect(labels("상단 메뉴")).toEqual(labels("주요 메뉴"));
     const menu = screen.getByRole("navigation", { name: "주요 메뉴" });
-    expect(within(menu).getByRole("link", { name: "배경음" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    expect(
+      within(menu).queryByRole("link", { name: "배경음" }),
+    ).not.toBeInTheDocument();
   });
 
-  it("로그인하지 않았으면 첫 화면, 캐릭터, 배경음, 목소리, 로그인만 둔다", async () => {
+  it("로그인하지 않았으면 첫 화면, 캐릭터, 목소리, 로그인만 둔다", async () => {
     mockFetch({ "GET /api/v1/me": json({}, 401) });
     render(
       <AppShell title="캐릭터" tab="characters">
@@ -54,7 +52,6 @@ describe("주요 메뉴", () => {
       expect(labels("상단 메뉴")).toEqual([
         "홈",
         "캐릭터",
-        "배경음",
         "목소리",
         "로그인",
       ]),

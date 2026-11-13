@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  AudioLines,
   AudioWaveform,
   BookImage,
   Home,
@@ -33,12 +32,6 @@ const CHARACTERS: TabItem = {
   label: "캐릭터",
   icon: Users,
 };
-const SOUNDS: TabItem = {
-  id: "sounds",
-  href: "/sounds",
-  label: "배경음",
-  icon: AudioLines,
-};
 const VOICES: TabItem = {
   id: "voices",
   href: "/voices",
@@ -46,22 +39,20 @@ const VOICES: TabItem = {
   icon: AudioWaveform,
 };
 
-/** 로그인한 사람의 메뉴. 배경음은 캐릭터 바로 옆, 목소리는 배경음 바로 옆에 둔다. */
+/** 로그인한 사람의 메뉴. 목소리는 캐릭터 바로 옆에 둔다. 배경음(/sounds)은 메뉴에서 뺐다(marco 요청), 주소로는 열린다. */
 const MEMBER_TABS: TabItem[] = [
   { id: "feed", href: "/", label: "피드", icon: Home },
   { id: "create", href: "/record", label: "만들기", icon: Mic },
   { id: "inbox", href: "/comics", label: "스토리", icon: BookImage },
   CHARACTERS,
-  SOUNDS,
   VOICES,
   { id: "profile", href: "/me", label: "프로필", icon: UserIcon },
 ];
 
-/** 로그인하지 않은 사람의 메뉴. 로그인 없이 열리는 화면(첫 화면, 캐릭터, 배경음, 목소리)과 로그인만 둔다. */
+/** 로그인하지 않은 사람의 메뉴. 로그인 없이 열리는 화면(첫 화면, 캐릭터, 목소리)과 로그인만 둔다. */
 const GUEST_TABS: TabItem[] = [
   { id: "feed", href: "/", label: "홈", icon: Home },
   CHARACTERS,
-  SOUNDS,
   VOICES,
   { id: "login", href: "/login", label: "로그인", icon: LogIn },
 ];
