@@ -40,6 +40,7 @@ describe("PAT: 개인 토큰 화면", () => {
     expect(await screen.findByText("스토리 자동화")).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText("이름"), "새 자동화");
     await userEvent.selectOptions(screen.getByLabelText("유효 기간"), "90");
+    await userEvent.selectOptions(screen.getByLabelText("권한"), "publish");
     await userEvent.click(screen.getByRole("button", { name: "토큰 발급" }));
     expect(await screen.findByTestId("issued-token")).toHaveTextContent(
       "fcp_secret-once",
@@ -48,9 +49,34 @@ describe("PAT: 개인 토큰 화면", () => {
     expect(JSON.parse(issue?.init?.body as string)).toEqual({
       name: "새 자동화",
       expiresInDays: 90,
+      scope: "publish",
     });
+    expect(screen.getByText(/게시 · 사용 중/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "폐기" }));
     expect(calls.some((c) => c.method === "DELETE")).toBe(true);
+  });
+
+  it("소리 검색 API 사용법(curl 예시, 파라미터)을 보여 주고, 권한 기본값은 소리 검색이다", async () => {
+    const calls = mockFetch({
+      "GET /api/v1/me/tokens": json({ items: [] }),
+      "POST /api/v1/me/tokens": json(
+        { token: "fcp_s", info: { ...TOKEN, scope: "sounds" } },
+        201,
+      ),
+    });
+    render(<TokensScreen />);
+    expect(
+      screen.getByRole("heading", { name: "소리 검색 API 사용법" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/curl -G/)).toHaveTextContent(
+      "/api/open/v1/sounds",
+    );
+    expect(screen.getByText("kind")).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText("이름"), "소리");
+    await userEvent.click(screen.getByRole("button", { name: "토큰 발급" }));
+    await screen.findByTestId("issued-token");
+    const issue = calls.find((c) => c.method === "POST");
+    expect(JSON.parse(issue?.init?.body as string).scope).toBe("sounds");
   });
 
   it("폐기·만료된 토큰은 상태만 보여 주고 폐기 버튼이 없다", async () => {

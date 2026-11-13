@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { api, errorMessage } from "@/lib/api";
 import { useLoad } from "@/lib/use-load";
 
+import { SoundApiGuide } from "./sound-api-guide";
+
 export type AccessToken = {
   id: string;
   name: string;
@@ -32,9 +34,14 @@ function state(t: AccessToken): string {
   return new Date(t.expiresAt) <= new Date() ? "만료됨" : "사용 중";
 }
 
+const SCOPES: Record<string, string> = {
+  publish: "게시",
+  sounds: "소리 검색",
+};
+
 /**
- * 개인 액세스 토큰(/me/tokens). 자동화 도구가 쿠키 없이 게시할 때 쓴다. 게시에 필요한 기능만 열리고,
- * 원문은 발급할 때 한 번만 보인다.
+ * 개인 액세스 토큰(/me/tokens). 권한 범위는 게시(자동화 도구가 쿠키 없이 게시)와 소리 검색(배경음·효과음
+ * 검색 API) 둘이다. 원문은 발급할 때 한 번만 보인다. 아래에 소리 검색 API 사용법을 보여 준다.
  */
 export function TokensScreen() {
   const list = useLoad("me:tokens", () =>
@@ -42,6 +49,7 @@ export function TokensScreen() {
   );
   const [name, setName] = useState("");
   const [days, setDays] = useState(30);
+  const [scope, setScope] = useState("sounds");
   const [issued, setIssued] = useState<string>();
   const [error, setError] = useState<string>();
 
@@ -51,6 +59,7 @@ export function TokensScreen() {
       const result = await api.post<Issued>("/me/tokens", {
         name,
         expiresInDays: days,
+        scope,
       });
       setIssued(result.token);
       setName("");
@@ -74,10 +83,11 @@ export function TokensScreen() {
     <AppShell title="개인 토큰">
       <div className="flex flex-col gap-6">
         <p className="text-sm text-muted-foreground">
-          자동화 도구가 로그인 쿠키 없이 대화를 올리고 4컷을 게시할 때 쓰는
-          토큰이에요. 게시에 필요한 기능만 쓸 수 있고, 댓글·탈퇴·토큰 관리는 할
-          수 없어요. 요청 머리글에 <code>Authorization: Bearer 토큰</code>을
-          넣어 보내요.
+          로그인 쿠키 없이 프로그램에서 쓰는 토큰이에요. 요청 머리글에{" "}
+          <code>Authorization: Bearer 토큰</code>을 넣어 보내요. 권한은 두
+          가지예요. <strong>소리 검색</strong> 토큰은 배경음·효과음 검색 API만,{" "}
+          <strong>게시</strong> 토큰은 대화를 올리고 4컷을 게시하는 기능만 쓸 수
+          있어요. 댓글·탈퇴·토큰 관리는 어느 토큰으로도 할 수 없어요.
         </p>
         <form
           className="flex flex-col gap-3"
@@ -96,6 +106,17 @@ export function TokensScreen() {
               placeholder="예: 스토리 자동화"
               onChange={(e) => setName(e.target.value)}
             />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            권한
+            <select
+              className="h-12 rounded-lg border border-input px-3 text-base"
+              value={scope}
+              onChange={(e) => setScope(e.target.value)}
+            >
+              <option value="sounds">소리 검색 (배경음·효과음 검색 API)</option>
+              <option value="publish">게시 (대화 올리기·4컷 게시)</option>
+            </select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             유효 기간
@@ -134,8 +155,8 @@ export function TokensScreen() {
               <div className="flex min-w-0 flex-col">
                 <span className="font-semibold">{t.name}</span>
                 <span className="text-muted-foreground">
-                  {t.hint}… · {state(t)} · 만료 {day(t.expiresAt)} · 마지막 사용{" "}
-                  {day(t.lastUsedAt)}
+                  {t.hint}… · {SCOPES[t.scope] ?? t.scope} · {state(t)} · 만료{" "}
+                  {day(t.expiresAt)} · 마지막 사용 {day(t.lastUsedAt)}
                 </span>
               </div>
               {state(t) === "사용 중" && (
@@ -150,6 +171,7 @@ export function TokensScreen() {
             </li>
           ))}
         </ul>
+        <SoundApiGuide />
       </div>
     </AppShell>
   );
