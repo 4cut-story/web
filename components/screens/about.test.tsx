@@ -123,8 +123,8 @@ describe("서비스 소개 페이지", () => {
       expect(within(tuning).getByText(t.title)).toBeInTheDocument();
       expect(within(tuning).getByText(t.after)).toBeInTheDocument();
     }
-    expect(CHARACTER_IMAGES).toBe(42546);
-    expect(screen.getAllByText(/42,546장/).length).toBeGreaterThan(0);
+    expect(CHARACTER_IMAGES).toBe(37926);
+    expect(screen.getAllByText(/37,926장/).length).toBeGreaterThan(0);
   });
 
   it("내부 IP 주소, 내부 호스트 이름, 운영 기관, 추정 표현을 싣지 않는다", () => {
