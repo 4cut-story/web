@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { gatewayUrl } from "./config";
-import { patAccessToken } from "./pat";
+import { patExchange, type PatScope } from "./pat";
 import { fromTokens, type Session, type TokenPair } from "./session";
 
 export type GatewayResult = {
@@ -131,35 +131,43 @@ function rejected(status: number, code: string, message: string): Response {
 }
 
 /**
- * 개인 액세스 토큰으로 게이트웨이를 부른다. Access Token이 만료돼 401이 오면 한 번 다시 바꿔서 부른다.
- * 세션 쿠키는 만들지 않는다.
+ * 개인 액세스 토큰으로 게이트웨이를 부른다. 토큰의 권한 범위가 scope와 다르면 403.
+ * Access Token이 만료돼 401이 오면 한 번 다시 바꿔서 부른다. 세션 쿠키는 만들지 않는다.
  */
 export async function callGatewayWithPat(
   path: string,
   init: CallInit,
   token: string,
+  scope: PatScope = "publish",
 ): Promise<GatewayResult> {
-  const access = await patAccessToken(token);
-  if (!access) {
+  const exchanged = await patExchange(token);
+  if (!exchanged) {
     return {
       response: rejected(401, "UNAUTHORIZED", "토큰이 없거나 만료·폐기됐어요."),
     };
   }
-  const response = await send(path, init, access);
+  if (exchanged.scope !== scope) {
+    return patForbidden(exchanged.scope);
+  }
+  const response = await send(path, init, exchanged.accessToken);
   if (response.status !== 401) {
     return { response };
   }
-  const renewed = await patAccessToken(token, true);
-  return { response: renewed ? await send(path, init, renewed) : response };
+  const renewed = await patExchange(token, true);
+  return {
+    response: renewed ? await send(path, init, renewed.accessToken) : response,
+  };
 }
 
-/** 토큰으로는 열지 않는 경로. */
-export function patForbidden(): GatewayResult {
+/** 토큰으로는 열지 않는 경로. 메시지는 토큰 권한 범위로 고른다. */
+export function patForbidden(scope = "publish"): GatewayResult {
   return {
     response: rejected(
       403,
       "FORBIDDEN",
-      "이 토큰으로는 게시에 필요한 기능만 쓸 수 있어요.",
+      scope === "sounds"
+        ? "소리 검색 토큰으로는 소리 검색 API(/api/open/v1/sounds)만 쓸 수 있어요."
+        : "이 토큰으로는 게시에 필요한 기능만 쓸 수 있어요.",
     ),
   };
 }

@@ -5,12 +5,16 @@ import type { NextRequest } from "next/server";
 import { gatewayUrl } from "./config";
 
 /**
- * 개인 액세스 토큰(게시 전용). 자동화 도구가 쿠키 대신 `Authorization: Bearer fcp_...`로 web을 부른다.
+ * 개인 액세스 토큰. 자동화 도구가 쿠키 대신 `Authorization: Bearer fcp_...`로 web을 부른다.
  * web이 auth-service에서 짧은 Access Token으로 바꿔 게이트웨이를 부르고, Access Token은 밖에 내보내지 않는다.
- * 토큰으로는 아래 게시 경로만 열린다. 토큰 관리(/me/tokens), 탈퇴, 팔로우·댓글은 열지 않는다.
- * 지우기는 내 게시물 하나(DELETE /posts/{id})만 된다.
+ * 권한 범위가 둘이다. publish 토큰으로는 아래 게시 경로만 열린다(토큰 관리(/me/tokens), 탈퇴, 팔로우·댓글은
+ * 열지 않는다. 지우기는 내 게시물 하나(DELETE /posts/{id})만 된다). sounds 토큰으로는 소리 검색 API
+ * (/api/open/v1/sounds)만 열린다.
  */
 export const PAT_PREFIX = "fcp_";
+
+/** 토큰 권한 범위. */
+export type PatScope = "publish" | "sounds";
 
 type Rule = {
   methods: string[];
@@ -47,7 +51,8 @@ export function readPat(request: NextRequest): string | null {
   return match && match[1].startsWith(PAT_PREFIX) ? match[1] : null;
 }
 
-type Cached = { accessToken: string; until: number };
+type Exchanged = { accessToken: string; scope: string };
+type Cached = Exchanged & { until: number };
 
 /** 토큰 해시 → 바꾼 Access Token. 만료 1분 전까지 다시 쓴다(원문은 키로 두지 않는다). */
 const cache = new Map<string, Cached>();
@@ -58,15 +63,17 @@ function key(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-/** Access Token으로 바꾼다. 토큰이 없거나 만료·폐기됐으면 null. fresh면 캐시를 건너뛴다. */
-export async function patAccessToken(
+/**
+ * Access Token과 권한 범위로 바꾼다. 토큰이 없거나 만료·폐기됐으면 null. fresh면 캐시를 건너뛴다.
+ */
+export async function patExchange(
   token: string,
   fresh = false,
-): Promise<string | null> {
+): Promise<Exchanged | null> {
   const k = key(token);
   const hit = cache.get(k);
   if (!fresh && hit && hit.until > Date.now()) {
-    return hit.accessToken;
+    return { accessToken: hit.accessToken, scope: hit.scope };
   }
   cache.delete(k);
   const response = await fetch(`${gatewayUrl()}/auth/pat/exchange`, {
@@ -82,15 +89,20 @@ export async function patAccessToken(
   const body = (await response.json()) as {
     accessToken: string;
     expiresIn: number;
+    scope?: string;
   };
   if (cache.size >= MAX_CACHE) {
     cache.clear();
   }
-  cache.set(k, {
+  const exchanged = {
     accessToken: body.accessToken,
+    scope: body.scope ?? "publish",
+  };
+  cache.set(k, {
+    ...exchanged,
     until: Date.now() + body.expiresIn * 1000 - MARGIN_MS,
   });
-  return body.accessToken;
+  return exchanged;
 }
 
 /** 테스트용. */
