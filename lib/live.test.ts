@@ -10,6 +10,7 @@ import {
   MAX_PEOPLE,
   nearWeight,
   peopleOf,
+  refinePeople,
   speakerIndex,
   depthMaskAlpha,
   AMBIENTS,
@@ -490,5 +491,51 @@ describe("라이브 모드 인물 움직임 (FR-052)", () => {
     expect(at(0)).toBe(0);
     expect(at(8)).toBeGreaterThan(0);
     expect(at(8)).toBeLessThan(at(12));
+  });
+});
+
+describe("깊이 지도로 얼굴 자리 맞추기 (FR-052)", () => {
+  const W = 160;
+  const H = 90;
+  const map = (draw: (x: number, y: number) => number) => {
+    const luma = new Array<number>(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        luma[y * W + x] = draw(x, y);
+      }
+    }
+    return luma;
+  };
+
+  it("받은 자리가 옆으로 어긋나면 가까운 머리 덩어리 가운데로 옮긴다", () => {
+    // 머리는 x 66~78, y 20~40, 몸은 그 아래. 오른쪽에 밝은 가구(x 95~100)가 있다
+    const luma = map((x, y) => {
+      if (x >= 66 && x <= 78 && y >= 20) {
+        return 220;
+      }
+      if (x >= 95 && x <= 100 && y >= 10) {
+        return 230;
+      }
+      return 30;
+    });
+    const [p] = refinePeople(
+      [{ speaker: "엄마", x: 0.38, y: 0.35, size: 0.2 }],
+      luma,
+      W,
+      H,
+    );
+    expect(p.speaker).toBe("엄마");
+    expect(p.x).toBeCloseTo(72.5 / W, 2);
+    expect(p.y).toBeGreaterThan(20 / H);
+    expect(p.y).toBeLessThan(40 / H);
+    expect(p.size).toBe(0.2);
+  });
+
+  it("깊이 차이가 없거나 창이 그림 밖이면 그대로 둔다", () => {
+    const flat = map(() => 120);
+    const person = { x: 0.5, y: 0.4, size: 0.2 };
+    expect(refinePeople([person], flat, W, H)).toEqual([person]);
+    const out = { x: 1.5, y: 0.4, size: 0.1 };
+    expect(refinePeople([out], flat, W, H)).toEqual([out]);
   });
 });
