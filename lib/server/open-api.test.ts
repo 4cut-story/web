@@ -33,10 +33,11 @@ describe("소리 검색 API: 소리 검색 개인 토큰으로만 부른다", ()
   it("검색 조건만 넘기고, 소리마다 미리 듣기·상세 주소를 붙인다", async () => {
     const calls = mockFetch({
       [`POST ${GW}/auth/pat/exchange`]: json(SOUNDS),
-      [`GET ${GW}/api/v1/sounds?q=%EB%B9%84&kind=AMBIENCE&size=5`]: json({
-        items: [SOUND],
-        nextCursor: null,
-      }),
+      [`GET ${GW}/api/v1/sounds?q=%EB%B9%84&kind=AMBIENCE&size=5&excludeSource=Freesound`]:
+        json({
+          items: [SOUND],
+          nextCursor: null,
+        }),
     });
     const response = await list(
       withPat("/api/open/v1/sounds?q=비&kind=AMBIENCE&size=5&evil=1&mood="),
@@ -55,11 +56,14 @@ describe("소리 검색 API: 소리 검색 개인 토큰으로만 부른다", ()
   it("상세는 소리와 비슷한 소리 모두에 주소를 붙이고, facets는 그대로 준다", async () => {
     mockFetch({
       [`POST ${GW}/auth/pat/exchange`]: json(SOUNDS),
-      [`GET ${GW}/api/v1/sounds/${ID}`]: json({
+      [`GET ${GW}/api/v1/sounds/${ID}?excludeSource=Freesound`]: json({
         sound: SOUND,
         similar: [SOUND],
       }),
-      [`GET ${GW}/api/v1/sounds/facets`]: json({ categories: [], moods: [] }),
+      [`GET ${GW}/api/v1/sounds/facets?excludeSource=Freesound`]: json({
+        categories: [],
+        moods: [],
+      }),
     });
     const detail = await (
       await one(withPat(`/api/open/v1/sounds/${ID}`), params({ path: [ID] }))
@@ -130,7 +134,8 @@ describe("소리 검색 API: 소리 검색 개인 토큰으로만 부른다", ()
   it(`토큰 하나로 1분에 ${RATE_LIMIT}번이 넘으면 429`, async () => {
     mockFetch({
       [`POST ${GW}/auth/pat/exchange`]: json(SOUNDS),
-      [`GET ${GW}/api/v1/sounds`]: () => json({ items: [], nextCursor: null }),
+      [`GET ${GW}/api/v1/sounds?excludeSource=Freesound`]: () =>
+        json({ items: [], nextCursor: null }),
     });
     for (let i = 0; i < RATE_LIMIT; i++) {
       expect((await list(withPat("/api/open/v1/sounds"))).status).toBe(200);

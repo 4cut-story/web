@@ -94,9 +94,9 @@ export function SoundApiGuide() {
         </tbody>
       </table>
       <p className="text-muted-foreground">
-        응답의 <code>audioUrl</code>로 MP3를 바로 받을 수 있어요. 소리는
-        상업적으로도 쓸 수 있는 공개 소리지만, CC BY 소리는 <code>credit</code>
-        의 저작자·라이선스를 함께 표시해야 해요.
+        응답의 <code>audioUrl</code>로 MP3를 바로 받을 수 있어요. 소리는 공개
+        데이터셋(FSD50K, Free Music Archive)의 소리라 상업적으로도 쓸 수 있지만,
+        CC BY 소리는 <code>credit</code>의 저작자·라이선스를 함께 표시해야 해요.
       </p>
       <Code>{EXAMPLE}</Code>
     </section>
