@@ -10,16 +10,18 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AmbientLayer } from "@/components/ambient-layer";
 import { DepthParallax } from "@/components/depth-parallax";
+import { LivingPicture } from "@/components/living-picture";
 import { ErrorText } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { request } from "@/lib/api";
 import {
   ambientOn,
   cameraTransform,
+  characterMotionOn,
   depthImageUrl,
   framesNeeded,
   frameAt,
@@ -32,6 +34,7 @@ import {
   panelSizes,
   panelSrcSet,
   parallaxOn,
+  peopleOf,
   prevIndex,
   SLIDE_MS,
   swipe,
@@ -117,6 +120,9 @@ export function LivePlayer({
   const count = panels.length;
   const wide = isWide(loaded.data);
   const [clock, setClock] = useState({ at: -1, ms: 0 });
+
+  // 인물 움직임이 그릴 때마다 읽는 대사 소리 크기
+  const voiceLevel = useCallback(() => audio.current?.voiceLevel() ?? 0, []);
 
   function player(): LiveAudio {
     audio.current ??= new LiveAudio(audioFactory);
@@ -383,6 +389,35 @@ export function LivePlayer({
                   className={`absolute inset-0 size-full ${full ? "object-contain" : "object-cover"}`}
                 />
               )}
+              {i === index &&
+                !parallaxOn(p, reduced) &&
+                characterMotionOn(p, reduced) && (
+                  <LivingPicture
+                    images={[
+                      panelImageUrl(kind, id, p.index),
+                      ...(p.motion?.frames
+                        .slice(1)
+                        .map((_, k) =>
+                          panelImageUrl(kind, id, p.index, k + 1),
+                        ) ?? []),
+                    ]}
+                    shown={
+                      moving ? frameAt(step, p.motion?.frames.length ?? 1) : 0
+                    }
+                    fadeMs={
+                      p.motion ? Math.round(p.motion.intervalMs * 0.6) : 0
+                    }
+                    people={peopleOf(p)}
+                    depth={p.depth ? depthImageUrl(kind, id, p.index) : null}
+                    speaker={playing ? (caption?.speaker ?? null) : null}
+                    level={voiceLevel}
+                    playing={playing}
+                    seed={`${id}:${p.index}`}
+                    width={width}
+                    height={height}
+                    className={`absolute inset-0 size-full ${pWide && !full ? "object-cover" : "object-contain"}`}
+                  />
+                )}
               {i === index && (
                 <AmbientLayer
                   types={ambientOn(p, reduced)}

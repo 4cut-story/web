@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { parallaxAt } from "@/lib/live";
 import type { Camera } from "@/lib/types";
+import { buildProgram, imageTexture, loadImage } from "@/lib/webgl";
 
 /**
  * 라이브 모드 깊이 패럴랙스 (docs specs/003-live-mode FR-048). 넓은 그림과 깊이 지도(밝을수록 가깝다)를 WebGL로 그려, 가까운
@@ -59,12 +60,12 @@ export function DepthParallax({
       return;
     }
     const sources = [...images, depth];
-    Promise.all(sources.map(load))
+    Promise.all(sources.map(loadImage))
       .then((loaded) => {
         if (cancelled) {
           return;
         }
-        const textures = loaded.map((img, k) => texture(gl, img, k));
+        const textures = loaded.map((img, k) => imageTexture(gl, img, k));
         const weights = images.map((_, k) => (k === target.current ? 1 : 0));
         const started = performance.now();
         let last = started;
@@ -118,23 +119,6 @@ export function DepthParallax({
   );
 }
 
-function load(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(src));
-    img.src = src;
-  });
-}
-
-const VERTEX = `
-attribute vec2 a;
-varying vec2 uv;
-void main() {
-  uv = vec2((a.x + 1.0) * 0.5, (1.0 - a.y) * 0.5);
-  gl_Position = vec4(a, 0.0, 1.0);
-}`;
-
 // 가까운 곳(깊이 1)은 offset만큼, 먼 곳(0)은 반대로 조금 움직인다. zoom은 가까운 것만 화면 가운데에서 더 키운다.
 // 가장자리가 비지 않게 조금 확대해서 그린다.
 const FRAGMENT = `
@@ -166,64 +150,16 @@ type Program = {
 };
 
 function build(gl: WebGLRenderingContext): Program | null {
-  const shader = (type: number, source: string) => {
-    const s = gl.createShader(type);
-    if (!s) {
-      return null;
-    }
-    gl.shaderSource(s, source);
-    gl.compileShader(s);
-    return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
-  };
-  const vs = shader(gl.VERTEX_SHADER, VERTEX);
-  const fs = shader(gl.FRAGMENT_SHADER, FRAGMENT);
-  const program = gl.createProgram();
-  if (!vs || !fs || !program) {
+  const program = buildProgram(gl, FRAGMENT, ["img0", "img1", "img2", "depth"]);
+  if (!program) {
     return null;
   }
-  gl.attachShader(program, vs);
-  gl.attachShader(program, fs);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    return null;
-  }
-  gl.useProgram(program);
-  const buffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
-    gl.STATIC_DRAW,
-  );
-  const a = gl.getAttribLocation(program, "a");
-  gl.enableVertexAttribArray(a);
-  gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
-  ["img0", "img1", "img2"].forEach((name, k) =>
-    gl.uniform1i(gl.getUniformLocation(program, name), k),
-  );
-  gl.uniform1i(gl.getUniformLocation(program, "depth"), 3);
   return {
     program,
     weight: gl.getUniformLocation(program, "weight"),
     offset: gl.getUniformLocation(program, "offset"),
     zoom: gl.getUniformLocation(program, "zoom"),
   };
-}
-
-function texture(
-  gl: WebGLRenderingContext,
-  img: HTMLImageElement,
-  index: number,
-): WebGLTexture | null {
-  const t = gl.createTexture();
-  gl.activeTexture(gl.TEXTURE0 + index);
-  gl.bindTexture(gl.TEXTURE_2D, t);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
-  return t;
 }
 
 function render(

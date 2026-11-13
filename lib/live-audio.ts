@@ -13,6 +13,13 @@ type Gain = {
   disconnect: () => void;
 };
 
+/** 대사 소리 크기를 재는 AnalyserNode에서 쓰는 만큼만. */
+type Analyser = {
+  fftSize: number;
+  getByteTimeDomainData: (out: Uint8Array) => void;
+  connect: (to: unknown) => unknown;
+};
+
 export type AudioContextLike = {
   currentTime: number;
   destination: unknown;
@@ -20,6 +27,8 @@ export type AudioContextLike = {
   createMediaElementSource: (el: HTMLAudioElement) => {
     connect: (to: unknown) => unknown;
   };
+  /** 대사 소리 크기를 재는 데 쓴다. 없으면 말하는 동안 정해 둔 박자로 움직인다. */
+  createAnalyser?: () => Analyser;
   resume?: () => Promise<void>;
   close?: () => Promise<void>;
 };
@@ -96,6 +105,9 @@ export class LiveAudio {
   private queue: string[] = [];
   /** 대사를 모두 이 재생기로 튼다(누를 때 열어 둔다). 없으면 대사마다 새로 만든다. */
   private voicePlayer: HTMLAudioElement | null = null;
+  /** 대사 소리 크기를 재는 것(대사 재생기 → 이것 → master). */
+  private analyser: Analyser | null = null;
+  private samples: Uint8Array | null = null;
   private volume = 1;
   private muted = false;
 
@@ -127,9 +139,7 @@ export class LiveAudio {
     }
     try {
       const el = this.factory.blank();
-      if (this.ctx && this.master) {
-        this.ctx.createMediaElementSource(el).connect(this.master);
-      }
+      this.routeVoice(el);
       el.src = SILENCE;
       void el
         .play()
@@ -144,6 +154,58 @@ export class LiveAudio {
     } catch {
       this.voicePlayer = null;
     }
+  }
+
+  /** 대사 재생기를 소리 크기 재는 것을 거쳐 master에 잇는다. 잴 수 없으면 바로 잇는다. */
+  private routeVoice(el: HTMLAudioElement): void {
+    if (!this.ctx || !this.master) {
+      return;
+    }
+    const source = this.ctx.createMediaElementSource(el);
+    try {
+      this.analyser ??= this.makeAnalyser();
+    } catch {
+      this.analyser = null;
+    }
+    if (this.analyser) {
+      source.connect(this.analyser);
+    } else {
+      source.connect(this.master);
+    }
+  }
+
+  private makeAnalyser(): Analyser | null {
+    const a = this.ctx?.createAnalyser?.() ?? null;
+    if (a && this.master) {
+      a.fftSize = 512;
+      a.connect(this.master);
+      this.samples = new Uint8Array(a.fftSize);
+    }
+    return a;
+  }
+
+  /**
+   * 지금 나오는 대사 소리 크기(0~1). 인물이 말할 때 고개를 끄덕이는 세기로 쓴다. 대사가 없으면 0. 소리 크기를 잴 수 없는 브라우저는
+   * 말하는 동안 음절 박자(초당 4번 남짓)로 오르내리는 값을 준다.
+   */
+  voiceLevel(now: number = Date.now()): number {
+    if (!this.speaking) {
+      return 0;
+    }
+    if (!this.analyser || !this.samples) {
+      return (
+        0.35 +
+        0.35 * Math.abs(Math.sin(now / 120)) * Math.abs(Math.sin(now / 310))
+      );
+    }
+    this.analyser.getByteTimeDomainData(this.samples);
+    let sum = 0;
+    for (const v of this.samples) {
+      const x = (v - 128) / 128;
+      sum += x * x;
+    }
+    // 대사 음성은 -23 LUFS 남짓이라 RMS 0.03~0.15에서 움직인다
+    return Math.min(1, Math.sqrt(sum / this.samples.length) * 7);
   }
 
   /** 다음 컷 소리를 미리 받아 둔다. */
@@ -245,7 +307,7 @@ export class LiveAudio {
         el.volume = this.level();
       }
     } else if (this.ctx && this.master) {
-      this.ctx.createMediaElementSource(el).connect(this.master);
+      this.routeVoice(el);
     } else {
       el.volume = this.level();
     }
@@ -336,6 +398,8 @@ export class LiveAudio {
     void this.ctx?.close?.();
     this.ctx = null;
     this.master = null;
+    this.analyser = null;
+    this.samples = null;
   }
 
   private level(): number {

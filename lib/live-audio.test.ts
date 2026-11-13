@@ -352,4 +352,49 @@ describe("라이브 모드 배경음", () => {
     expect(audio.isSpeaking()).toBe(false);
     expect(audios[0].volume).toBeCloseTo(0.4);
   });
+
+  it("FR-052: 대사가 나오는 동안 소리 크기를 재고, 대사가 없으면 0이다", () => {
+    const { f, ctx } = factory(true);
+    let wave = 128;
+    const analyser = {
+      fftSize: 0,
+      getByteTimeDomainData: (out: Uint8Array) => {
+        out.forEach((_, i) => (out[i] = i % 2 ? 128 + wave : 128 - wave));
+      },
+      connect: vi.fn(),
+    };
+    ctx.createAnalyser = () => analyser;
+    f.blank = () =>
+      ({
+        src: "",
+        play: vi.fn(() => Promise.resolve()),
+        pause: vi.fn(),
+      }) as unknown as HTMLAudioElement;
+    const audio = new LiveAudio(f);
+    audio.start();
+    expect(analyser.fftSize).toBe(512);
+    expect(audio.voiceLevel()).toBe(0);
+    audio.voice("/v/1");
+    wave = 0;
+    expect(audio.voiceLevel()).toBe(0);
+    wave = 10;
+    expect(audio.voiceLevel()).toBeGreaterThan(0.4);
+    wave = 100;
+    expect(audio.voiceLevel()).toBe(1);
+    audio.stopVoice();
+    expect(audio.voiceLevel()).toBe(0);
+  });
+
+  it("FR-052: 소리 크기를 잴 수 없으면 말하는 동안 박자로 오르내린다", () => {
+    const { f } = factory(false);
+    const audio = new LiveAudio(f);
+    audio.start();
+    audio.voice("/v/1");
+    const levels = [0, 100, 200, 300, 400].map((t) => audio.voiceLevel(t));
+    levels.forEach((l) => {
+      expect(l).toBeGreaterThanOrEqual(0.35);
+      expect(l).toBeLessThanOrEqual(0.7);
+    });
+    expect(new Set(levels).size).toBeGreaterThan(1);
+  });
 });
