@@ -288,28 +288,13 @@ describe("라이브 모드 재생기", () => {
     view.unmount();
   });
 
-  it("FR-052: 넓은 그림 컷은 인물 움직임 층을 얹고, 움직임 줄이기 설정이면 뺀다", async () => {
-    for (const reduce of [false, true]) {
-      const view = await renderFirst(reduce, {
-        aspect: "16:9",
-        depth: "panels/1-depth.png",
-        people: [{ speaker: "엄마", x: 0.4, y: 0.3, size: 0.2 }],
-      });
-      if (reduce) {
-        expect(screen.queryByTestId("living-picture")).not.toBeInTheDocument();
-      } else {
-        expect(screen.getByTestId("living-picture")).toBeInTheDocument();
-        fireEvent.click(screen.getAllByRole("button", { name: "재생" })[0]);
-        expect(screen.getByTestId("living-picture")).toBeInTheDocument();
-      }
-      view.unmount();
-    }
-  });
-
-  it("FR-052: 1:1 컷은 말풍선 글자가 휘지 않게 인물 움직임을 얹지 않는다", async () => {
+  it("FR-052: 화면에서 그림을 휘는 인물 움직임은 쓰지 않는다(배경까지 흔들려 보였다)", async () => {
     const view = await renderFirst(false, {
+      aspect: "16:9",
+      depth: "panels/1-depth.png",
       people: [{ speaker: "엄마", x: 0.4, y: 0.3, size: 0.2 }],
     });
+    fireEvent.click(screen.getAllByRole("button", { name: "재생" })[0]);
     expect(screen.queryByTestId("living-picture")).not.toBeInTheDocument();
     view.unmount();
   });
