@@ -12,6 +12,8 @@ import { publicUrl } from "./config";
  * 소리 검색 API (/api/open/v1/sounds). 프로필에서 발급한 소리 검색(sounds) 개인 토큰이 있어야 부를 수 있다.
  * 쿠키 세션으로는 열지 않는다. web이 토큰을 Access Token으로 바꿔 게이트웨이 /api/v1/sounds를 부르고,
  * 소리마다 미리 듣기 MP3 주소(audioUrl)와 사이트 상세 주소(pageUrl)를 붙여 돌려준다.
+ * Freesound API로 받은 소리(source=Freesound)는 Freesound API 약관상 앱 밖으로 내보낼 수 없어 늘 뺀다
+ * (excludeSource). 사이트 화면(/sounds, 라이브 모드)에서는 그대로 쓴다.
  *
  * - GET /api/open/v1/sounds?q=&kind=&category=&mood=&cursor=&size= : 목록·검색
  * - GET /api/open/v1/sounds/facets : 종류·카테고리·분위기별 개수
@@ -20,6 +22,9 @@ import { publicUrl } from "./config";
 
 /** 넘기는 검색 조건. 나머지 쿼리는 버린다. */
 const QUERY_KEYS = ["q", "kind", "category", "mood", "cursor", "size"];
+
+/** 소리 검색 API에서 빼는 출처. */
+export const EXCLUDED_SOURCE = "Freesound";
 
 /** 토큰 하나가 1분에 부를 수 있는 횟수. */
 export const RATE_LIMIT = 60;
@@ -84,11 +89,11 @@ function gatewayPath(request: NextRequest, path: string[]): string | null {
         query.set(key, value);
       }
     }
-    const search = query.toString();
-    return `/api/v1/sounds${search ? `?${search}` : ""}`;
+    query.set("excludeSource", EXCLUDED_SOURCE);
+    return `/api/v1/sounds?${query.toString()}`;
   }
   if (path.length === 1 && (path[0] === "facets" || isPublicId(path[0]))) {
-    return `/api/v1/sounds/${path[0]}`;
+    return `/api/v1/sounds/${path[0]}?excludeSource=${EXCLUDED_SOURCE}`;
   }
   return null;
 }
