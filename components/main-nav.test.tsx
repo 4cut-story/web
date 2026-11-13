@@ -49,12 +49,7 @@ describe("주요 메뉴", () => {
       </AppShell>,
     );
     await waitFor(() =>
-      expect(labels("상단 메뉴")).toEqual([
-        "홈",
-        "캐릭터",
-        "목소리",
-        "로그인",
-      ]),
+      expect(labels("상단 메뉴")).toEqual(["홈", "캐릭터", "목소리", "로그인"]),
     );
     const top = screen.getByRole("navigation", { name: "상단 메뉴" });
     expect(within(top).getByRole("link", { name: "로그인" })).toHaveAttribute(
